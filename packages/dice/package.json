@@ -1,0 +1,15 @@
+{
+  "name": "@scriptorium/dice",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Dice expression engine: ast (parse, validate, format, expected value; no RNG) and roll (evaluate with an injectable RNG)",
+  "type": "module",
+  "exports": {
+    "./ast": "./src/ast/index.ts",
+    "./roll": "./src/roll/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  }
+}

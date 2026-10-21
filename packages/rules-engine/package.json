@@ -1,0 +1,18 @@
+{
+  "name": "@scriptorium/rules-engine",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Pure, deterministic D&D 5e rules engine: static sheet computation, contextual action resolution, commands",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@scriptorium/content-schema": "workspace:*",
+    "@scriptorium/dice": "workspace:*"
+  }
+}

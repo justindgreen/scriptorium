@@ -6,15 +6,15 @@ Read this file, then `docs/IMPLEMENTATION_PLAN.md` for the current milestone and
 
 ## Documents
 
-| File | Use it for |
-|---|---|
-| `docs/PRODUCT_SPEC.md` | Requirements, the 1.0 boundary, the acceptance scenario, what we do not want |
-| `docs/ARCHITECTURE.md` | Stack, repository layout, module boundaries, command path, encounter coordinator, SSE, deployment, security, post-alpha change process |
-| `docs/DATA_MODEL.md` | Every table and JSON shape, aggregate and revision rules |
-| `docs/RULES_ENGINE.md` | Engine contract: static sheet, contribution model, stat paths, effects, predicates, formulas, action resolution, turn bookkeeping, commands and undo, automation levels, diagnostics, ambiguity register |
-| `docs/IMPLEMENTATION_PLAN.md` | Milestones, measurable criteria, dependencies, status, evidence, measured usage. Keep it current. |
-| `docs/DECISIONS.md` | ADR log. Append new entries; never rewrite old ones. |
-| `docs/TEST_STRATEGY.md` | Suites, golden and behavioural case formats, gates, restore acceptance |
+| File                          | Use it for                                                                                                                                                                                               |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/PRODUCT_SPEC.md`        | Requirements, the 1.0 boundary, the acceptance scenario, what we do not want                                                                                                                             |
+| `docs/ARCHITECTURE.md`        | Stack, repository layout, module boundaries, command path, encounter coordinator, SSE, deployment, security, post-alpha change process                                                                   |
+| `docs/DATA_MODEL.md`          | Every table and JSON shape, aggregate and revision rules                                                                                                                                                 |
+| `docs/RULES_ENGINE.md`        | Engine contract: static sheet, contribution model, stat paths, effects, predicates, formulas, action resolution, turn bookkeeping, commands and undo, automation levels, diagnostics, ambiguity register |
+| `docs/IMPLEMENTATION_PLAN.md` | Milestones, measurable criteria, dependencies, status, evidence, measured usage. Keep it current.                                                                                                        |
+| `docs/DECISIONS.md`           | ADR log. Append new entries; never rewrite old ones.                                                                                                                                                     |
+| `docs/TEST_STRATEGY.md`       | Suites, golden and behavioural case formats, gates, restore acceptance                                                                                                                                   |
 
 ## Repository layout (target; created progressively from M1.1)
 
@@ -29,16 +29,20 @@ tools/srd-import        Upstream SRD data + overlays -> packages
 deploy/docker deploy/unraid docs
 ```
 
-## Commands (available once M1.1 lands; keep this list accurate)
+## Commands (keep this list accurate)
 
 ```bash
-corepack enable pnpm        # once per machine
+npm install -g pnpm         # once per machine (corepack enable needs admin rights on this workstation)
 pnpm install
-pnpm dev                    # web + server; boots the dev database if DATABASE_URL is unset
-pnpm lint && pnpm typecheck && pnpm test
-pnpm test:e2e               # Playwright
-pnpm -F @scriptorium/server cli -- <command>
+pnpm dev                    # web on :5173 (proxies /api, /healthz, /readyz) + server on :3000
+pnpm lint && pnpm format:check && pnpm typecheck && pnpm test
+pnpm build                  # server bundle (tsup) + web (vite)
+pnpm test:e2e               # builds, serves apps/web/dist from the server on :3100, runs Playwright
+pnpm exec playwright install chromium   # once per machine, before test:e2e
+pnpm -F @scriptorium/server cli -- <command>   # from M1.3
 ```
+
+Toolchain notes: TypeScript is pinned to 6.x until typescript-eslint supports 7.x (ADR-0023). pnpm only runs build scripts listed under `allowBuilds` in `pnpm-workspace.yaml`.
 
 ## Non-negotiable rules
 
@@ -58,7 +62,7 @@ pnpm -F @scriptorium/server cli -- <command>
 ## Milestone workflow
 
 - Work one milestone at a time in the order of `docs/IMPLEMENTATION_PLAN.md`; keep the application runnable at every commit.
-- Before starting: set the milestone to *in progress* in the plan. On finishing: update status, criteria met, evidence (commands + results), what was skipped or is unsupported, and **measured usage** from the session usage tooling (record "not exposed" if unavailable; never estimate).
+- Before starting: set the milestone to _in progress_ in the plan. On finishing: update status, criteria met, evidence (commands + results), what was skipped or is unsupported, and **measured usage** from the session usage tooling (record "not exposed" if unavailable; never estimate).
 - Add tests with the feature, not afterwards. Golden cases live in `packages/rules-engine/test/golden/`; behavioural cases live next to the content overlay that declares the feature.
 - Significant decisions go to `docs/DECISIONS.md` as a new ADR. Ambiguous rules go to the ambiguity register in `docs/RULES_ENGINE.md` with the assumption taken.
 - Prefer focused changes over whole-file rewrites. Keep files single-purpose; split modules rather than growing them.

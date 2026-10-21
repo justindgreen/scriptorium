@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - packages/*
+  - tools/*
+
+# pnpm blocks dependency build scripts by default. Only these may run postinstall scripts.
+allowBuilds:
+  esbuild: true

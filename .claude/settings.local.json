@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(corepack enable *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(corepack pnpm *)",
+      "Bash(command -v pnpm)",
+      "Bash(pnpm --version)",
+      "Bash(npm install *)",
+      "Bash(npm prefix *)",
+      "Bash(set -e)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm --filter @scriptorium/server add fastify @fastify/static zod pino)",
+      "Bash(pnpm --filter @scriptorium/server add -D tsx tsup pino-pretty @types/node)",
+      "Bash(pnpm --filter @scriptorium/web add react react-dom)",
+      "Bash(pnpm --filter @scriptorium/web add -D vite @vitejs/plugin-react tailwindcss @tailwindcss/vite @types/react @types/react-dom)",
+      "Bash(pnpm --filter @scriptorium/content-schema add zod)",
+      "Bash(pnpm install *)",
+      "Bash(node -e \"const r=require\\('./package.json'\\);console.log\\('root',JSON.stringify\\(r.devDependencies,null,1\\)\\)\")",
+      "Bash(node -e \"console.log\\('server',JSON.stringify\\(require\\('./apps/server/package.json'\\).dependencies\\),JSON.stringify\\(require\\('./apps/server/package.json'\\).devDependencies\\)\\)\")",
+      "Bash(node -e \"console.log\\('web',JSON.stringify\\(require\\('./apps/web/package.json'\\).dependencies\\),JSON.stringify\\(require\\('./apps/web/package.json'\\).devDependencies\\)\\)\")",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm exec *)",
+      "Bash(pnpm --filter @scriptorium/web add -D vitest)",
+      "Bash(grep -v -E \"^\\\\s*$|Attention|telemetry|roadmap|opt-out|turborepo.dev|Remote caching|Packages in scope\")",
+      "Bash(pnpm peers *)",
+      "Bash(pnpm format *)",
+      "Bash(pnpm format:check)",
+      "Bash(pnpm build *)",
+      "Bash(pnpm test:e2e)",
+      "Bash(grep -v -E \"^\\\\s*$|Attention|telemetry|roadmap|opt-out|turborepo.dev|Remote caching|Packages in scope|cache \\(hit|miss\\)|\\\\\\\\$ \\(tsup|vite build\\)|CLI|ESM|transforming|rendering|computing|dist/|modules transformed|SOURCEMAP|rolldown|built in\")",
+      "Bash(grep -v -E \"^\\\\s*$|Attention|telemetry|roadmap|opt-out|turborepo.dev|Remote caching|Packages in scope|cache \\(hit|miss\\)|\\\\\\\\$ \\(tsup|vite build\\)|CLI|ESM|transforming|rendering|computing|dist/|modules transformed|SOURCEMAP|rolldown|built in|Tasks:|Cached:|Time:\")"
+    ]
+  }
+}

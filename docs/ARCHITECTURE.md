@@ -4,18 +4,18 @@ Scriptorium is a modular monolith: one server process serving a single-page appl
 
 ## 1. Stack
 
-| Layer | Choice | Notes |
-|---|---|---|
-| Runtime | Node 24 LTS, TypeScript 5 strict, ESM, pnpm workspaces, Turborepo | Turborepo is used only for the task graph and caching |
-| Web | React 19, Vite, TanStack Router, TanStack Query, Tailwind CSS v4, shadcn/ui on Radix primitives (copied in), react-hook-form + Zod, CodeMirror 6 (lazy), react-markdown + rehype-sanitize | SPA; no SSR |
-| API | Fastify 5, tRPC v11 (Fastify adapter), Zod 4, `trpc-to-openapi` for the transfer/health REST surface | Verified by spike S2; fallbacks in §10 |
-| Data | Drizzle ORM, drizzle-kit SQL migrations, `pg`, PostgreSQL 17 | 16 tolerated with a startup warning |
-| Auth | Decided by spike S3: Better Auth (default) or an own implementation (Argon2id, opaque DB sessions, invites) | Policy module is independent of the choice |
-| Real-time | Server-Sent Events via tRPC subscriptions; fallback dedicated SSE route | Post-commit emission only |
-| Files | Local disk `DATA_DIR/uploads`, content-addressed by sha256, images re-encoded by `sharp` | Immutable files |
-| Dice | `@scriptorium/dice/ast` (no RNG) and `@scriptorium/dice/roll` (injectable RNG) | Engine may import `ast` only |
-| Logging | Pino | |
-| Tests | Vitest, fast-check, Playwright + axe-core, golden and conformance suites | See `TEST_STRATEGY.md` |
+| Layer     | Choice                                                                                                                                                                                    | Notes                                                 |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Runtime   | Node 24 LTS, TypeScript 5 strict, ESM, pnpm workspaces, Turborepo                                                                                                                         | Turborepo is used only for the task graph and caching |
+| Web       | React 19, Vite, TanStack Router, TanStack Query, Tailwind CSS v4, shadcn/ui on Radix primitives (copied in), react-hook-form + Zod, CodeMirror 6 (lazy), react-markdown + rehype-sanitize | SPA; no SSR                                           |
+| API       | Fastify 5, tRPC v11 (Fastify adapter), Zod 4, `trpc-to-openapi` for the transfer/health REST surface                                                                                      | Verified by spike S2; fallbacks in §10                |
+| Data      | Drizzle ORM, drizzle-kit SQL migrations, `pg`, PostgreSQL 17                                                                                                                              | 16 tolerated with a startup warning                   |
+| Auth      | Decided by spike S3: Better Auth (default) or an own implementation (Argon2id, opaque DB sessions, invites)                                                                               | Policy module is independent of the choice            |
+| Real-time | Server-Sent Events via tRPC subscriptions; fallback dedicated SSE route                                                                                                                   | Post-commit emission only                             |
+| Files     | Local disk `DATA_DIR/uploads`, content-addressed by sha256, images re-encoded by `sharp`                                                                                                  | Immutable files                                       |
+| Dice      | `@scriptorium/dice/ast` (no RNG) and `@scriptorium/dice/roll` (injectable RNG)                                                                                                            | Engine may import `ast` only                          |
+| Logging   | Pino                                                                                                                                                                                      |                                                       |
+| Tests     | Vitest, fast-check, Playwright + axe-core, golden and conformance suites                                                                                                                  | See `TEST_STRATEGY.md`                                |
 
 Rejected alternatives and reasons are in `DECISIONS.md`.
 
@@ -43,7 +43,7 @@ docs/
 
 ## 3. Module boundaries
 
-Enforced by `eslint-plugin-boundaries` and package `exports`:
+Enforced by per-directory `@typescript-eslint/no-restricted-imports` rules in `eslint.config.js` (proven by `test/boundaries.test.ts`), package `exports`, and, from M1.3, `eslint-plugin-boundaries` for intra-server layering:
 
 - `rules-engine` imports only `content-schema` and `dice/ast`. No Node built-ins, DB, HTTP, React or `dice/roll`.
 - `dice/ast` has no dependencies; `dice/roll` depends on `dice/ast` and takes an RNG function.
@@ -116,13 +116,13 @@ SSE channels per campaign and per character. Subscriptions are authorized like q
 
 ## 10. Integration spikes and fallbacks (M1.2)
 
-| Spike | Verify | Fallbacks in order |
-|---|---|---|
-| S1 dev database | `embedded-postgres` 17.x on this Windows workstation: initdb/start/stop as the current user, migrations, Vitest boot, `pg_trgm` and tsvector | PGlite (in-process Postgres 17, single connection) → native PostgreSQL service → Docker Desktop |
-| S2 API stack | tRPC v11 on Fastify 5 with SSE subscriptions through the adapter and behind a proxy; `trpc-to-openapi` emits valid OpenAPI 3 for transfer procedures | Dedicated SSE route on `reply.raw`; Fastify routes with `fastify-type-provider-zod` + `@fastify/swagger` for the transfer surface |
-| S3 auth | Better Auth: offline username/password without email, Drizzle adapter on our schema, DB cookie sessions, admin/role plugin, rate limiting, invite-gated sign-up, acceptable footprint and release stability | Own implementation per the Lucia guide patterns |
-| S4 production DB parity | Migrations and integration suite on `postgres:17` in CI or on Unraid; startup version check | Pin supported versions; add 16 to the matrix only if needed |
-| S5 native modules | `sharp` on Windows and in `node:24-bookworm-slim`; embedded Postgres binaries cacheable offline | `jimp`; vendored binaries |
+| Spike                   | Verify                                                                                                                                                                                                      | Fallbacks in order                                                                                                                |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| S1 dev database         | `embedded-postgres` 17.x on this Windows workstation: initdb/start/stop as the current user, migrations, Vitest boot, `pg_trgm` and tsvector                                                                | PGlite (in-process Postgres 17, single connection) → native PostgreSQL service → Docker Desktop                                   |
+| S2 API stack            | tRPC v11 on Fastify 5 with SSE subscriptions through the adapter and behind a proxy; `trpc-to-openapi` emits valid OpenAPI 3 for transfer procedures                                                        | Dedicated SSE route on `reply.raw`; Fastify routes with `fastify-type-provider-zod` + `@fastify/swagger` for the transfer surface |
+| S3 auth                 | Better Auth: offline username/password without email, Drizzle adapter on our schema, DB cookie sessions, admin/role plugin, rate limiting, invite-gated sign-up, acceptable footprint and release stability | Own implementation per the Lucia guide patterns                                                                                   |
+| S4 production DB parity | Migrations and integration suite on `postgres:17` in CI or on Unraid; startup version check                                                                                                                 | Pin supported versions; add 16 to the matrix only if needed                                                                       |
+| S5 native modules       | `sharp` on Windows and in `node:24-bookworm-slim`; embedded Postgres binaries cacheable offline                                                                                                             | `jimp`; vendored binaries                                                                                                         |
 
 Each spike closes with a `DECISIONS.md` entry containing the command output that proves the outcome.
 

@@ -21,6 +21,7 @@ applyCommand(aggregate, sheet, command)               -> { patch, event } | erro
 Everything true of the character independent of any attack, target, turn or action: ability scores and modifiers, proficiency bonus, saves, skills, passives, AC, initiative, speeds, HP and hit dice, proficiency sets, senses, size, carrying capacity, spellcasting ability/DC/attack/slots/preparation limits, resource maxima, defenses (symbolic, possibly conditional), and **action templates** (display lines with symbolic dice and conditional riders listed, never rolled).
 
 Pipeline:
+
 1. **Collect grants** in a fixed source order: species → background → class levels in order → subclass → feats → resolved choices → equipped/attuned items → active conditions → active toggles → temporary effects → DM adjustments → manual overrides. Each produces `EffectInstance { effect, source: { kind, uid, name, path }, active, inactiveReason? }`.
 2. **Emit pending choices** (§5).
 3. **Resolve stats** with the contribution model (§3).
@@ -33,15 +34,24 @@ A stat is a node with a value kind: `number`, `set<string>`, `die`, `boolean`, `
 ```ts
 type Contribution = {
   target: StatPath
-  op: 'base' | 'replace' | 'add' | 'multiply' | 'atLeast' | 'atMost' | 'replaceFinal' | 'override'
-    | 'union' | 'remove'            // set-valued stats
-    | 'formula'                     // member of an exclusive formula group (e.g. ac.base)
+  op:
+    | 'base'
+    | 'replace'
+    | 'add'
+    | 'multiply'
+    | 'atLeast'
+    | 'atMost'
+    | 'replaceFinal'
+    | 'override'
+    | 'union'
+    | 'remove' // set-valued stats
+    | 'formula' // member of an exclusive formula group (e.g. ac.base)
   value: number | Formula | string[]
-  phase?: 'BASE' | 'REPLACE' | 'ADD' | 'MULTIPLY' | 'CLAMP' | 'FINAL' | 'OVERRIDE'  // default from op
-  priority?: number                 // default 0; higher wins among replace/replaceFinal
-  stackKey?: string                 // adds sharing a key collapse to the single highest
-  selection?: 'max' | 'userChoice'  // formula groups; default max
-  condition?: Predicate             // static-scope leaves only
+  phase?: 'BASE' | 'REPLACE' | 'ADD' | 'MULTIPLY' | 'CLAMP' | 'FINAL' | 'OVERRIDE' // default from op
+  priority?: number // default 0; higher wins among replace/replaceFinal
+  stackKey?: string // adds sharing a key collapse to the single highest
+  selection?: 'max' | 'userChoice' // formula groups; default max
+  condition?: Predicate // static-scope leaves only
   source: SourceRef
   index: number
 }
@@ -68,25 +78,25 @@ Set-valued stats (proficiencies, languages, resistances, condition immunities, s
 
 **Static effect catalogue** (discriminated union in `content-schema`; the generated `EFFECTS_REFERENCE.md` is authoritative once it exists):
 
-| Type | Purpose |
-|---|---|
-| `abilityScore.bonus / atLeast / maxIncrease` | +2 DEX; Headband sets INT to at least 19; raises the cap |
-| `proficiency.grant` | kind skill/save/tool/weapon/armor/language, target or filter, level proficient/expertise/half |
-| `bonus`, `set`, `atLeast`, `atMost`, `multiply`, `replaceFinal` | generic contributions to a stat path with stackKey/priority/condition |
-| `ac.formula` | candidate in the `ac.base` group |
-| `advantage / disadvantage` | rollKey (e.g. `save.vs.poison`, `check.stealth`), condition |
-| `damage.resistance / immunity / vulnerability`, `condition.immunity` | damage type or condition, optional packet-scope condition |
-| `sense.grant`, `speed.set/bonus`, `size.set`, `language.grant` | |
-| `attack.extra`, `crit.range`, `weapon.property.grant` | Extra Attack, Improved Critical, finesse for monk weapons under a predicate |
-| `hp.bonusPerLevel` | Tough, Hill Dwarf |
-| `resource.define` | id, max formula, recharge shortRest/longRest/dawn/turn/custom, display die |
-| `spellcasting.grant` | ability, progression full/half/third/pact/none, preparation known/prepared/spellbook, list, ritual, focus |
-| `spell.grant`, `spellSlots.bonus` | granted spells with uses/recharge; extra slots |
-| `action.grant` | name, actionType, attack, damage formula, save, range, cost, rider text |
-| `damage.rider` | scaling damage line displayed on templates (its application is action-scoped) |
-| `toggle.define` | named on/off state carrying nested effects (Rage), optional resource cost |
-| `choice` | §5 |
-| `feature.grant`, `attunement`, `charges`, `hook`, `manual` | nesting; attunement rules; charge pools; registered hooks; descriptive-only mechanics |
+| Type                                                                 | Purpose                                                                                                   |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `abilityScore.bonus / atLeast / maxIncrease`                         | +2 DEX; Headband sets INT to at least 19; raises the cap                                                  |
+| `proficiency.grant`                                                  | kind skill/save/tool/weapon/armor/language, target or filter, level proficient/expertise/half             |
+| `bonus`, `set`, `atLeast`, `atMost`, `multiply`, `replaceFinal`      | generic contributions to a stat path with stackKey/priority/condition                                     |
+| `ac.formula`                                                         | candidate in the `ac.base` group                                                                          |
+| `advantage / disadvantage`                                           | rollKey (e.g. `save.vs.poison`, `check.stealth`), condition                                               |
+| `damage.resistance / immunity / vulnerability`, `condition.immunity` | damage type or condition, optional packet-scope condition                                                 |
+| `sense.grant`, `speed.set/bonus`, `size.set`, `language.grant`       |                                                                                                           |
+| `attack.extra`, `crit.range`, `weapon.property.grant`                | Extra Attack, Improved Critical, finesse for monk weapons under a predicate                               |
+| `hp.bonusPerLevel`                                                   | Tough, Hill Dwarf                                                                                         |
+| `resource.define`                                                    | id, max formula, recharge shortRest/longRest/dawn/turn/custom, display die                                |
+| `spellcasting.grant`                                                 | ability, progression full/half/third/pact/none, preparation known/prepared/spellbook, list, ritual, focus |
+| `spell.grant`, `spellSlots.bonus`                                    | granted spells with uses/recharge; extra slots                                                            |
+| `action.grant`                                                       | name, actionType, attack, damage formula, save, range, cost, rider text                                   |
+| `damage.rider`                                                       | scaling damage line displayed on templates (its application is action-scoped)                             |
+| `toggle.define`                                                      | named on/off state carrying nested effects (Rage), optional resource cost                                 |
+| `choice`                                                             | §5                                                                                                        |
+| `feature.grant`, `attunement`, `charges`, `hook`, `manual`           | nesting; attunement rules; charge pools; registered hooks; descriptive-only mechanics                     |
 
 **Action-scoped effects** (§6): `action.attackBonus`, `action.damageAdd { formula, damageType, condition, oncePerTurn?, optional? }`, `action.damageReplaceDie`, `action.advantage/disadvantage`, `action.critRange`, `action.rerollDamageDice { values, once }`, `action.onHit`, `action.onCrit`, `action.saveDC`, `action.cost { resource | slot }`, `action.requiresChoice`.
 
@@ -111,12 +121,12 @@ Set-valued stats (proficiencies, languages, resistances, condition immunities, s
 
 `state.combat` separates four things:
 
-| Field | Meaning | Resets |
-|---|---|---|
-| `turn.turnId`, `turn.ownTurn` | identity of the current global turn (encounter id + round + turn index); outside encounters a local counter advanced by "New turn" | changes whenever **any** participant's turn begins |
-| `oncePerTurn[key] = turnId` | a once-per-turn feature (Sneak Attack) is available when its recorded turnId differs from the current one | effectively on every creature's turn start, so a reaction attack on another creature's turn can trigger it again |
-| `reaction.usedOnTurnId` | usable on any creature's turn | regained at the start of the character's **own** turn |
-| `bonusAction.usedOnTurnId`, `actions.budget/usedOnTurnId` | only on the character's own turn; Action Surge adds 1 to the budget for that turn | at the start of the character's own turn |
+| Field                                                     | Meaning                                                                                                                            | Resets                                                                                                           |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `turn.turnId`, `turn.ownTurn`                             | identity of the current global turn (encounter id + round + turn index); outside encounters a local counter advanced by "New turn" | changes whenever **any** participant's turn begins                                                               |
+| `oncePerTurn[key] = turnId`                               | a once-per-turn feature (Sneak Attack) is available when its recorded turnId differs from the current one                          | effectively on every creature's turn start, so a reaction attack on another creature's turn can trigger it again |
+| `reaction.usedOnTurnId`                                   | usable on any creature's turn                                                                                                      | regained at the start of the character's **own** turn                                                            |
+| `bonusAction.usedOnTurnId`, `actions.budget/usedOnTurnId` | only on the character's own turn; Action Surge adds 1 to the budget for that turn                                                  | at the start of the character's own turn                                                                         |
 
 The tracker issues `turnStarted { turnId, ownTurn }` to every participant when the marker moves. Limitation: outside a tracked encounter the bookkeeping is advisory because other creatures' turns are not observed.
 
@@ -144,14 +154,14 @@ Structured `{ code, severity, message, statPath?, sources[] }`. Codes: `CYCLE_DE
 
 Record each ambiguous 2014 rule with the assumption taken and the test that pins it.
 
-| Id | Rule | Assumption | Test |
-|---|---|---|---|
-| (none yet) | | | |
+| Id         | Rule | Assumption | Test |
+| ---------- | ---- | ---------- | ---- |
+| (none yet) |      |            |      |
 
 ## 13. Manual-feature allow-list (official content)
 
 Features whose mechanics are legitimately descriptive and therefore `manual`, each with a one-line reason, reviewed by the owner. Populated from M2.4 onward.
 
-| Feature | Reason |
-|---|---|
-| (none yet) | |
+| Feature    | Reason |
+| ---------- | ------ |
+| (none yet) |        |

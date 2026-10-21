@@ -1,0 +1,17 @@
+{
+  "name": "@scriptorium/content-schema",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Zod schemas for content kinds, effects, predicates, choices, stat paths, automation metadata and package formats",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
+}

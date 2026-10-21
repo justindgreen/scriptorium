@@ -4,14 +4,14 @@ Testing is part of implementation. A milestone is done only when its tests exist
 
 ## 1. Suites
 
-| Suite | Tool | Scope |
-|---|---|---|
-| Unit | Vitest | resolver phases, cycle detection, each effect type (static and action), predicates incl. tri-state, formulas, dice ast/roll, point-buy, policy decisions, schemas, command patches and compensations |
-| Golden regression | Vitest + JSON fixtures in `packages/rules-engine/test/golden/` | character aggregates with expected sheet slices, expected action plans for given contexts, expected command results. 2014 SRD rules are the source of expected values; ambiguities go to the register in `RULES_ENGINE.md` |
-| Conformance and coverage | Vitest runner over content packages | declaration checks and behavioural cases per feature; generates `docs/AUTOMATION_COVERAGE.md` |
-| Property | fast-check | dice grammar, point-buy, resolver invariants (order independence, add commutativity, replace determinism) |
-| Integration | Vitest against the dev database; CI also against `postgres:17` | modules, migrations from empty, JSON migrators, import/export round trips, authorization matrix, combat coordination, restore acceptance |
-| E2E | Playwright + axe-core | the acceptance scenario on alpha content (gate A1) and full content (1.0), desktop and mobile; theme and reduced motion |
+| Suite                    | Tool                                                           | Scope                                                                                                                                                                                                                      |
+| ------------------------ | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit                     | Vitest                                                         | resolver phases, cycle detection, each effect type (static and action), predicates incl. tri-state, formulas, dice ast/roll, point-buy, policy decisions, schemas, command patches and compensations                       |
+| Golden regression        | Vitest + JSON fixtures in `packages/rules-engine/test/golden/` | character aggregates with expected sheet slices, expected action plans for given contexts, expected command results. 2014 SRD rules are the source of expected values; ambiguities go to the register in `RULES_ENGINE.md` |
+| Conformance and coverage | Vitest runner over content packages                            | declaration checks and behavioural cases per feature; generates `docs/AUTOMATION_COVERAGE.md`                                                                                                                              |
+| Property                 | fast-check                                                     | dice grammar, point-buy, resolver invariants (order independence, add commutativity, replace determinism)                                                                                                                  |
+| Integration              | Vitest against the dev database; CI also against `postgres:17` | modules, migrations from empty, JSON migrators, import/export round trips, authorization matrix, combat coordination, restore acceptance                                                                                   |
+| E2E                      | Playwright + axe-core                                          | the acceptance scenario on alpha content (gate A1) and full content (1.0), desktop and mobile; theme and reduced motion                                                                                                    |
 
 ## 2. Golden case format
 
@@ -23,11 +23,22 @@ Testing is part of implementation. A milestone is done only when its tests exist
   "snapshotRefs": ["srd-5.1:class:rogue@1", "..."],
   "expectSheet": { "skill.stealth.bonus": 9, "attacks.perAction": 1 },
   "actions": [
-    { "ref": { "kind": "weapon", "itemId": "rapier" }, "ctx": { "situation": { "advantageSources": ["hidden"] } },
-      "expectPlan": { "damagePackets": [{ "type": "piercing", "dice": "1d8+4" }, { "type": "piercing", "dice": "3d6", "source": "Sneak Attack" }] } }
+    {
+      "ref": { "kind": "weapon", "itemId": "rapier" },
+      "ctx": { "situation": { "advantageSources": ["hidden"] } },
+      "expectPlan": {
+        "damagePackets": [
+          { "type": "piercing", "dice": "1d8+4" },
+          { "type": "piercing", "dice": "3d6", "source": "Sneak Attack" }
+        ]
+      }
+    }
   ],
   "commands": [
-    { "command": { "type": "applyDamage", "amount": 12, "damageType": "slashing" }, "expectState": { "hp_current": 20 } }
+    {
+      "command": { "type": "applyDamage", "amount": 12, "damageType": "slashing" },
+      "expectState": { "hp_current": 20 }
+    }
   ]
 }
 ```
