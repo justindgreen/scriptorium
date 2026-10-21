@@ -1,4 +1,5 @@
 import {
+  ArchiveIcon,
   HomeIcon,
   KeyRoundIcon,
   ScrollTextIcon,
@@ -8,7 +9,13 @@ import {
 } from 'lucide-react'
 
 export type AppPath =
-  '/' | '/admin/users' | '/admin/invites' | '/admin/audit' | '/admin/settings' | '/licenses'
+  | '/'
+  | '/admin/users'
+  | '/admin/invites'
+  | '/admin/audit'
+  | '/admin/settings'
+  | '/admin/backups'
+  | '/licenses'
 
 export type NavItem = {
   to: AppPath
@@ -52,6 +59,13 @@ export const navItems: NavItem[] = [
     icon: SettingsIcon,
     group: 'admin',
     keywords: ['instance', 'name'],
+  },
+  {
+    to: '/admin/backups',
+    label: 'Backups',
+    icon: ArchiveIcon,
+    group: 'admin',
+    keywords: ['restore', 'dump', 'archive'],
   },
 ]
 

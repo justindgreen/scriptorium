@@ -3,6 +3,7 @@ import { and, asc, count, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { schema, type Db } from '../../db/client.js'
 import { procedureFor, router } from '../../core/trpc.js'
+import { backupRouter } from '../backup/router.js'
 
 const roleSchema = z.enum(['admin', 'user'])
 
@@ -179,6 +180,7 @@ export const adminRouter = router({
   invites: invitesRouter,
   audit: auditRouter,
   settings: settingsRouter,
+  backups: backupRouter,
 })
 
 /** Refuses to demote or deactivate the only remaining active administrator. */

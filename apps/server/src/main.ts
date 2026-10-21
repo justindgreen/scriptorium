@@ -1,4 +1,6 @@
+import { Cron } from 'croner'
 import { buildApp } from './app.js'
+import { createBackup, pruneBackups } from './modules/backup/backup.js'
 import { loadConfig } from './core/config.js'
 import { resolveAppSecret } from './core/secret.js'
 import { connectDatabase } from './db/index.js'
@@ -30,11 +32,36 @@ async function main() {
     )
   }
 
+  let schedule: Cron | null = null
+  if (config.BACKUP_CRON) {
+    schedule = new Cron(config.BACKUP_CRON, { protect: true }, async () => {
+      try {
+        const result = await createBackup({
+          databaseUrl: database.url,
+          dataDir: config.DATA_DIR,
+          log: (m) => app.log.info(m),
+        })
+        const pruned = pruneBackups(config.DATA_DIR, config.BACKUP_RETENTION)
+        app.log.info(
+          { name: result.name, bytes: result.totalBytes, pruned },
+          'scheduled backup done',
+        )
+      } catch (error) {
+        app.log.error({ err: error }, 'scheduled backup failed')
+      }
+    })
+    app.log.info(
+      { cron: config.BACKUP_CRON, next: schedule.nextRun()?.toISOString() },
+      'backup schedule active',
+    )
+  }
+
   let shuttingDown = false
   const shutdown = async (signal: string) => {
     if (shuttingDown) return
     shuttingDown = true
     app.log.info({ signal }, 'shutting down')
+    schedule?.stop()
     await app.close()
     await database.close()
     process.exit(0)

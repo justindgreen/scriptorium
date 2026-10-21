@@ -54,6 +54,7 @@ test('the shell adapts to the viewport and every admin page passes the accessibi
     ['/admin/invites', 'Invites'],
     ['/admin/audit', 'Audit log'],
     ['/admin/settings', 'Settings'],
+    ['/admin/backups', 'Backups'],
   ] as const) {
     await page.goto(path)
     await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible()

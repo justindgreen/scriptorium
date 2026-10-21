@@ -8,6 +8,7 @@ import type { ContentRepo } from '../modules/content/repo.js'
 import type { Audit } from './audit.js'
 import type { Auth, SessionInfo } from './auth.js'
 import type { Config } from './config.js'
+import type { MaintenanceGate } from './maintenance.js'
 import { anonymousScope, assertCan, toRole, type Action, type Scope } from './policy.js'
 import type { Settings } from './settings.js'
 
@@ -20,6 +21,8 @@ export type Services = {
   invites: InviteService
   settings: Settings
   content: ContentRepo
+  databaseUrl: string
+  maintenance: MaintenanceGate
 }
 
 export type Context = Services & {

@@ -12,16 +12,25 @@ import { connectDatabase } from '../db/index.js'
 import { ImportError, importPackage, upsertRuleset } from '../modules/content/import.js'
 import { createContentRepo } from '../modules/content/repo.js'
 import { seedBundledContent } from '../modules/content/seed.js'
+import {
+  createBackup,
+  listBackups,
+  pruneBackups,
+  restoreBackup,
+  verifyBackup,
+} from '../modules/backup/backup.js'
 
 async function main(argv: string[]) {
   const [command, ...args] = argv
   if (!command || command === '--help' || command === '-h') {
-    console.log('commands: migrate | seed [dir] | import-content <file...> | sources')
+    console.log(
+      'commands: migrate | seed [dir] | import-content <file...> | sources | backup | backups | verify-backup <dir> | restore <dir> | prune [keep]',
+    )
     return
   }
   const config = loadConfig()
   const database = await connectDatabase(config, {
-    migrate: true,
+    migrate: command !== 'restore' && command !== 'verify-backup',
     onEmbeddedError: (m) => console.error('[embedded-postgres]', m),
   })
   try {
@@ -62,6 +71,52 @@ async function main(argv: string[]) {
           console.log(
             `${s.slug}\t${s.version}\t${s.entryCount} entries\t${s.isEnabled ? 'enabled' : 'disabled'}\t${s.license}`,
           )
+        break
+      }
+      case 'backup': {
+        const result = await createBackup({
+          databaseUrl: database.url,
+          dataDir: config.DATA_DIR,
+          log: (m) => console.log(m),
+        })
+        const pruned = pruneBackups(config.DATA_DIR, config.BACKUP_RETENTION)
+        console.log(
+          `${result.name}: ${result.totalBytes} bytes${pruned.length ? `, pruned ${pruned.join(', ')}` : ''}`,
+        )
+        break
+      }
+      case 'backups': {
+        for (const b of listBackups(config.DATA_DIR))
+          console.log(
+            `${b.name}\t${b.totalBytes} bytes\t${b.manifest.files.length} files\tapp ${b.manifest.appVersion}`,
+          )
+        break
+      }
+      case 'verify-backup': {
+        if (!args[0]) throw new Error('verify-backup needs a backup directory')
+        const result = verifyBackup(path.resolve(args[0]))
+        console.log(
+          result.ok ? 'backup verified' : `backup has problems:\n  ${result.problems.join('\n  ')}`,
+        )
+        if (!result.ok) process.exitCode = 1
+        break
+      }
+      case 'restore': {
+        if (!args[0]) throw new Error('restore needs a backup directory')
+        const result = await restoreBackup({
+          dir: path.resolve(args[0]),
+          databaseUrl: database.url,
+          dataDir: config.DATA_DIR,
+          log: (m) => console.log(m),
+        })
+        console.log(
+          `restored backup from ${result.manifest.createdAt} (${result.restoredFiles} files)`,
+        )
+        break
+      }
+      case 'prune': {
+        const keep = args[0] ? Number(args[0]) : config.BACKUP_RETENTION
+        console.log(`pruned: ${pruneBackups(config.DATA_DIR, keep).join(', ') || 'nothing'}`)
         break
       }
       default:

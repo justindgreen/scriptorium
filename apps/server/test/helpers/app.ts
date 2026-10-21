@@ -20,7 +20,7 @@ export async function createTestApp(existing?: TestDatabase): Promise<TestApp> {
   })
   const app = await buildApp({
     config,
-    database: { db: tdb.db, pool: tdb.pool },
+    database: { db: tdb.db, pool: tdb.pool, url: tdb.url },
     secret: TEST_SECRET,
   })
   await app.ready()

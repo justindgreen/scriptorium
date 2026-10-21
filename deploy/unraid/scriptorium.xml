@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Scriptorium</Name>
+  <Repository>scriptorium:latest</Repository>
+  <Registry/>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/</Support>
+  <Project>https://github.com/</Project>
+  <Overview>Self-hosted D&amp;D 5e character, content and campaign platform: character builder and sheets with a rules engine, compendium, homebrew, campaigns, monsters and encounters. Needs a PostgreSQL 17 container (install one from Community Applications first and create a database and user for Scriptorium).</Overview>
+  <Category>Tools: Other</Category>
+  <WebUI>http://[IP]:[PORT:3000]</WebUI>
+  <Icon/>
+  <ExtraParams>--health-cmd="node -e \"fetch('http://127.0.0.1:3000/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"" --health-interval=30s</ExtraParams>
+  <PostArgs/>
+  <Config Name="Web port" Target="3000" Default="3000" Mode="tcp" Description="Port the web app listens on" Type="Port" Display="always" Required="true" Mask="false">3000</Config>
+  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/scriptorium/data" Mode="rw" Description="Uploads, backups and logs" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/scriptorium/data</Config>
+  <Config Name="DATABASE_URL" Target="DATABASE_URL" Default="postgres://scriptorium:PASSWORD@192.168.1.10:5432/scriptorium" Mode="" Description="PostgreSQL 17 connection string (user, password, host, database you created)" Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="APP_SECRET" Target="APP_SECRET" Default="" Mode="" Description="Random string of at least 32 characters; keep it constant between updates" Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="PUBLIC_URL" Target="PUBLIC_URL" Default="http://192.168.1.10:3000" Mode="" Description="The address users open in their browser (use https://... when behind a reverse proxy)" Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="TRUST_PROXY" Target="TRUST_PROXY" Default="false" Mode="" Description="true when behind a reverse proxy such as SWAG or Nginx Proxy Manager" Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="BACKUP_CRON" Target="BACKUP_CRON" Default="0 4 * * *" Mode="" Description="Cron expression for automatic backups into /data/backups (empty disables)" Type="Variable" Display="advanced" Required="false" Mask="false">0 4 * * *</Config>
+  <Config Name="BACKUP_RETENTION" Target="BACKUP_RETENTION" Default="14" Mode="" Description="How many backups to keep" Type="Variable" Display="advanced" Required="false" Mask="false">14</Config>
+  <Config Name="LOG_LEVEL" Target="LOG_LEVEL" Default="info" Mode="" Description="fatal, error, warn, info, debug or trace" Type="Variable" Display="advanced" Required="false" Mask="false">info</Config>
+</Container>

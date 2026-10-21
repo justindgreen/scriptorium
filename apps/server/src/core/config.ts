@@ -38,6 +38,10 @@ const configSchema = z
     CONTENT_DIR: z.string().optional(),
     /** Import bundled content at start (idempotent). */
     SEED_CONTENT: booleanFromEnv.default(true),
+    /** Cron expression for automatic backups; empty disables. */
+    BACKUP_CRON: z.string().trim().optional(),
+    /** Backups to keep after each automatic or manual backup. */
+    BACKUP_RETENTION: z.coerce.number().int().min(1).max(365).default(14),
     /** Trust X-Forwarded-* headers from a reverse proxy. */
     TRUST_PROXY: booleanFromEnv.default(false),
     /** Mark cookies Secure. "auto" derives it from PUBLIC_URL's scheme. */

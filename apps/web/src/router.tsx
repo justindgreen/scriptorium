@@ -12,6 +12,7 @@ import { AuthLayout } from '@/layout/AuthLayout'
 import { loadSession, loadStatus } from '@/lib/session'
 import { errorMessage } from '@/lib/trpc'
 import { AdminAuditPage } from '@/pages/AdminAuditPage'
+import { AdminBackupsPage } from '@/pages/AdminBackupsPage'
 import { AdminInvitesPage } from '@/pages/AdminInvitesPage'
 import { AdminSettingsPage } from '@/pages/AdminSettingsPage'
 import { AdminUsersPage } from '@/pages/AdminUsersPage'
@@ -85,6 +86,12 @@ const adminSettingsRoute = createRoute({
   beforeLoad: requireAdmin,
   component: AdminSettingsPage,
 })
+const adminBackupsRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/admin/backups',
+  beforeLoad: requireAdmin,
+  component: AdminBackupsPage,
+})
 
 // --- Public frame
 const authLayout = createRoute({
@@ -132,6 +139,7 @@ const routeTree = rootRoute.addChildren([
     adminInvitesRoute,
     adminAuditRoute,
     adminSettingsRoute,
+    adminBackupsRoute,
   ]),
   authLayout.addChildren([setupRoute, loginRoute, registerRoute, licensesRoute]),
 ])

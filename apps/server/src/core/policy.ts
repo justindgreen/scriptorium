@@ -22,6 +22,7 @@ export type Action =
   | 'admin.invites.manage'
   | 'admin.audit.read'
   | 'admin.settings.manage'
+  | 'admin.backups.manage'
 
 const adminActions: ReadonlySet<Action> = new Set([
   'admin.users.manage',
@@ -29,6 +30,7 @@ const adminActions: ReadonlySet<Action> = new Set([
   'admin.audit.read',
   'admin.settings.manage',
   'admin.content.manage',
+  'admin.backups.manage',
 ])
 
 export function can(scope: Scope, action: Action): boolean {

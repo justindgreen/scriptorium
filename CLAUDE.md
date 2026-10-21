@@ -18,6 +18,9 @@ Read this file, then `docs/IMPLEMENTATION_PLAN.md` for the current milestone and
 | `docs/DECISIONS.md`           | ADR log. Append new entries; never rewrite old ones.                                                                                                                                                     |
 | `docs/TEST_STRATEGY.md`       | Suites, golden and behavioural case formats, gates, restore acceptance                                                                                                                                   |
 | `docs/DESIGN_SYSTEM.md`       | Tokens, fonts, themes, generated components, shell patterns, accessibility rules                                                                                                                         |
+| `docs/CONTENT_FORMAT.md`      | Package and entry format, import semantics, converter and overlays                                                                                                                                       |
+| `docs/LICENSES.md`            | Game content and software licences                                                                                                                                                                       |
+| `docs/DEPLOYMENT.md`          | Docker, Compose, Unraid install, environment, updates, backup and restore                                                                                                                                |
 
 ## Repository layout (target; created progressively from M1.1)
 

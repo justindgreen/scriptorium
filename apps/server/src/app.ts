@@ -9,6 +9,7 @@ import { fastifyTRPCOpenApiPlugin, generateOpenApiDocument } from 'trpc-to-opena
 import { createAudit } from './core/audit.js'
 import { createAuth, type Auth } from './core/auth.js'
 import type { Config } from './core/config.js'
+import { createMaintenanceGate } from './core/maintenance.js'
 import { createSettings } from './core/settings.js'
 import { createContextFactory, type Services } from './core/trpc.js'
 import { APP_VERSION } from './core/version.js'
@@ -21,7 +22,7 @@ export type App = FastifyInstance & { services: Services }
 
 export type AppDeps = {
   config: Config
-  database: { db: Db; pool: Pool }
+  database: { db: Db; pool: Pool; url: string }
   secret: string
 }
 
@@ -54,6 +55,8 @@ export async function buildApp(deps: AppDeps): Promise<App> {
   const settings = createSettings(db)
   const invites = createInviteService(db)
   const content = createContentRepo(db)
+  const maintenance = createMaintenanceGate(config.DATA_DIR)
+  maintenance.register(app)
   const auth = createAuth({ db, config, secret: deps.secret, audit, invites, settings })
   const services: Services = {
     config,
@@ -64,6 +67,8 @@ export async function buildApp(deps: AppDeps): Promise<App> {
     invites,
     settings,
     content,
+    databaseUrl: deps.database.url,
+    maintenance,
   }
   app.decorate('services', services)
 
@@ -74,6 +79,11 @@ export async function buildApp(deps: AppDeps): Promise<App> {
   }))
 
   app.get('/readyz', async (_request, reply) => {
+    if (maintenance.isActive()) {
+      return reply
+        .code(503)
+        .send({ status: 'maintenance' as const, checks: { database: 'unknown' as const } })
+    }
     try {
       await db.execute(sql`select 1`)
       return { status: 'ok' as const, checks: { database: 'ok' as const } }
