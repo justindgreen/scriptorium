@@ -9,3 +9,8 @@ allowBuilds:
   '@embedded-postgres/windows-x64': true
   '@embedded-postgres/linux-x64': true
   '@embedded-postgres/darwin-arm64': true
+
+# Better Auth's adapter packages reference these drivers; we use only the Drizzle adapter on pg.
+overrides:
+  '@prisma/client': '-'
+  better-sqlite3: '-'

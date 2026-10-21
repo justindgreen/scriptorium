@@ -1,7 +1,10 @@
+import { QueryClientProvider } from '@tanstack/react-query'
+import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import { App } from './App.js'
+import { queryClient } from './lib/trpc.js'
+import { router } from './router.js'
 
 const container = document.getElementById('root')
 if (!container) {
@@ -10,6 +13,8 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   </StrictMode>,
 )

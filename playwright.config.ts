@@ -7,9 +7,11 @@ const port = 3100
 const baseURL = `http://localhost:${port}`
 
 /**
- * End-to-end tests run against the production-style server serving the built web app,
- * so they exercise the same static hosting and SPA fallback as a deployment.
+ * End-to-end tests run against the production-style server serving the built web app on a
+ * fresh embedded database, so every run starts at the setup wizard.
  */
+const e2eDataDir = path.join(rootDir, '.data', 'e2e')
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -24,16 +26,21 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
-    command: 'pnpm build && pnpm --filter @scriptorium/server start',
-    url: `${baseURL}/healthz`,
+    command: 'pnpm build && node e2e/start-server.mjs',
+    url: `${baseURL}/readyz`,
     reuseExistingServer: !process.env['CI'],
     timeout: 180_000,
     env: {
-      NODE_ENV: 'production',
+      NODE_ENV: 'test',
       PORT: String(port),
       LOG_LEVEL: 'warn',
+      DATA_DIR: e2eDataDir,
+      DEV_PG_PORT: '54331',
+      APP_SECRET: 'e2e-secret-'.padEnd(48, 'x'),
+      PUBLIC_URL: baseURL,
       // The server starts with its package directory as cwd, so the path must be absolute.
       WEB_DIST_DIR: path.join(rootDir, 'apps', 'web', 'dist'),
+      ...(process.env['DATABASE_URL'] ? { DATABASE_URL: process.env['DATABASE_URL'] } : {}),
     },
   },
 })
