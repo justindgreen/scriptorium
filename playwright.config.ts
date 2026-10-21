@@ -22,8 +22,35 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
-    { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    // First-run flow (wizard, invite, registration) runs alone and first; it owns the fresh database.
+    {
+      name: 'first-run',
+      testMatch: /auth.spec.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
+    },
+    {
+      name: 'desktop',
+      dependencies: ['first-run'],
+      testIgnore: /auth.spec.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
+    },
+    {
+      name: 'tablet',
+      dependencies: ['first-run'],
+      testIgnore: /auth.spec.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 768, height: 1024 },
+        isMobile: true,
+        hasTouch: true,
+      },
+    },
+    {
+      name: 'phone',
+      dependencies: ['first-run'],
+      testIgnore: /auth.spec.ts/,
+      use: { ...devices['Pixel 7'], viewport: { width: 375, height: 812 } },
+    },
   ],
   webServer: {
     command: 'pnpm build && node e2e/start-server.mjs',

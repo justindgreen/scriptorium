@@ -1,16 +1,38 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { CopyIcon, KeyRoundIcon } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { toast } from 'sonner'
+import { FormField } from '@/components/FormField'
+import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/states'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import {
-  Field,
-  FormError,
-  PageTitle,
-  PrimaryButton,
-  SecondaryButton,
-  TextInput,
-} from '../components/forms.js'
-import { errorMessage, trpc } from '../lib/trpc.js'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { errorMessage, trpc } from '@/lib/trpc'
 
 type Created = { id: string; code: string; url: string }
+const statusVariant = {
+  active: 'default',
+  exhausted: 'secondary',
+  expired: 'outline',
+  revoked: 'destructive',
+} as const
 
 export function AdminInvitesPage() {
   const queryClient = useQueryClient()
@@ -20,23 +42,22 @@ export function AdminInvitesPage() {
   const [maxUses, setMaxUses] = useState(1)
   const [note, setNote] = useState('')
   const [created, setCreated] = useState<Created | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: trpc.admin.invites.list.queryKey() })
   const create = useMutation(trpc.admin.invites.create.mutationOptions())
   const revoke = useMutation(
     trpc.admin.invites.revoke.mutationOptions({
-      onSuccess: invalidate,
-      onError: (e) => setError(errorMessage(e)),
+      onSuccess: () => {
+        toast.success('Invite revoked')
+        void invalidate()
+      },
+      onError: (e) => toast.error(errorMessage(e)),
     }),
   )
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
-    setError(null)
-    setCopied(false)
     try {
       const result = await create.mutateAsync({
         role,
@@ -45,152 +66,179 @@ export function AdminInvitesPage() {
         ...(note.trim() ? { note: note.trim() } : {}),
       })
       setCreated(result)
+      setNote('')
+      toast.success('Invite created')
       await invalidate()
     } catch (e) {
-      setError(errorMessage(e))
+      toast.error(errorMessage(e))
     }
   }
 
   async function copy(text: string) {
     try {
       await navigator.clipboard.writeText(text)
-      setCopied(true)
+      toast.success('Link copied')
     } catch {
-      setCopied(false)
+      toast.error('Could not copy. Select the link and copy it manually.')
     }
   }
 
   return (
     <div>
-      <PageTitle subtitle="Players register with an invite code. Codes are shown once; revoke any you no longer want.">
-        Invites
-      </PageTitle>
+      <PageHeader
+        title="Invites"
+        description="Players register with an invite code. Codes are shown once; revoke any you no longer want."
+      />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="space-y-6">
+          {created ? (
+            <Alert data-testid="created-invite">
+              <KeyRoundIcon aria-hidden="true" />
+              <AlertTitle>Invite created</AlertTitle>
+              <AlertDescription>
+                <p>
+                  Code:{' '}
+                  <code className="font-mono" data-testid="invite-code">
+                    {created.code}
+                  </code>
+                </p>
+                <p className="break-all">
+                  Link:{' '}
+                  <code className="font-mono" data-testid="invite-url">
+                    {created.url}
+                  </code>
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => void copy(created.url)}
+                >
+                  <CopyIcon aria-hidden="true" /> Copy link
+                </Button>
+              </AlertDescription>
+            </Alert>
+          ) : null}
 
-      <form
-        onSubmit={(e) => void onSubmit(e)}
-        className="mb-8 grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2"
-        noValidate
-      >
-        <Field id="role" label="Role">
-          <select
-            id="role"
-            value={role}
-            onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
-            className="rounded border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900"
-          >
-            <option value="user">Player</option>
-            <option value="admin">Administrator</option>
-          </select>
-        </Field>
-        <Field id="expires" label="Expires in (hours)">
-          <TextInput
-            id="expires"
-            type="number"
-            min={1}
-            max={720}
-            value={expiresInHours}
-            onChange={(e) => setExpiresInHours(Number(e.target.value))}
-          />
-        </Field>
-        <Field id="maxUses" label="Maximum uses">
-          <TextInput
-            id="maxUses"
-            type="number"
-            min={1}
-            max={100}
-            value={maxUses}
-            onChange={(e) => setMaxUses(Number(e.target.value))}
-          />
-        </Field>
-        <Field id="note" label="Note (optional)">
-          <TextInput
-            id="note"
-            value={note}
-            maxLength={200}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="e.g. Thursday group"
-          />
-        </Field>
-        <div className="sm:col-span-2">
-          <FormError message={error} />
-          <PrimaryButton disabled={create.isPending}>
-            {create.isPending ? 'Creating…' : 'Create invite'}
-          </PrimaryButton>
+          {invites.isPending ? <LoadingState rows={3} label="Loading invites" /> : null}
+          {invites.isError ? (
+            <ErrorState
+              message={errorMessage(invites.error)}
+              onRetry={() => void invites.refetch()}
+            />
+          ) : null}
+          {invites.data && invites.data.length === 0 ? (
+            <EmptyState
+              icon={KeyRoundIcon}
+              title="No invites yet"
+              description="Create one to bring in your first player. Each code can be limited to a number of uses and a time window."
+            />
+          ) : null}
+          {invites.data && invites.data.length > 0 ? (
+            <div className="rounded-lg border bg-card">
+              <Table aria-label="Invites table">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Uses</TableHead>
+                    <TableHead>Expires</TableHead>
+                    <TableHead>Note</TableHead>
+                    <TableHead>Created by</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invites.data.map((i) => (
+                    <TableRow key={i.id}>
+                      <TableCell>
+                        <Badge variant={statusVariant[i.status]} className="capitalize">
+                          {i.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{i.role === 'admin' ? 'Administrator' : 'Player'}</TableCell>
+                      <TableCell className="tabular">
+                        {i.uses} / {i.maxUses}
+                      </TableCell>
+                      <TableCell className="tabular whitespace-nowrap">
+                        {new Date(i.expiresAt).toLocaleString()}
+                      </TableCell>
+                      <TableCell>{i.note}</TableCell>
+                      <TableCell>{i.createdByUsername}</TableCell>
+                      <TableCell className="text-right">
+                        {i.status === 'active' ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => revoke.mutate({ id: i.id })}
+                            disabled={revoke.isPending}
+                          >
+                            Revoke
+                          </Button>
+                        ) : null}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : null}
         </div>
-      </form>
 
-      {created ? (
-        <section
-          aria-live="polite"
-          className="mb-8 rounded border border-stone-300 bg-white p-4 text-sm dark:border-stone-700 dark:bg-stone-900"
-          data-testid="created-invite"
-        >
-          <h2 className="mb-2 font-semibold">Invite created</h2>
-          <p>
-            Code:{' '}
-            <code className="font-mono" data-testid="invite-code">
-              {created.code}
-            </code>
-          </p>
-          <p className="mt-1 break-all">
-            Link:{' '}
-            <code className="font-mono" data-testid="invite-url">
-              {created.url}
-            </code>
-          </p>
-          <div className="mt-3 flex gap-2">
-            <SecondaryButton onClick={() => void copy(created.url)}>
-              {copied ? 'Copied' : 'Copy link'}
-            </SecondaryButton>
-          </div>
-        </section>
-      ) : null}
-
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-stone-300 text-left dark:border-stone-700">
-            <th className="py-2 pr-4">Status</th>
-            <th className="py-2 pr-4">Role</th>
-            <th className="py-2 pr-4">Uses</th>
-            <th className="py-2 pr-4">Expires</th>
-            <th className="py-2 pr-4">Note</th>
-            <th className="py-2 pr-4">Created by</th>
-            <th className="py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {invites.data?.map((i) => (
-            <tr key={i.id} className="border-b border-stone-200 dark:border-stone-800">
-              <td className="py-2 pr-4 capitalize">{i.status}</td>
-              <td className="py-2 pr-4">{i.role === 'admin' ? 'Administrator' : 'Player'}</td>
-              <td className="py-2 pr-4">
-                {i.uses} / {i.maxUses}
-              </td>
-              <td className="py-2 pr-4">{new Date(i.expiresAt).toLocaleString()}</td>
-              <td className="py-2 pr-4">{i.note}</td>
-              <td className="py-2 pr-4">{i.createdByUsername}</td>
-              <td className="py-2">
-                {i.status === 'active' ? (
-                  <SecondaryButton
-                    onClick={() => {
-                      setError(null)
-                      revoke.mutate({ id: i.id })
-                    }}
-                    disabled={revoke.isPending}
-                  >
-                    Revoke
-                  </SecondaryButton>
-                ) : null}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {invites.data?.length === 0 ? (
-        <p className="mt-4 text-sm opacity-70">
-          No invites yet. Create one above to bring in your first player.
-        </p>
-      ) : null}
+        <Card className="h-fit">
+          <CardHeader>
+            <CardTitle>New invite</CardTitle>
+            <CardDescription>Share the link or the code with your player.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={(e) => void onSubmit(e)} className="grid gap-4" noValidate>
+              <FormField id="role" label="Role">
+                <Select value={role} onValueChange={(v) => setRole(v as 'user' | 'admin')}>
+                  <SelectTrigger id="role" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">Player</SelectItem>
+                    <SelectItem value="admin">Administrator</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+              <FormField id="expires" label="Expires in (hours)">
+                <Input
+                  id="expires"
+                  type="number"
+                  min={1}
+                  max={720}
+                  value={expiresInHours}
+                  onChange={(e) => setExpiresInHours(Number(e.target.value))}
+                />
+              </FormField>
+              <FormField id="maxUses" label="Maximum uses">
+                <Input
+                  id="maxUses"
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={maxUses}
+                  onChange={(e) => setMaxUses(Number(e.target.value))}
+                />
+              </FormField>
+              <FormField id="note" label="Note (optional)">
+                <Input
+                  id="note"
+                  value={note}
+                  maxLength={200}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="e.g. Thursday group"
+                />
+              </FormField>
+              <Button type="submit" disabled={create.isPending}>
+                {create.isPending ? 'Creating…' : 'Create invite'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

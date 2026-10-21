@@ -6,7 +6,9 @@ Read this file, then `docs/IMPLEMENTATION_PLAN.md` for the current milestone and
 
 ## Documents
 
-| File                          | Use it for                                                                                                                                                                                               |
+| File | Use it for |
+
+|                               | Tokens, fonts, themes, generated components, shell patterns, accessibility rules                                                                                                                         |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `docs/PRODUCT_SPEC.md`        | Requirements, the 1.0 boundary, the acceptance scenario, what we do not want                                                                                                                             |
 | `docs/ARCHITECTURE.md`        | Stack, repository layout, module boundaries, command path, encounter coordinator, SSE, deployment, security, post-alpha change process                                                                   |
@@ -15,6 +17,7 @@ Read this file, then `docs/IMPLEMENTATION_PLAN.md` for the current milestone and
 | `docs/IMPLEMENTATION_PLAN.md` | Milestones, measurable criteria, dependencies, status, evidence, measured usage. Keep it current.                                                                                                        |
 | `docs/DECISIONS.md`           | ADR log. Append new entries; never rewrite old ones.                                                                                                                                                     |
 | `docs/TEST_STRATEGY.md`       | Suites, golden and behavioural case formats, gates, restore acceptance                                                                                                                                   |
+| `docs/DESIGN_SYSTEM.md`       | Tokens, fonts, themes, generated components, shell patterns, accessibility rules                                                                                                                         |
 
 ## Repository layout (target; created progressively from M1.1)
 

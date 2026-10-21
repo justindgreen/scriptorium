@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <title>Scriptorium</title>
+    <script>
+      // Apply the stored theme before first paint to avoid a flash. Mirrors ThemeProvider.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('scriptorium.theme')
+          var dark =
+            stored === 'dark' ||
+            ((!stored || stored === 'system') && matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.classList.toggle('dark', dark)
+        } catch (e) {
+          /* storage unavailable: fall back to light */
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

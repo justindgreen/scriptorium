@@ -24,7 +24,9 @@ let inviteUrl = ''
 test.skip(({ isMobile }) => isMobile, 'Desktop project only')
 
 async function signOut(page: Page) {
-  await page.getByRole('button', { name: 'Sign out' }).click()
+  // Sign out lives in the account menu; only one trigger is visible per viewport.
+  await page.locator('[data-testid=account-menu]:visible').click()
+  await page.getByRole('menuitem', { name: 'Sign out' }).click()
   await expect(page).toHaveURL(/\/login$/)
 }
 

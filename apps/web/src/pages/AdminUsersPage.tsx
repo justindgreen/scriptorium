@@ -1,104 +1,214 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { FormError, PageTitle, SecondaryButton } from '../components/forms.js'
-import { errorMessage, trpc } from '../lib/trpc.js'
+import { toast } from 'sonner'
+import { ErrorState, LoadingState, PageHeader } from '@/components/states'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { errorMessage, trpc } from '@/lib/trpc'
+
+type Row = {
+  id: string
+  username: string | null
+  displayName: string
+  role: string
+  banned: boolean
+  banReason: string | null
+  createdAt: Date | string
+}
 
 export function AdminUsersPage() {
   const queryClient = useQueryClient()
   const users = useQuery(trpc.admin.users.list.queryOptions())
   const me = useQuery(trpc.me.get.queryOptions())
-  const [error, setError] = useState<string | null>(null)
+  const [toDeactivate, setToDeactivate] = useState<Row | null>(null)
+  const [reason, setReason] = useState('')
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: trpc.admin.users.list.queryKey() })
-  const onError = (e: unknown) => setError(errorMessage(e))
+  const onError = (e: unknown) => toast.error(errorMessage(e))
   const setRole = useMutation(
-    trpc.admin.users.setRole.mutationOptions({ onSuccess: invalidate, onError }),
+    trpc.admin.users.setRole.mutationOptions({
+      onSuccess: () => {
+        toast.success('Role updated')
+        void invalidate()
+      },
+      onError,
+    }),
   )
-  const ban = useMutation(trpc.admin.users.ban.mutationOptions({ onSuccess: invalidate, onError }))
+  const ban = useMutation(
+    trpc.admin.users.ban.mutationOptions({
+      onSuccess: () => {
+        toast.success('Account deactivated')
+        setToDeactivate(null)
+        setReason('')
+        void invalidate()
+      },
+      onError,
+    }),
+  )
   const unban = useMutation(
-    trpc.admin.users.unban.mutationOptions({ onSuccess: invalidate, onError }),
+    trpc.admin.users.unban.mutationOptions({
+      onSuccess: () => {
+        toast.success('Account reactivated')
+        void invalidate()
+      },
+      onError,
+    }),
   )
 
   return (
     <div>
-      <PageTitle subtitle="Roles and access for everyone on this instance.">Users</PageTitle>
-      <FormError message={error} />
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-stone-300 text-left dark:border-stone-700">
-            <th className="py-2 pr-4">Username</th>
-            <th className="py-2 pr-4">Display name</th>
-            <th className="py-2 pr-4">Role</th>
-            <th className="py-2 pr-4">Status</th>
-            <th className="py-2 pr-4">Joined</th>
-            <th className="py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.data?.map((u) => {
-            const isSelf = u.id === me.data?.id
-            return (
-              <tr
-                key={u.id}
-                className="border-b border-stone-200 dark:border-stone-800"
-                data-testid={`user-row-${u.username}`}
-              >
-                <td className="py-2 pr-4 font-medium">{u.username}</td>
-                <td className="py-2 pr-4">{u.displayName}</td>
-                <td className="py-2 pr-4">
-                  <label className="sr-only" htmlFor={`role-${u.id}`}>
-                    Role for {u.username}
-                  </label>
-                  <select
-                    id={`role-${u.id}`}
-                    value={u.role}
-                    disabled={isSelf || setRole.isPending}
-                    onChange={(e) => {
-                      setError(null)
-                      setRole.mutate({ userId: u.id, role: e.target.value as 'admin' | 'user' })
-                    }}
-                    className="rounded border border-stone-300 bg-white px-2 py-1 dark:border-stone-700 dark:bg-stone-900"
-                  >
-                    <option value="user">Player</option>
-                    <option value="admin">Administrator</option>
-                  </select>
-                </td>
-                <td className="py-2 pr-4">
-                  {u.banned ? `Deactivated${u.banReason ? ` (${u.banReason})` : ''}` : 'Active'}
-                </td>
-                <td className="py-2 pr-4">{new Date(u.createdAt).toLocaleDateString()}</td>
-                <td className="py-2">
-                  {isSelf ? (
-                    <span className="opacity-60">You</span>
-                  ) : u.banned ? (
-                    <SecondaryButton
-                      onClick={() => {
-                        setError(null)
-                        unban.mutate({ userId: u.id })
-                      }}
-                      disabled={unban.isPending}
-                    >
-                      Reactivate
-                    </SecondaryButton>
-                  ) : (
-                    <SecondaryButton
-                      onClick={() => {
-                        setError(null)
-                        ban.mutate({ userId: u.id })
-                      }}
-                      disabled={ban.isPending}
-                    >
-                      Deactivate
-                    </SecondaryButton>
-                  )}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-      {users.data?.length === 0 ? <p className="mt-4 text-sm opacity-70">No users yet.</p> : null}
+      <PageHeader title="Users" description="Roles and access for everyone on this instance." />
+      {users.isPending ? <LoadingState rows={4} label="Loading users" /> : null}
+      {users.isError ? (
+        <ErrorState message={errorMessage(users.error)} onRetry={() => void users.refetch()} />
+      ) : null}
+      {users.data ? (
+        <div className="rounded-lg border bg-card">
+          <Table aria-label="Users table">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Username</TableHead>
+                <TableHead>Display name</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Joined</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.data.map((u) => {
+                const isSelf = u.id === me.data?.id
+                return (
+                  <TableRow key={u.id} data-testid={`user-row-${u.username}`}>
+                    <TableCell className="font-medium">{u.username}</TableCell>
+                    <TableCell>{u.displayName}</TableCell>
+                    <TableCell>
+                      <Label htmlFor={`role-${u.id}`} className="sr-only">
+                        Role for {u.username}
+                      </Label>
+                      <Select
+                        value={u.role}
+                        disabled={isSelf || setRole.isPending}
+                        onValueChange={(role) =>
+                          setRole.mutate({ userId: u.id, role: role as 'admin' | 'user' })
+                        }
+                      >
+                        <SelectTrigger id={`role-${u.id}`} size="sm" className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="user">Player</SelectItem>
+                          <SelectItem value="admin">Administrator</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      {u.banned ? (
+                        <Badge variant="destructive" title={u.banReason ?? undefined}>
+                          Deactivated
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">Active</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="tabular whitespace-nowrap">
+                      {new Date(u.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {isSelf ? (
+                        <span className="text-xs text-muted-foreground">You</span>
+                      ) : u.banned ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => unban.mutate({ userId: u.id })}
+                          disabled={unban.isPending}
+                        >
+                          Reactivate
+                        </Button>
+                      ) : (
+                        <Button variant="outline" size="sm" onClick={() => setToDeactivate(u)}>
+                          Deactivate
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      ) : null}
+
+      <Dialog
+        open={toDeactivate !== null}
+        onOpenChange={(open) => {
+          if (!open) setToDeactivate(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Deactivate {toDeactivate?.displayName}?</DialogTitle>
+            <DialogDescription>
+              They will be signed out everywhere and cannot sign in until reactivated. Their data is
+              kept.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-1.5">
+            <Label htmlFor="deactivate-reason">Reason (optional)</Label>
+            <Input
+              id="deactivate-reason"
+              value={reason}
+              maxLength={200}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setToDeactivate(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={ban.isPending}
+              onClick={() =>
+                toDeactivate &&
+                ban.mutate({
+                  userId: toDeactivate.id,
+                  ...(reason.trim() ? { reason: reason.trim() } : {}),
+                })
+              }
+            >
+              Deactivate
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

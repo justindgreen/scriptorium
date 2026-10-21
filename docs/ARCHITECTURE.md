@@ -17,7 +17,7 @@ Scriptorium is a modular monolith: one server process serving a single-page appl
 | Logging   | Pino                                                                                                                                                                                      |                                                       |
 | Tests     | Vitest, fast-check, Playwright + axe-core, golden and conformance suites                                                                                                                  | See `TEST_STRATEGY.md`                                |
 
-Rejected alternatives and reasons are in `DECISIONS.md`.
+Rejected alternatives and reasons are in `DECISIONS.md`. The web app's visual system (tokens, fonts, themes, generated components, shell patterns) is documented in `DESIGN_SYSTEM.md`.
 
 ## 2. Repository layout
 

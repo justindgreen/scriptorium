@@ -1,11 +1,16 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const srcDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'src')
 
 const apiTarget = process.env['VITE_API_TARGET'] ?? 'http://localhost:3000'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  resolve: { alias: { '@': srcDir } },
   server: {
     port: 5173,
     strictPort: true,
@@ -20,7 +25,9 @@ export default defineConfig({
   },
   test: {
     name: 'web',
-    environment: 'node',
+    environment: 'jsdom',
+    setupFiles: ['src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    css: false,
   },
 })

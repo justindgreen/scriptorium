@@ -1,18 +1,28 @@
-import { createRootRoute, createRoute, createRouter, redirect } from '@tanstack/react-router'
-import { RootLayout } from './layout/RootLayout.js'
-import { loadSession, loadStatus } from './lib/session.js'
-import { AdminInvitesPage } from './pages/AdminInvitesPage.js'
-import { AdminUsersPage } from './pages/AdminUsersPage.js'
-import { HomePage } from './pages/HomePage.js'
-import { LoginPage } from './pages/LoginPage.js'
-import { NotFoundPage } from './pages/NotFoundPage.js'
-import { RegisterPage } from './pages/RegisterPage.js'
-import { SetupPage } from './pages/SetupPage.js'
+import {
+  createRootRoute,
+  createRoute,
+  createRouter,
+  redirect,
+  useRouter,
+  type ErrorComponentProps,
+} from '@tanstack/react-router'
+import { ErrorState, LoadingState } from '@/components/states'
+import { AppShell } from '@/layout/AppShell'
+import { AuthLayout } from '@/layout/AuthLayout'
+import { loadSession, loadStatus } from '@/lib/session'
+import { errorMessage } from '@/lib/trpc'
+import { AdminAuditPage } from '@/pages/AdminAuditPage'
+import { AdminInvitesPage } from '@/pages/AdminInvitesPage'
+import { AdminSettingsPage } from '@/pages/AdminSettingsPage'
+import { AdminUsersPage } from '@/pages/AdminUsersPage'
+import { HomePage } from '@/pages/HomePage'
+import { LoginPage } from '@/pages/LoginPage'
+import { NotFoundPage } from '@/pages/NotFoundPage'
+import { RegisterPage } from '@/pages/RegisterPage'
+import { SetupPage } from '@/pages/SetupPage'
+import { RootDocument } from '@/RootDocument'
 
-const rootRoute = createRootRoute({
-  component: RootLayout,
-  notFoundComponent: NotFoundPage,
-})
+const rootRoute = createRootRoute({ component: RootDocument })
 
 /** Until the first administrator exists, every page leads to the setup wizard. */
 async function requireSetupComplete() {
@@ -41,15 +51,49 @@ async function requireAnonymous() {
   return { status }
 }
 
-const indexRoute = createRoute({
+// --- Authenticated application frame
+const appLayout = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
+  id: 'app',
   beforeLoad: requireSession,
-  component: HomePage,
+  component: AppShell,
+})
+
+const indexRoute = createRoute({ getParentRoute: () => appLayout, path: '/', component: HomePage })
+const adminUsersRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/admin/users',
+  beforeLoad: requireAdmin,
+  component: AdminUsersPage,
+})
+const adminInvitesRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/admin/invites',
+  beforeLoad: requireAdmin,
+  component: AdminInvitesPage,
+})
+const adminAuditRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/admin/audit',
+  beforeLoad: requireAdmin,
+  component: AdminAuditPage,
+})
+const adminSettingsRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/admin/settings',
+  beforeLoad: requireAdmin,
+  component: AdminSettingsPage,
+})
+
+// --- Public frame
+const authLayout = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'auth',
+  component: AuthLayout,
 })
 
 const setupRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => authLayout,
   path: '/setup',
   beforeLoad: async () => {
     const status = await loadStatus()
@@ -58,16 +102,14 @@ const setupRoute = createRoute({
   },
   component: SetupPage,
 })
-
 const loginRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => authLayout,
   path: '/login',
   beforeLoad: requireAnonymous,
   component: LoginPage,
 })
-
 const registerRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => authLayout,
   path: '/register',
   validateSearch: (search: Record<string, unknown>) => ({
     invite: typeof search['invite'] === 'string' ? search['invite'] : '',
@@ -76,32 +118,37 @@ const registerRoute = createRoute({
   component: RegisterPage,
 })
 
-const adminUsersRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/users',
-  beforeLoad: requireAdmin,
-  component: AdminUsersPage,
-})
-
-const adminInvitesRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/invites',
-  beforeLoad: requireAdmin,
-  component: AdminInvitesPage,
-})
-
 const routeTree = rootRoute.addChildren([
-  indexRoute,
-  setupRoute,
-  loginRoute,
-  registerRoute,
-  adminUsersRoute,
-  adminInvitesRoute,
+  appLayout.addChildren([
+    indexRoute,
+    adminUsersRoute,
+    adminInvitesRoute,
+    adminAuditRoute,
+    adminSettingsRoute,
+  ]),
+  authLayout.addChildren([setupRoute, loginRoute, registerRoute]),
 ])
+
+function RouteError(props: ErrorComponentProps) {
+  const router = useRouter()
+  return (
+    <div className="mx-auto max-w-xl py-10">
+      <ErrorState
+        title="This page could not load"
+        message={errorMessage(props.error)}
+        onRetry={() => void router.invalidate()}
+      />
+    </div>
+  )
+}
 
 export const router = createRouter({
   routeTree,
   defaultPreload: 'intent',
+  defaultPendingMs: 300,
+  defaultPendingComponent: () => <LoadingState className="mx-auto max-w-3xl py-10" />,
+  defaultErrorComponent: RouteError,
+  defaultNotFoundComponent: NotFoundPage,
   scrollRestoration: true,
 })
 

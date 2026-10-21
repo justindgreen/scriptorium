@@ -1,8 +1,11 @@
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useState, type FormEvent } from 'react'
-import { Field, FormError, PageTitle, PrimaryButton, TextInput } from '../components/forms.js'
-import { signInWithUsername } from '../lib/auth-client.js'
-import { resetSessionCache } from '../lib/session.js'
+import { FormError, FormField } from '@/components/FormField'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { signInWithUsername } from '@/lib/auth-client'
+import { resetSessionCache } from '@/lib/session'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -26,40 +29,50 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-sm">
-      <PageTitle subtitle="Sign in with the username your Dungeon Master gave you.">
-        Sign in
-      </PageTitle>
-      <form onSubmit={(e) => void onSubmit(e)} className="flex flex-col gap-4" noValidate>
-        <Field id="username" label="Username">
-          <TextInput
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            autoComplete="username"
-          />
-        </Field>
-        <Field id="password" label="Password">
-          <TextInput
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
-        </Field>
-        <FormError message={error} />
-        <PrimaryButton disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</PrimaryButton>
-      </form>
-      <p className="mt-6 text-sm opacity-80">
-        Have an invite?{' '}
-        <a href="/register" className="underline">
-          Create your account
-        </a>
-        .
-      </p>
-    </div>
+    <Card>
+      <CardHeader>
+        <h1 className="font-display text-2xl font-semibold">Sign in</h1>
+        <CardDescription>Use the username your Dungeon Master gave you.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={(e) => void onSubmit(e)} className="grid gap-4" noValidate>
+          <FormField id="username" label="Username">
+            <Input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoComplete="username"
+            />
+          </FormField>
+          <FormField id="password" label="Password">
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
+          </FormField>
+          <FormError message={error} />
+          <Button type="submit" disabled={pending} className="w-full">
+            {pending ? 'Signing in…' : 'Sign in'}
+          </Button>
+        </form>
+      </CardContent>
+      <CardFooter className="text-sm text-muted-foreground">
+        <span>
+          Have an invite?{' '}
+          <Link
+            to="/register"
+            search={{ invite: '' }}
+            className="text-foreground underline underline-offset-4"
+          >
+            Create your account
+          </Link>
+        </span>
+      </CardFooter>
+    </Card>
   )
 }

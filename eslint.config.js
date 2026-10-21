@@ -139,6 +139,8 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       ...jsxA11y.configs.recommended.rules,
+      // Scrollable regions must be keyboard reachable (axe: scrollable-region-focusable).
+      'jsx-a11y/no-noninteractive-tabindex': ['error', { roles: ['tabpanel', 'region'] }],
       '@typescript-eslint/no-restricted-imports': [
         'error',
         {
