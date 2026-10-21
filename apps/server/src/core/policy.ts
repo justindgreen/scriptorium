@@ -16,6 +16,8 @@ export const anonymousScope: Scope = { userId: null, role: null }
  */
 export type Action =
   | 'me.read'
+  | 'content.read'
+  | 'admin.content.manage'
   | 'admin.users.manage'
   | 'admin.invites.manage'
   | 'admin.audit.read'
@@ -26,6 +28,7 @@ const adminActions: ReadonlySet<Action> = new Set([
   'admin.invites.manage',
   'admin.audit.read',
   'admin.settings.manage',
+  'admin.content.manage',
 ])
 
 export function can(scope: Scope, action: Action): boolean {
@@ -33,6 +36,7 @@ export function can(scope: Scope, action: Action): boolean {
   if (adminActions.has(action)) return scope.role === 'admin'
   switch (action) {
     case 'me.read':
+    case 'content.read':
       return true
     default:
       return false

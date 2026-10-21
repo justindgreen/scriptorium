@@ -66,6 +66,12 @@ export function AppShell() {
         <NavList items={items} className="flex-1 px-3" />
         <div className="border-t border-sidebar-border p-3">
           <UserMenu user={user} onSignOut={() => void onSignOut()} />
+          <Link
+            to="/licenses"
+            className="mt-2 block px-2 text-xs text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Licences and attribution
+          </Link>
         </div>
       </aside>
 

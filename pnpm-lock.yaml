@@ -425,6 +425,16 @@ importers:
         specifier: ^4.23.15
         version: 4.23.15
 
+  tools/srd-import:
+    dependencies:
+      '@scriptorium/content-schema':
+        specifier: workspace:*
+        version: link:../../packages/content-schema
+    devDependencies:
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+
 packages:
 
   '@adobe/css-tools@4.5.0':

@@ -14,6 +14,7 @@ import { createContextFactory, type Services } from './core/trpc.js'
 import { APP_VERSION } from './core/version.js'
 import type { Db } from './db/client.js'
 import { createInviteService } from './modules/admin/invites.js'
+import { createContentRepo } from './modules/content/repo.js'
 import { appRouter, type AppRouter } from './router.js'
 
 export type App = FastifyInstance & { services: Services }
@@ -52,6 +53,7 @@ export async function buildApp(deps: AppDeps): Promise<App> {
   const audit = createAudit(db)
   const settings = createSettings(db)
   const invites = createInviteService(db)
+  const content = createContentRepo(db)
   const auth = createAuth({ db, config, secret: deps.secret, audit, invites, settings })
   const services: Services = {
     config,
@@ -61,6 +63,7 @@ export async function buildApp(deps: AppDeps): Promise<App> {
     audit,
     invites,
     settings,
+    content,
   }
   app.decorate('services', services)
 

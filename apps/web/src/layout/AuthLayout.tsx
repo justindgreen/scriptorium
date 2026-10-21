@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Outlet } from '@tanstack/react-router'
+import { Link, Outlet } from '@tanstack/react-router'
 import { ThemeToggleButton } from '@/layout/ThemeMenu'
 import { trpc } from '@/lib/trpc'
 
@@ -28,6 +28,11 @@ export function AuthLayout() {
           <Outlet />
         </div>
       </main>
+      <footer className="px-4 py-4 text-center text-xs text-muted-foreground sm:px-6">
+        <Link to="/licenses" className="underline underline-offset-4">
+          Licences and attribution
+        </Link>
+      </footer>
     </div>
   )
 }

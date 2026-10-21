@@ -38,6 +38,8 @@ Registration rule, enforced in the user-creation database hook rather than the U
 
 Content kinds: `class, subclass, species, background, feat, feature, spell, spell_list, item, monster, condition, rule, resource`. Projection tables are rebuilt from `data` on publish; other kinds filter via jsonb GIN and tags.
 
+Notes (M1.5): entries also carry `search_text` (tsvector + trigram indexes); relations store the target `to_uid` rather than an id so they can point at entries imported later; `content_source_access` and `content_entry_shares` arrive with campaigns (ADR-0027).
+
 ## 3. Characters (one aggregate, one revision)
 
 | Table                    | Columns                                                                                                                                                                                                                                                                                                                                                                                                                                                              |

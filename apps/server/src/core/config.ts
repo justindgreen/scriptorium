@@ -34,6 +34,10 @@ const configSchema = z
           .map((o) => o.trim())
           .filter(Boolean),
       ),
+    /** Directory with bundled rulesets and content packages. Defaults to the repository/image content dir. */
+    CONTENT_DIR: z.string().optional(),
+    /** Import bundled content at start (idempotent). */
+    SEED_CONTENT: booleanFromEnv.default(true),
     /** Trust X-Forwarded-* headers from a reverse proxy. */
     TRUST_PROXY: booleanFromEnv.default(false),
     /** Mark cookies Secure. "auto" derives it from PUBLIC_URL's scheme. */

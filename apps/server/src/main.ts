@@ -2,6 +2,7 @@ import { buildApp } from './app.js'
 import { loadConfig } from './core/config.js'
 import { resolveAppSecret } from './core/secret.js'
 import { connectDatabase } from './db/index.js'
+import { seedBundledContent } from './modules/content/seed.js'
 
 async function main() {
   const config = loadConfig()
@@ -15,6 +16,17 @@ async function main() {
     app.log.info(
       { url: database.url.replace(/:[^:@]+@/, ':***@') },
       'using embedded development database',
+    )
+  }
+
+  if (config.SEED_CONTENT) {
+    const report = await seedBundledContent(database.db, {
+      ...(config.CONTENT_DIR ? { contentDir: config.CONTENT_DIR } : {}),
+      log: (message) => app.log.info(message),
+    })
+    app.log.info(
+      { rulesets: report.rulesets.length, packages: report.packages.length },
+      'bundled content checked',
     )
   }
 

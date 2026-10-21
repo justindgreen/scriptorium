@@ -4,6 +4,7 @@ import type { Pool } from 'pg'
 import type { OpenApiMeta } from 'trpc-to-openapi'
 import type { Db } from '../db/client.js'
 import type { InviteService } from '../modules/admin/invites.js'
+import type { ContentRepo } from '../modules/content/repo.js'
 import type { Audit } from './audit.js'
 import type { Auth, SessionInfo } from './auth.js'
 import type { Config } from './config.js'
@@ -18,6 +19,7 @@ export type Services = {
   audit: Audit
   invites: InviteService
   settings: Settings
+  content: ContentRepo
 }
 
 export type Context = Services & {

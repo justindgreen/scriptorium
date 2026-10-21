@@ -42,7 +42,7 @@ pnpm lint && pnpm format:check && pnpm typecheck && pnpm test
 pnpm build                  # server bundle (tsup) + web (vite)
 pnpm test:e2e               # builds, serves apps/web/dist from the server on :3100, runs Playwright
 pnpm exec playwright install chromium   # once per machine, before test:e2e
-pnpm -F @scriptorium/server cli -- <command>   # from M1.6 (migrate, create-admin, backup, restore)
+pnpm -F @scriptorium/server cli -- <command>   # migrate | seed [dir] | import-content <file...> | sources
 ```
 
 Toolchain notes: TypeScript is pinned to 6.x until typescript-eslint supports 7.x (ADR-0023). pnpm only runs build scripts listed under `allowBuilds` in `pnpm-workspace.yaml`.

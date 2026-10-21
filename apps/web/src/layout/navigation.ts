@@ -7,7 +7,8 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-export type AppPath = '/' | '/admin/users' | '/admin/invites' | '/admin/audit' | '/admin/settings'
+export type AppPath =
+  '/' | '/admin/users' | '/admin/invites' | '/admin/audit' | '/admin/settings' | '/licenses'
 
 export type NavItem = {
   to: AppPath

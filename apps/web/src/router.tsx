@@ -16,6 +16,7 @@ import { AdminInvitesPage } from '@/pages/AdminInvitesPage'
 import { AdminSettingsPage } from '@/pages/AdminSettingsPage'
 import { AdminUsersPage } from '@/pages/AdminUsersPage'
 import { HomePage } from '@/pages/HomePage'
+import { LicensesPage } from '@/pages/LicensesPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { RegisterPage } from '@/pages/RegisterPage'
@@ -118,6 +119,12 @@ const registerRoute = createRoute({
   component: RegisterPage,
 })
 
+const licensesRoute = createRoute({
+  getParentRoute: () => authLayout,
+  path: '/licenses',
+  component: LicensesPage,
+})
+
 const routeTree = rootRoute.addChildren([
   appLayout.addChildren([
     indexRoute,
@@ -126,7 +133,7 @@ const routeTree = rootRoute.addChildren([
     adminAuditRoute,
     adminSettingsRoute,
   ]),
-  authLayout.addChildren([setupRoute, loginRoute, registerRoute]),
+  authLayout.addChildren([setupRoute, loginRoute, registerRoute, licensesRoute]),
 ])
 
 function RouteError(props: ErrorComponentProps) {

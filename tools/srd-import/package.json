@@ -1,0 +1,19 @@
+{
+  "name": "@scriptorium/srd-import",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Converts upstream SRD 5.1 data plus our mechanics overlays into Scriptorium content packages",
+  "type": "module",
+  "scripts": {
+    "download": "tsx src/cli.ts download",
+    "convert": "tsx src/cli.ts convert",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@scriptorium/content-schema": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  }
+}
