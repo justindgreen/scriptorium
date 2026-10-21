@@ -10,7 +10,7 @@ Scriptorium is a modular monolith: one server process serving a single-page appl
 | Web       | React 19, Vite, TanStack Router, TanStack Query, Tailwind CSS v4, shadcn/ui on Radix primitives (copied in), react-hook-form + Zod, CodeMirror 6 (lazy), react-markdown + rehype-sanitize | SPA; no SSR                                           |
 | API       | Fastify 5, tRPC v11 (Fastify adapter), Zod 4, `trpc-to-openapi` for the transfer/health REST surface                                                                                      | Verified by spike S2; fallbacks in §10                |
 | Data      | Drizzle ORM, drizzle-kit SQL migrations, `pg`, PostgreSQL 17                                                                                                                              | 16 tolerated with a startup warning                   |
-| Auth      | Decided by spike S3: Better Auth (default) or an own implementation (Argon2id, opaque DB sessions, invites)                                                                               | Policy module is independent of the choice            |
+| Auth      | Better Auth 1.7 (ADR-0024): Drizzle adapter on our own tables, username and admin plugins, DB-backed cookie sessions, invite-gated sign-up through a before-hook, built-in rate limiting  | The policy module is independent of the auth library  |
 | Real-time | Server-Sent Events via tRPC subscriptions; fallback dedicated SSE route                                                                                                                   | Post-commit emission only                             |
 | Files     | Local disk `DATA_DIR/uploads`, content-addressed by sha256, images re-encoded by `sharp`                                                                                                  | Immutable files                                       |
 | Dice      | `@scriptorium/dice/ast` (no RNG) and `@scriptorium/dice/roll` (injectable RNG)                                                                                                            | Engine may import `ast` only                          |
@@ -124,7 +124,7 @@ SSE channels per campaign and per character. Subscriptions are authorized like q
 | S4 production DB parity | Migrations and integration suite on `postgres:17` in CI or on Unraid; startup version check                                                                                                                 | Pin supported versions; add 16 to the matrix only if needed                                                                       |
 | S5 native modules       | `sharp` on Windows and in `node:24-bookworm-slim`; embedded Postgres binaries cacheable offline                                                                                                             | `jimp`; vendored binaries                                                                                                         |
 
-Each spike closes with a `DECISIONS.md` entry containing the command output that proves the outcome.
+Outcomes are recorded in ADR-0024 with the command output that proves them: S1 go, S2 go, S3 go (Better Auth adopted), S4 partial until the first CI run, S5 go on Windows with the Debian check pending the first image build.
 
 ## 11. Security
 

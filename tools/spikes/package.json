@@ -1,0 +1,29 @@
+{
+  "name": "@scriptorium/spikes",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Reproducible integration spikes (M1.2). Each script prints evidence recorded in docs/DECISIONS.md.",
+  "type": "module",
+  "scripts": {
+    "s1": "tsx src/s1-embedded-postgres.ts",
+    "s2": "tsx src/s2-trpc-fastify.ts",
+    "s3": "tsx src/s3-better-auth.ts",
+    "s5": "tsx src/s5-sharp.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@trpc/server": "^11.19.0",
+    "better-auth": "^1.7.12",
+    "drizzle-orm": "^0.45.4",
+    "embedded-postgres": "17.9.0-beta.17",
+    "fastify": "^5.12.7",
+    "pg": "^8.23.1",
+    "sharp": "^0.35.5",
+    "trpc-to-openapi": "^3.3.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15"
+  }
+}

@@ -6,3 +6,6 @@ packages:
 # pnpm blocks dependency build scripts by default. Only these may run postinstall scripts.
 allowBuilds:
   esbuild: true
+  '@embedded-postgres/windows-x64': true
+  '@embedded-postgres/linux-x64': true
+  '@embedded-postgres/darwin-arm64': true

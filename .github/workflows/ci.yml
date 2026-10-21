@@ -8,7 +8,24 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: scriptorium
+          POSTGRES_PASSWORD: scriptorium
+          POSTGRES_DB: scriptorium_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U scriptorium"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      # Integration tests run against the production major (spike S4); unit tests do not need it.
+      DATABASE_URL: postgres://scriptorium:scriptorium@localhost:5432/scriptorium_test
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

@@ -31,7 +31,9 @@
       "Bash(pnpm build *)",
       "Bash(pnpm test:e2e)",
       "Bash(grep -v -E \"^\\\\s*$|Attention|telemetry|roadmap|opt-out|turborepo.dev|Remote caching|Packages in scope|cache \\(hit|miss\\)|\\\\\\\\$ \\(tsup|vite build\\)|CLI|ESM|transforming|rendering|computing|dist/|modules transformed|SOURCEMAP|rolldown|built in\")",
-      "Bash(grep -v -E \"^\\\\s*$|Attention|telemetry|roadmap|opt-out|turborepo.dev|Remote caching|Packages in scope|cache \\(hit|miss\\)|\\\\\\\\$ \\(tsup|vite build\\)|CLI|ESM|transforming|rendering|computing|dist/|modules transformed|SOURCEMAP|rolldown|built in|Tasks:|Cached:|Time:\")"
+      "Bash(grep -v -E \"^\\\\s*$|Attention|telemetry|roadmap|opt-out|turborepo.dev|Remote caching|Packages in scope|cache \\(hit|miss\\)|\\\\\\\\$ \\(tsup|vite build\\)|CLI|ESM|transforming|rendering|computing|dist/|modules transformed|SOURCEMAP|rolldown|built in|Tasks:|Cached:|Time:\")",
+      "Bash(pnpm --filter @scriptorium/spikes add embedded-postgres pg fastify @trpc/server trpc-to-openapi zod sharp better-auth drizzle-orm)",
+      "Bash(pnpm --filter @scriptorium/spikes add -D @types/pg tsx @better-auth/cli)"
     ]
   }
 }
