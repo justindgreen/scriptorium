@@ -10,7 +10,7 @@ const baseURL = `http://localhost:${port}`
  * End-to-end tests run against the production-style server serving the built web app on a
  * fresh embedded database, so every run starts at the setup wizard.
  */
-const e2eDataDir = path.join(rootDir, '.data', 'e2e')
+export const e2eDataDir = path.join(rootDir, '.data', 'e2e')
 
 export default defineConfig({
   testDir: './e2e',
@@ -31,13 +31,13 @@ export default defineConfig({
     {
       name: 'desktop',
       dependencies: ['first-run'],
-      testIgnore: /auth.spec.ts/,
+      testIgnore: /auth.spec.ts|restart.spec.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
     },
     {
       name: 'tablet',
       dependencies: ['first-run'],
-      testIgnore: /auth.spec.ts/,
+      testIgnore: /auth.spec.ts|restart.spec.ts/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 768, height: 1024 },
@@ -48,8 +48,16 @@ export default defineConfig({
     {
       name: 'phone',
       dependencies: ['first-run'],
-      testIgnore: /auth.spec.ts/,
+      testIgnore: /auth.spec.ts|restart.spec.ts/,
       use: { ...devices['Pixel 7'], viewport: { width: 375, height: 812 } },
+    },
+    // Persistence across a server restart runs alone and last: the restart would fail requests
+    // made by tests running at the same time.
+    {
+      name: 'restart',
+      dependencies: ['desktop', 'tablet', 'phone'],
+      testMatch: /restart.spec.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
     },
   ],
   webServer: {

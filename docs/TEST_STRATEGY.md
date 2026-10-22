@@ -92,6 +92,8 @@ Every `full` or `partial` feature declares `tests[]`:
 
 The acceptance scenario in `PRODUCT_SPEC.md` §16 is a Playwright test with a server restart in the middle of the encounter and a retried attack command that must apply once. It runs at 1280 px and 375 px. axe-core checks run on every visited page.
 
+Server restarts in E2E (M2.6): `e2e/start-server.mjs` supervises the server process and restarts it when a test creates `restart.request` in the E2E data directory; the application has no test hooks. Specs that restart the server run in the `restart` Playwright project, which depends on the desktop, tablet and phone projects so nothing else is in flight while the server is down. Readiness after the restart is detected through `/healthz` (a lower uptime) and `/readyz`.
+
 ## 7. Running (commands land with M1.1)
 
 ```bash

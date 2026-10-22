@@ -86,6 +86,9 @@ export function createCommandRunner(deps: {
 
   async function run(
     request: CommandRequest,
+    hooks: {
+      prepare?: (tx: Parameters<Parameters<Db['transaction']>[0]>[0]) => Promise<void>
+    } = {},
   ): Promise<CommandOutcome & { sheet: ComputedSheet; aggregate: CharacterAggregate }> {
     const receipt = await deps.characters.getReceipt(deps.db, request.commandId)
     if (receipt) {
@@ -98,6 +101,7 @@ export function createCommandRunner(deps: {
     }
 
     const result = await deps.db.transaction(async (tx) => {
+      if (hooks.prepare) await hooks.prepare(tx)
       const row = await deps.characters.getRow(tx, request.characterId, { forUpdate: true })
       if (!row) throw new CommandError('NOT_FOUND', 'character not found')
       const aggregate = await deps.characters.loadAggregate(tx, row)

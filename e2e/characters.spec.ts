@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { admin, ensureSetup, expectAccessible, signInAs } from './helpers'
+import { admin, buildCharacter, ensureSetup, expectAccessible, signInAs } from './helpers'
 
 /**
  * M2.5: each alpha class is built at level 1 through the builder and levelled to 5 on the
@@ -16,17 +16,6 @@ const ALPHA = [
   { label: 'Warlock', species: 'Human', background: 'Acolyte', subclass: 'Fiend' },
 ]
 
-async function build(page: Page, name: string, cls: (typeof ALPHA)[number]) {
-  await page.goto('/characters/new')
-  await page.getByTestId('builder-name').fill(name)
-  await page.getByTestId('builder-class').selectOption({ label: cls.label })
-  await page.getByTestId('builder-species').selectOption({ label: cls.species })
-  await page.getByTestId('builder-background').selectOption({ label: cls.background })
-  await page.getByTestId('builder-create').click()
-  await expect(page).toHaveURL(/\/characters\/[0-9a-f-]+$/)
-  await expect(page.getByRole('heading', { name })).toBeVisible()
-}
-
 async function setSubclass(page: Page, subclass: string) {
   await page.getByTestId('subclass-select').selectOption({ label: subclass })
   await page.getByTestId('subclass-set').focus()
@@ -39,7 +28,7 @@ test('builds every alpha class at level 1 and levels it to 5', async ({ page }, 
   await signInAs(page, admin.username, admin.password)
   for (const cls of ALPHA) {
     const name = `${cls.label} ${testInfo.project.name} ${Date.now().toString(36)}`
-    await build(page, name, cls)
+    await buildCharacter(page, name, cls)
     await expect(page.getByText(/Level 1 ·/)).toBeVisible()
     await expect(page.getByTestId('pending-choices')).toBeVisible()
     if (cls.label === 'Fighter') await expectAccessible(page)
@@ -73,7 +62,7 @@ test('choices, equipment and undo survive a reload', async ({ page }, testInfo) 
   test.setTimeout(120_000)
   await signInAs(page, admin.username, admin.password)
   const name = `Undo ${testInfo.project.name} ${Date.now().toString(36)}`
-  await build(page, name, ALPHA[0]!)
+  await buildCharacter(page, name, ALPHA[0]!)
 
   const skills = page.getByTestId('choice-class:srd-5.1:class:fighter@1/skills')
   await skills.getByTestId('option-athletics').check()

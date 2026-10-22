@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSubscription } from '@trpc/tanstack-react-query'
+import { useCallback, useState } from 'react'
 import { trpc, trpcClient } from '@/lib/trpc'
 
 /** The character view the API returns: aggregate plus computed sheet. */
@@ -6,26 +8,23 @@ export type CharacterView = Awaited<ReturnType<typeof trpcClient.characters.get.
 /** The command input as the API validates it (a subset of the engine's command union). */
 export type CommandInput = Parameters<typeof trpcClient.characters.command.mutate>[0]['command']
 
-export function useCharacter(characterId: string) {
-  return useQuery(trpc.characters.get.queryOptions({ characterId }))
+/** How often the sheet is polled while the live subscription is not connected. */
+export const POLL_INTERVAL_MS = 15_000
+
+export function useCharacter(characterId: string, options: { live?: boolean } = {}) {
+  return useQuery({
+    ...trpc.characters.get.queryOptions({ characterId }),
+    // Polling is the fallback when Server-Sent Events are unavailable (docs/ARCHITECTURE.md §7).
+    refetchInterval: options.live ? false : POLL_INTERVAL_MS,
+  })
 }
 
-/**
- * Sends one command with a fresh client command id and the revision the caller saw. A CONFLICT
- * means someone else changed the character: the view is refetched and the user tries again.
- */
-export function useCommand(characterId: string) {
+/** Every query that shows part of a character, invalidated together after any change. */
+export function useInvalidateCharacter(characterId: string) {
   const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (input: { command: CommandInput; expectedRevision: number }) =>
-      trpcClient.characters.command.mutate({
-        characterId,
-        commandId: crypto.randomUUID(),
-        expectedRevision: input.expectedRevision,
-        command: input.command,
-      }),
-    onSettled: async () => {
-      await Promise.all([
+  return useCallback(
+    () =>
+      Promise.all([
         queryClient.invalidateQueries({ queryKey: trpc.characters.get.queryKey({ characterId }) }),
         queryClient.invalidateQueries({
           queryKey: trpc.characters.events.queryKey({ characterId }),
@@ -36,9 +35,56 @@ export function useCommand(characterId: string) {
         queryClient.invalidateQueries({
           queryKey: trpc.characters.snapshots.list.queryKey({ characterId }),
         }),
+        queryClient.invalidateQueries({ queryKey: trpc.characters.plan.queryKey() }),
         queryClient.invalidateQueries({ queryKey: trpc.characters.list.queryKey() }),
-      ])
-    },
+      ]),
+    [queryClient, characterId],
+  )
+}
+
+/**
+ * Subscribes to the character's post-commit events. Every `character.changed` (and the `ready`
+ * frame after a reconnect) is compared with the cached revision; a gap triggers a refetch.
+ * Returns whether the stream is connected so the caller can fall back to polling.
+ */
+export function useCharacterLive(characterId: string): { live: boolean } {
+  const queryClient = useQueryClient()
+  const invalidate = useInvalidateCharacter(characterId)
+  const [live, setLive] = useState(false)
+  const subscription = useSubscription(
+    trpc.characters.subscribe.subscriptionOptions(
+      { characterId },
+      {
+        onData: (event) => {
+          if (event.type === 'character.deleted') {
+            void invalidate()
+            return
+          }
+          const cached = queryClient.getQueryData(trpc.characters.get.queryKey({ characterId }))
+          if (!cached || cached.revision !== event.revision) void invalidate()
+        },
+        onConnectionStateChange: (state) => setLive(state.state === 'pending'),
+      },
+    ),
+  )
+  return { live: live && subscription.status === 'pending' }
+}
+
+/**
+ * Sends one command with a fresh client command id and the revision the caller saw. A CONFLICT
+ * means someone else changed the character: the view is refetched and the user tries again.
+ */
+export function useCommand(characterId: string) {
+  const invalidate = useInvalidateCharacter(characterId)
+  return useMutation({
+    mutationFn: (input: { command: CommandInput; expectedRevision: number }) =>
+      trpcClient.characters.command.mutate({
+        characterId,
+        commandId: crypto.randomUUID(),
+        expectedRevision: input.expectedRevision,
+        command: input.command,
+      }),
+    onSettled: () => invalidate(),
   })
 }
 

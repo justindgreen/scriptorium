@@ -51,3 +51,7 @@ Application-level pieces live in `src/components` and `src/layout`:
 - Accessibility: visible focus rings, labelled controls, `aria-current` on active navigation, dialogs trap focus (Radix), icons are `aria-hidden` with text labels, headings are in order with exactly one `h1` per page. Playwright runs axe (WCAG 2.1 AA, serious and critical impacts) on each page it visits.
 - Responsive breakpoints: phone (375), tablet (768), desktop (1280) are the three widths tested end to end.
 - Game-specific colour tokens (damage types, conditions, spell schools) are added when the character sheet lands, as additional `--color-*` entries here, never as ad-hoc hex values in components.
+
+## Print
+
+The character sheet prints from the browser ("Save as PDF" is the 1.0 export). `@media print` in `apps/web/src/index.css` switches to white paper and black ink and hides every control (`button`, `input`, `select`, `textarea`, disclosure summaries, alerts) and the shell (sidebar and header carry `print:hidden`; the shell grid becomes a single column with `print:block`). Components mark control groups with the Tailwind `print:hidden` variant and let open disclosures print their content. Nothing is rendered specially for print: what prints is the same computed sheet.

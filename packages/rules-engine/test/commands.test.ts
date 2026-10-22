@@ -150,18 +150,21 @@ describe('runtime state commands', () => {
       applyCommand(tired, sheet, {
         type: 'shortRest',
         hitDice: [
-          { die: 'd10', healed: 8 },
-          { die: 'd10', healed: 4 },
+          { die: 'd10', roll: 8 },
+          { die: 'd10', roll: 4 },
         ],
       }),
     )
-    expect(short.aggregate.state.hpCurrent).toBe(13)
+    const conMod = sheet.stats['ability.con.mod']!.value as number
+    expect(short.aggregate.state.hpCurrent).toBe(
+      1 + Math.max(0, 8 + conMod) + Math.max(0, 4 + conMod),
+    )
     expect(short.aggregate.state.hitDiceSpent).toEqual({ d10: 2 })
     expect(short.aggregate.state.resources).toEqual({})
     expect(short.event.reversible).toBe(false)
     expect(short.event.snapshotReason).toBe('rest')
     expect(
-      applyCommand(tired, sheet, { type: 'shortRest', hitDice: [{ die: 'd8', healed: 1 }] }),
+      applyCommand(tired, sheet, { type: 'shortRest', hitDice: [{ die: 'd8', roll: 1 }] }),
     ).toMatchObject({ ok: false, code: 'NOT_FOUND' })
 
     const long = ok(

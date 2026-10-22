@@ -330,8 +330,11 @@ export function applyCommand(
         if (!pool) return fail('NOT_FOUND', `no ${spent.die} hit dice`)
         const used = s.hitDiceSpent[spent.die] ?? 0
         if (used >= pool.max) return fail('INSUFFICIENT', `no ${spent.die} hit dice left`)
+        const faces = Number(spent.die.slice(1))
+        if (!Number.isInteger(spent.roll) || spent.roll < 1 || spent.roll > faces)
+          return fail('INVALID', `a ${spent.die} cannot show ${spent.roll}`)
         s.hitDiceSpent[spent.die] = used + 1
-        healed += Math.max(0, Math.floor(spent.healed))
+        healed += Math.max(0, spent.roll + numberStat(sheet, 'ability.con.mod'))
       }
       s.hpCurrent = Math.min(hpMax, s.hpCurrent + healed)
       for (const resource of sheet.resources)

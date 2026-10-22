@@ -1,6 +1,12 @@
 import { z } from 'zod'
 import { procedureFor, router } from '../../core/trpc.js'
-import { commandRequestSchema, createCharacterSchema } from './schemas.js'
+import {
+  commandRequestSchema,
+  commitRollSchema,
+  createCharacterSchema,
+  hitDieRequestSchema,
+  planRequestSchema,
+} from './schemas.js'
 
 const byId = z.object({ characterId: z.string().uuid() })
 
@@ -28,6 +34,30 @@ export const charactersRouter = router({
   command: procedureFor('character.write')
     .input(commandRequestSchema)
     .mutation(({ ctx, input }) => ctx.characters.command(ctx.scope, input)),
+
+  plan: procedureFor('character.read')
+    .input(planRequestSchema)
+    .query(({ ctx, input }) => ctx.rolls.plan(ctx.scope, input.characterId, input.ref, input.ctx)),
+
+  roll: procedureFor('character.write')
+    .input(planRequestSchema)
+    .mutation(({ ctx, input }) =>
+      ctx.rolls.roll(ctx.scope, input.characterId, input.ref, input.ctx),
+    ),
+
+  rollHitDie: procedureFor('character.write')
+    .input(hitDieRequestSchema)
+    .mutation(({ ctx, input }) => ctx.rolls.rollHitDie(ctx.scope, input.characterId, input.die)),
+
+  subscribe: procedureFor('character.read')
+    .input(byId)
+    .subscription(({ ctx, input, signal }) =>
+      ctx.characters.subscribe(ctx.scope, input.characterId, signal),
+    ),
+
+  commitAction: procedureFor('character.write')
+    .input(commitRollSchema)
+    .mutation(({ ctx, input }) => ctx.rolls.commit(ctx.scope, input)),
 
   undo: procedureFor('character.write')
     .input(byId.extend({ expectedRevision: z.number().int().min(0) }))

@@ -49,7 +49,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[16rem_1fr]">
+    <div className="min-h-screen lg:grid lg:grid-cols-[16rem_1fr] print:block">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
@@ -59,7 +59,7 @@ export function AppShell() {
 
       {/* Sidebar (large screens) */}
       <aside
-        className="hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:flex-col"
+        className="hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:flex-col print:hidden"
         aria-label="Sidebar"
       >
         <Brand name={instanceName} className="px-5 py-5" />
@@ -77,7 +77,7 @@ export function AppShell() {
 
       <div className="flex min-h-screen flex-col">
         {/* Top bar (small screens) */}
-        <header className="flex items-center gap-2 border-b bg-card px-3 py-2 lg:hidden">
+        <header className="flex items-center gap-2 border-b bg-card px-3 py-2 lg:hidden print:hidden">
           <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
             <SheetTrigger asChild>
               <Button

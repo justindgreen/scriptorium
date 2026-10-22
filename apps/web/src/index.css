@@ -142,6 +142,33 @@
   }
 }
 
+/* Print: the sheet without its controls (docs/DESIGN_SYSTEM.md). Browser "Save as PDF" is the 1.0 export. */
+@media print {
+  :root {
+    --background: white;
+    --card: white;
+    --foreground: black;
+    --card-foreground: black;
+  }
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [role='alert'] {
+    display: none !important;
+  }
+  details > *:not(summary) {
+    display: block;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .grid {
+    break-inside: avoid;
+  }
+}
+
 /* Respect the user's motion preference across every component. */
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -46,3 +46,17 @@ export async function expectAccessible(page: Page): Promise<void> {
     ),
   ).toEqual([])
 }
+
+export type AlphaClass = { label: string; species: string; background: string; subclass?: string }
+
+/** Creates a level-1 character through the builder and lands on its sheet. */
+export async function buildCharacter(page: Page, name: string, cls: AlphaClass): Promise<void> {
+  await page.goto('/characters/new')
+  await page.getByTestId('builder-name').fill(name)
+  await page.getByTestId('builder-class').selectOption({ label: cls.label })
+  await page.getByTestId('builder-species').selectOption({ label: cls.species })
+  await page.getByTestId('builder-background').selectOption({ label: cls.background })
+  await page.getByTestId('builder-create').click()
+  await expect(page).toHaveURL(/\/characters\/[0-9a-f-]+$/)
+  await expect(page.getByRole('heading', { name })).toBeVisible()
+}

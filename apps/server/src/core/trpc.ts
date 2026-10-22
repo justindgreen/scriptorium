@@ -5,6 +5,7 @@ import type { OpenApiMeta } from 'trpc-to-openapi'
 import type { Db } from '../db/client.js'
 import type { InviteService } from '../modules/admin/invites.js'
 import type { CharacterService } from '../modules/characters/service.js'
+import type { RollService } from '../modules/characters/rolls.js'
 import type { ContentRepo } from '../modules/content/repo.js'
 import type { EventBus } from './events.js'
 import type { Audit } from './audit.js'
@@ -24,6 +25,7 @@ export type Services = {
   settings: Settings
   content: ContentRepo
   characters: CharacterService
+  rolls: RollService
   events: EventBus
   databaseUrl: string
   maintenance: MaintenanceGate
@@ -74,7 +76,17 @@ export function createContextFactory(services: Services) {
   }
 }
 
-const t = initTRPC.meta<OpenApiMeta>().context<Context>().create()
+const t = initTRPC
+  .meta<OpenApiMeta>()
+  .context<Context>()
+  .create({
+    // Subscriptions stream as Server-Sent Events; pings keep proxies from closing idle streams
+    // and the client reconnects (then refetches on a revision gap) after a quiet minute.
+    sse: {
+      ping: { enabled: true, intervalMs: 25_000 },
+      client: { reconnectAfterInactivityMs: 60_000 },
+    },
+  })
 
 export const router = t.router
 export const mergeRouters = t.mergeRouters

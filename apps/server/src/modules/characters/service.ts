@@ -12,11 +12,13 @@ import type { Db } from '../../db/client.js'
 import { CommandError, summaryOf, type CommandRunner } from '../../core/commands.js'
 import { newId } from '../../core/ids.js'
 import type { Scope } from '../../core/policy.js'
-import type { EventBus } from '../../core/events.js'
+import type { DomainEvent, EventBus } from '../../core/events.js'
 import type { CharacterRepo } from './repo.js'
 import { characterRootUids, loadSnapshot } from './snapshot.js'
 import type { createCharacterSchema } from './schemas.js'
 import type { z } from 'zod'
+
+export type LiveEvent = { type: 'ready'; characterId: string; revision: number } | DomainEvent
 
 export type CharacterView = {
   id: string
@@ -77,6 +79,43 @@ export function createCharacterService(deps: {
     },
 
     get: load,
+
+    /**
+     * Live updates for one character (docs/ARCHITECTURE.md §7): authorized like `get`, a `ready`
+     * frame with the current revision first (so a reconnecting client can detect a gap), then every
+     * post-commit event for this character until the client goes away.
+     */
+    async *subscribe(
+      scope: Scope,
+      characterId: string,
+      signal: AbortSignal | undefined,
+    ): AsyncGenerator<LiveEvent> {
+      const row = await repo.getRow(deps.db, characterId)
+      if (!row) throw new TRPCError({ code: 'NOT_FOUND', message: 'Character not found.' })
+      assertOwner(scope, row.ownerUserId)
+      yield { type: 'ready', characterId, revision: row.revision }
+      const queue: LiveEvent[] = []
+      let wake: (() => void) | null = null
+      const unsubscribe = deps.events.subscribe((event) => {
+        if (event.characterId !== characterId) return
+        queue.push(event)
+        wake?.()
+      })
+      try {
+        while (!signal?.aborted) {
+          if (queue.length === 0) {
+            await new Promise<void>((resolve) => {
+              wake = resolve
+              signal?.addEventListener('abort', () => resolve(), { once: true })
+            })
+            wake = null
+          }
+          while (queue.length > 0 && !signal?.aborted) yield queue.shift()!
+        }
+      } finally {
+        unsubscribe()
+      }
+    },
 
     async create(
       scope: Scope,

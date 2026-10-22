@@ -49,8 +49,11 @@ export type CharacterCommand =
   | { type: 'setInspiration'; value: boolean }
   | {
       type: 'shortRest'
-      /** Hit dice spent during the rest, by die (`d10`), with the hit points each roll restored. */
-      hitDice?: Array<{ die: string; healed: number }>
+      /**
+       * Hit dice spent during the rest, by die (`d10`), with what each die showed. The engine adds
+       * the Constitution modifier to every die (minimum 0 per die, 2014 rules).
+       */
+      hitDice?: Array<{ die: string; roll: number }>
     }
   | { type: 'longRest' }
   | {

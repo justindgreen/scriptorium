@@ -56,7 +56,7 @@ const costSpec = z.object({
   sufficient: z.boolean(),
 })
 
-const actionRef = z.discriminatedUnion('kind', [
+export const actionRefSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('weapon'),
     itemId: z.string(),
@@ -81,7 +81,7 @@ const actionRef = z.discriminatedUnion('kind', [
 ])
 
 const actionOutcome = z.object({
-  ref: actionRef,
+  ref: actionRefSchema,
   name: z.string(),
   attack: z
     .object({
@@ -197,7 +197,7 @@ export const commandSchema = z.discriminatedUnion('type', [
       .array(
         z.object({
           die: z.enum(['d4', 'd6', 'd8', 'd10', 'd12']),
-          healed: z.number().int().min(0).max(100),
+          roll: z.number().int().min(1).max(12),
         }),
       )
       .max(40)
@@ -251,6 +251,53 @@ export const commandSchema = z.discriminatedUnion('type', [
 ])
 
 export type CommandInput = z.infer<typeof commandSchema>
+
+export const actionContextSchema = z.object({
+  target: z
+    .object({
+      name: z.string().max(80).optional(),
+      creatureType: z.string().max(40).optional(),
+      size: z.string().max(20).optional(),
+      conditions: z.array(z.string().max(40)).max(20).optional(),
+      ac: z.number().int().min(0).max(40).optional(),
+    })
+    .optional(),
+  situation: z
+    .object({
+      advantageSources: z.array(z.string().max(60)).max(10).optional(),
+      disadvantageSources: z.array(z.string().max(60)).max(10).optional(),
+      allyAdjacentToTarget: z.boolean().optional(),
+      hidden: z.boolean().optional(),
+      firstAttackThisTurn: z.boolean().optional(),
+      range: z.enum(['normal', 'long']).optional(),
+    })
+    .optional(),
+  options: z
+    .object({
+      declineOptional: z.array(z.string().max(80)).max(20).optional(),
+      answers: z.record(z.string().max(80), z.unknown()).optional(),
+    })
+    .optional(),
+})
+
+export const planRequestSchema = z.object({
+  characterId: z.string().uuid(),
+  ref: actionRefSchema,
+  ctx: actionContextSchema.default({}),
+})
+
+export const hitDieRequestSchema = z.object({
+  characterId: z.string().uuid(),
+  die: z.enum(['d4', 'd6', 'd8', 'd10', 'd12']),
+})
+
+export const commitRollSchema = z.object({
+  characterId: z.string().uuid(),
+  commandId: z.string().uuid(),
+  expectedRevision: z.number().int().min(0),
+  rollId: z.string().uuid(),
+  targetAc: z.number().int().min(0).max(40).optional(),
+})
 
 export const commandRequestSchema = z.object({
   characterId: z.string().uuid(),

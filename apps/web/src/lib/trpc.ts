@@ -1,5 +1,11 @@
 import { QueryClient } from '@tanstack/react-query'
-import { createTRPCClient, httpBatchLink, TRPCClientError } from '@trpc/client'
+import {
+  createTRPCClient,
+  httpBatchLink,
+  httpSubscriptionLink,
+  splitLink,
+  TRPCClientError,
+} from '@trpc/client'
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query'
 import type { AppRouter } from '@scriptorium/server'
 
@@ -10,7 +16,15 @@ export const queryClient = new QueryClient({
 })
 
 export const trpcClient = createTRPCClient<AppRouter>({
-  links: [httpBatchLink({ url: '/api/trpc' })],
+  links: [
+    splitLink({
+      // Subscriptions ride on Server-Sent Events (EventSource reconnects by itself); everything
+      // else is batched over HTTP.
+      condition: (op) => op.type === 'subscription',
+      true: httpSubscriptionLink({ url: '/api/trpc' }),
+      false: httpBatchLink({ url: '/api/trpc' }),
+    }),
+  ],
 })
 
 /** Query/mutation option builders: `useQuery(trpc.system.status.queryOptions())`. */
