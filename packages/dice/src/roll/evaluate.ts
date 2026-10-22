@@ -2,6 +2,7 @@ import {
   format,
   formatDice,
   multiplyDice,
+  normalizeDice,
   parse,
   LIMITS,
   type DiceNode,
@@ -64,6 +65,7 @@ export function roll(input: Node | string, context: RollContext): RollResult {
   } else {
     ast = input
   }
+  ast = normalizeDice(ast)
   if (context.critical) ast = multiplyDice(ast, 2)
   const terms: RollTerm[] = []
   const { value, text } = evaluate(ast, context, terms)

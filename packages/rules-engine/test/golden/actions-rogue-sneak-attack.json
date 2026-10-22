@@ -1,0 +1,261 @@
+{
+  "name": "actions-rogue-sneak-attack",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": [
+    "srd-5.1:class:rogue",
+    "srd-5.1:item:leather-armor",
+    "srd-5.1:item:rapier",
+    "srd-5.1:item:shortbow",
+    "srd-5.1:item:longsword",
+    "srd-5.1:feature:thieves-cant",
+    "srd-5.1:feature:cunning-action",
+    "srd-5.1:feature:roguish-archetype",
+    "srd-5.1:feature:rogue-ability-score-improvement-1",
+    "srd-5.1:feature:uncanny-dodge"
+  ],
+  "contentFiles": ["_overlays.json"],
+  "content": [
+    {
+      "kind": "feature",
+      "uid": "srd-5.1:feature:sneak-attack",
+      "slug": "sneak-attack",
+      "name": "Sneak Attack",
+      "data": {
+        "description": "Once per turn, extra damage with a finesse or ranged weapon when you have advantage or an ally is adjacent to the target."
+      },
+      "effects": [
+        {
+          "type": "action.damageAdd",
+          "formula": "dice(ceil(classLevel('srd-5.1:class:rogue') / 2), 6)",
+          "damageType": "weapon",
+          "oncePerTurn": "sneak-attack",
+          "label": "Sneak Attack",
+          "condition": {
+            "all": [
+              { "any": [{ "leaf": "ctx.hasAdvantage" }, { "leaf": "ctx.allyAdjacent" }] },
+              {
+                "any": [
+                  { "leaf": "ctx.weaponProperty", "property": "finesse" },
+                  { "leaf": "ctx.attackType", "type": "ranged" }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "automation": { "level": "full" }
+    }
+  ],
+  "aggregate": {
+    "name": "Sable",
+    "definition": {
+      "baseAbilities": { "str": 10, "dex": 16, "con": 12, "int": 12, "wis": 10, "cha": 14 },
+      "speciesUid": "srd-5.1:species:high-elf",
+      "classes": [{ "classUid": "srd-5.1:class:rogue", "level": 5, "order": 0 }],
+      "choices": {
+        "class:srd-5.1:class:rogue@1/skills": {
+          "kind": "skill",
+          "skills": ["stealth", "acrobatics", "perception", "deception"]
+        },
+        "class:srd-5.1:class:rogue@1/feature:rogue-expertise-1/expertise": {
+          "kind": "expertise",
+          "skills": ["stealth", "perception"]
+        }
+      }
+    },
+    "inventory": [
+      {
+        "id": "armor",
+        "itemUid": "srd-5.1:item:leather-armor",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      },
+      {
+        "id": "rapier",
+        "itemUid": "srd-5.1:item:rapier",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      },
+      {
+        "id": "bow",
+        "itemUid": "srd-5.1:item:shortbow",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      },
+      {
+        "id": "longsword",
+        "itemUid": "srd-5.1:item:longsword",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      }
+    ],
+    "state": {
+      "combat": {
+        "turn": { "encounterId": null, "round": null, "turnId": "local:1", "ownTurn": true },
+        "oncePerTurn": {},
+        "reaction": { "usedOnTurnId": null },
+        "bonusAction": { "usedOnTurnId": null },
+        "actions": { "budget": 1, "usedOnTurnId": null }
+      }
+    }
+  },
+  "actions": [
+    {
+      "name": "advantage from hiding adds Sneak Attack once",
+      "ref": { "kind": "weapon", "itemId": "rapier" },
+      "ctx": { "situation": { "hidden": true } },
+      "expectPlan": {
+        "attack": { "bonus": 7, "mode": "advantage", "critRange": 20, "attackType": "melee" },
+        "damageIds": ["weapon", "sneak-attack"],
+        "damage": [
+          {
+            "id": "weapon",
+            "formula": "1d8 + 4",
+            "critFormula": "2d8 + 4",
+            "damageType": "piercing"
+          },
+          {
+            "id": "sneak-attack",
+            "formula": "3d6",
+            "critFormula": "6d6",
+            "damageType": "piercing",
+            "oncePerTurnKey": "sneak-attack"
+          }
+        ],
+        "questions": [],
+        "oncePerTurnKeys": ["sneak-attack"],
+        "economy": { "available": true },
+        "blocked": null
+      },
+      "rolls": { "attack": { "natural": 20 }, "damage": { "weapon": 12, "sneak-attack": 20 } },
+      "targetAc": 15,
+      "expectOutcome": {
+        "hit": true,
+        "critical": true,
+        "packets": [
+          { "id": "weapon", "amount": 12 },
+          { "id": "sneak-attack", "amount": 20 }
+        ],
+        "oncePerTurnMarks": ["sneak-attack"],
+        "economyMark": "action"
+      }
+    },
+    {
+      "name": "without advantage the engine asks about an adjacent ally and assumes none",
+      "ref": { "kind": "weapon", "itemId": "rapier" },
+      "expectPlan": {
+        "attack": { "mode": "normal" },
+        "damageIds": ["weapon"],
+        "questions": ["allyAdjacent"],
+        "assumptions": [{ "id": "allyAdjacent", "value": false }],
+        "oncePerTurnKeys": []
+      },
+      "rolls": { "attack": { "natural": 5 }, "damage": { "weapon": 9 } },
+      "targetAc": 15,
+      "expectOutcome": { "hit": false, "critical": false, "packets": [], "oncePerTurnMarks": [] }
+    },
+    {
+      "name": "answering the ally question grants Sneak Attack",
+      "ref": { "kind": "weapon", "itemId": "rapier" },
+      "ctx": { "options": { "answers": { "allyAdjacent": true } } },
+      "expectPlan": { "damageIds": ["weapon", "sneak-attack"], "questions": [], "assumptions": [] },
+      "rolls": { "attack": { "natural": 10 }, "damage": { "weapon": 9, "sneak-attack": 11 } },
+      "expectOutcome": {
+        "hit": null,
+        "packets": [
+          { "id": "weapon", "amount": 9 },
+          { "id": "sneak-attack", "amount": 11 }
+        ],
+        "oncePerTurnMarks": ["sneak-attack"]
+      }
+    },
+    {
+      "name": "a ranged weapon qualifies too",
+      "ref": { "kind": "weapon", "itemId": "bow" },
+      "ctx": { "situation": { "hidden": true } },
+      "expectPlan": {
+        "attack": { "bonus": 7, "attackType": "ranged" },
+        "damageIds": ["weapon", "sneak-attack"],
+        "damage": [{ "id": "weapon", "formula": "1d6 + 4" }]
+      }
+    },
+    {
+      "name": "a non-finesse melee weapon never gets Sneak Attack",
+      "ref": { "kind": "weapon", "itemId": "longsword" },
+      "ctx": { "situation": { "hidden": true } },
+      "expectPlan": {
+        "attack": { "bonus": 3 },
+        "damageIds": ["weapon"],
+        "damage": [{ "id": "weapon", "formula": "1d8" }],
+        "questions": []
+      }
+    },
+    {
+      "name": "a save roll uses the sheet bonus and no packets",
+      "ref": { "kind": "save", "ability": "dex" },
+      "expectPlan": { "damageIds": [], "costs": [] }
+    }
+  ],
+  "variants": [
+    {
+      "name": "Sneak Attack already used this turn",
+      "aggregate": { "state": { "combat": { "oncePerTurn": { "sneak-attack": "local:1" } } } },
+      "actions": [
+        {
+          "name": "excluded with a reason",
+          "ref": { "kind": "weapon", "itemId": "rapier" },
+          "ctx": { "situation": { "hidden": true } },
+          "expectPlan": {
+            "damageIds": ["weapon"],
+            "excluded": [{ "id": "sneak-attack", "reason": "already used this turn" }],
+            "oncePerTurnKeys": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "another creature's turn resets once-per-turn but not the action",
+      "aggregate": {
+        "state": {
+          "combat": {
+            "turn": { "encounterId": "enc", "round": 1, "turnId": "enc:1:2", "ownTurn": false },
+            "oncePerTurn": { "sneak-attack": "enc:1:1" }
+          }
+        }
+      },
+      "actions": [
+        {
+          "name": "a reaction attack can Sneak Attack again",
+          "ref": { "kind": "weapon", "itemId": "rapier" },
+          "ctx": { "situation": { "hidden": true } },
+          "expectPlan": {
+            "damageIds": ["weapon", "sneak-attack"],
+            "economy": { "available": false, "reason": "not your turn" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "advantage cancelled by disadvantage",
+      "aggregate": {},
+      "actions": [
+        {
+          "name": "no Sneak Attack from advantage when it is cancelled",
+          "ref": { "kind": "weapon", "itemId": "rapier" },
+          "ctx": {
+            "situation": {
+              "hidden": true,
+              "disadvantageSources": ["prone"],
+              "allyAdjacentToTarget": false
+            }
+          },
+          "expectPlan": { "attack": { "mode": "normal" }, "damageIds": ["weapon"], "questions": [] }
+        }
+      ]
+    }
+  ]
+}

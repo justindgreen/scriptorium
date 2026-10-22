@@ -207,3 +207,15 @@ describe('dice/roll d20', () => {
     expect(resolveMode(3, 1)).toBe('normal')
   })
 })
+
+describe('dice/roll scaled dice', () => {
+  it('rolls dice(count, faces) like an ordinary term', () => {
+    const result = roll('dice(2, 6) + 1', { dice: scriptedDice([3, 4]) })
+    expect(result.expression).toBe('2d6 + 1')
+    expect(result.total).toBe(8)
+    expect(() => roll('dice(STR, 6)', { dice: scriptedDice([]) })).toThrow('unknown variable "STR"')
+    expect(() => roll('dice(1, 6, 1)', { dice: scriptedDice([]) })).toThrow(
+      'cannot evaluate function "dice"',
+    )
+  })
+})

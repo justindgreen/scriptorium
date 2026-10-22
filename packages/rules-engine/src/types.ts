@@ -4,6 +4,7 @@
  */
 import type {
   Ability,
+  ActionEffect,
   ContentEntry,
   ContentEntryOf,
   Effect,
@@ -323,6 +324,8 @@ export type ActionTemplate = {
   range?: { normal: number; long?: number }
   reach?: number
   properties: string[]
+  weaponCategory?: 'simple' | 'martial'
+  magical?: boolean
   cost?: unknown
   source: SourceRef
 }
@@ -358,6 +361,75 @@ export type ComputedSheet = {
   diagnostics: Diagnostic[]
   hitDice: Array<{ die: string; max: number; spent: number }>
   hp: { max: number; current: number; temp: number }
-  /** Spellcasting arrives with M2.3; null until then. */
-  spellcasting: null
+  spellcasting: SpellcastingView | null
+  /** Serializable facts about the character for action resolution. */
+  facts: SheetFacts
+  /** Action-scoped effects collected from active sources, for planAction. */
+  actionEffects: ActionEffectView[]
+}
+
+export type SheetFacts = {
+  level: number
+  classLevels: Record<string, number>
+  speciesChain: string[]
+  subclasses: string[]
+  features: string[]
+  conditions: string[]
+  activeToggles: string[]
+  armorCategory: 'none' | 'light' | 'medium' | 'heavy'
+  shield: boolean
+  equippedItems: string[]
+  attunedItems: string[]
+}
+
+export type ActionEffectView = { effect: ActionEffect; source: SourceRef; itemId?: string }
+
+export type SpellcastingSource = {
+  id: string
+  name: string
+  ability: Ability
+  mod: number
+  saveDC: number
+  attack: number
+  progression: 'full' | 'half' | 'third' | 'pact' | 'none'
+  preparation: 'known' | 'prepared' | 'spellbook'
+  list?: string
+  classUid?: string
+  classLevel?: number
+  /** Contribution to the multiclass caster level. */
+  casterLevels: number
+  cantripsKnown?: number
+  spellsKnown?: number
+  preparedMax?: number
+  alwaysPrepared: string[]
+  source: SourceRef
+}
+
+export type SpellcastingView = {
+  sources: SpellcastingSource[]
+  /** Source whose ability drives `spell.saveDC` / `spell.attack` and `castingMod`. */
+  primary: string
+  casterLevel: number
+  slots: Array<{ level: number; max: number; used: number }>
+  pact: { slots: number; level: number; used: number } | null
+  known: Array<{
+    spellUid: string
+    origin: string
+    prepared: boolean
+    alwaysPrepared: boolean
+    cantrip: boolean
+    level?: number
+  }>
+  granted: Array<{
+    spellUid: string
+    source: SourceRef
+    uses?: { max: number; recharge: string }
+    atWill: boolean
+    castAtLevel?: number
+    chargeCost?: number
+    castingAbility?: Ability
+  }>
+  preparedCount: number
+  /** Why spells cannot be cast right now (armor without proficiency). */
+  blocked?: string
 }

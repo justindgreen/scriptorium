@@ -179,3 +179,17 @@ describe('dice/ast validate', () => {
     })
   })
 })
+
+describe('dice/ast normalize', () => {
+  it('turns dice(count, faces) with constant arguments into dice terms', async () => {
+    const { normalizeDice, foldConstants, expectedValue } = await import('../src/ast/index.js')
+    expect(format(normalizeDice(parseOrThrow('dice(3, 6) + 2')))).toBe('3d6 + 2')
+    expect(format(normalizeDice(parseOrThrow('dice(0, 6) + 2')))).toBe('0 + 2')
+    expect(format(normalizeDice(parseOrThrow('dice(STR, 6)')))).toBe('dice(STR, 6)')
+    expect(format(foldConstants(parseOrThrow('dice(ceil(5 / 2), 6) + (1 + 2) * 2')))).toBe(
+      'dice(3, 6) + 6',
+    )
+    expect(format(normalizeDice(foldConstants(parseOrThrow('dice(ceil(5 / 2), 6)'))))).toBe('3d6')
+    expect(expectedValue(parseOrThrow('dice(2, 6) + 1'))).toBe(8)
+  })
+})

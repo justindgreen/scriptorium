@@ -28,6 +28,12 @@ export { evaluateStaticPredicate } from './static/predicates.js'
 export type { PredicateFacts, PredicateEnv } from './static/predicates.js'
 export { applySelection } from './static/choices.js'
 export { REGISTERED_HOOKS, expandHook } from './hooks/index.js'
+export type * from './actions/types.js'
+export { planAction, scopeFromSheet } from './actions/plan.js'
+export { applyRolls, applyPackets, defensesFromSheet } from './actions/apply.js'
+export { monsterDefenses, parseDefenseText, evaluatePacketPredicate } from './actions/defenses.js'
+export { evaluateActionPredicate } from './actions/predicates.js'
+export type { ActionPredicateEnv, WeaponFacts } from './actions/predicates.js'
 
 /** Reads one stat's value from a sheet; undefined when the path was never computed. */
 export function statValue(sheet: ComputedSheet, path: string): StatScalar | undefined {

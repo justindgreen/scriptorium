@@ -20,6 +20,7 @@ export {
   range,
 } from './analyze.js'
 export { expectedDice, expectedValue, singleDieDistribution } from './expected.js'
+export { foldConstants, normalizeDice } from './normalize.js'
 export type { ExpectedContext } from './expected.js'
 
 import { parse } from './parser.js'

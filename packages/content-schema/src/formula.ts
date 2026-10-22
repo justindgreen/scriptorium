@@ -11,7 +11,7 @@ import { z } from 'zod'
  */
 export type FormulaScope = 'static' | 'action'
 
-const FUNCTIONS = new Set(['floor', 'ceil', 'max', 'min', 'table', 'classLevel'])
+const FUNCTIONS = new Set(['floor', 'ceil', 'max', 'min', 'abs', 'table', 'classLevel', 'dice'])
 
 const STATIC_VARIABLES = new Set([
   'STR',

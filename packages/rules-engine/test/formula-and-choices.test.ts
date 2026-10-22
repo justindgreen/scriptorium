@@ -16,6 +16,7 @@ const scope: FormulaScope = {
   castingMod: () => {
     throw new FormulaError('no spellcasting', 'UNKNOWN_VARIABLE')
   },
+  slotLevel: () => 3,
   table: (name, level) => (name === 'sneak-attack' ? Math.ceil(level / 2) : 0),
 }
 
@@ -45,7 +46,7 @@ describe('static formulas', () => {
 
   it('substitutes variables for display while keeping dice symbolic', () => {
     expect(substituteVariables("1d10 + classLevel('srd-5.1:class:rogue')", scope)).toBe('1d10 + 5')
-    expect(substituteVariables('2d6 + STR + floor(PB / 2)', scope)).toBe('2d6 + 3 + floor(3 / 2)')
+    expect(substituteVariables('2d6 + STR + floor(PB / 2)', scope)).toBe('2d6 + 3 + 1')
   })
 })
 

@@ -16,6 +16,7 @@ const scope: FormulaScope = {
   level: () => 1,
   classLevel: () => 0,
   castingMod: () => 0,
+  slotLevel: () => 0,
   table: () => 0,
 }
 

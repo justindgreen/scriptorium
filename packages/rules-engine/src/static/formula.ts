@@ -1,4 +1,4 @@
-import { parse, format, type Node } from '@scriptorium/dice/ast'
+import { parse, format, foldConstants, normalizeDice, type Node } from '@scriptorium/dice/ast'
 import type { Ability } from '@scriptorium/content-schema'
 
 /** Raised when a formula cannot be evaluated to a number in the current scope. */
@@ -20,6 +20,7 @@ export type FormulaScope = {
   level(): number
   classLevel(classUid: string): number
   castingMod(): number
+  slotLevel(): number
   table(name: string, level: number): number
 }
 
@@ -101,7 +102,10 @@ function resolveVariable(name: string, scope: FormulaScope): number {
     case 'level':
       return scope.level()
     case 'castingMod':
+    case 'MOD':
       return scope.castingMod()
+    case 'slotLevel':
+      return scope.slotLevel()
     default:
       throw new FormulaError(`unknown variable "${name}"`, 'UNKNOWN_VARIABLE')
   }
@@ -149,7 +153,7 @@ function evaluateCall(name: string, args: Node[], scope: FormulaScope): number {
  */
 export function substituteVariables(formula: string, scope: FormulaScope): string {
   const ast = parseFormula(formula)
-  return format(substituteNode(ast, scope))
+  return format(normalizeDice(foldConstants(substituteNode(ast, scope))))
 }
 
 function substituteNode(node: Node, scope: FormulaScope): Node {

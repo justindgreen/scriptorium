@@ -1,0 +1,140 @@
+{
+  "name": "actions-fighter-great-weapon-fighting",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": ["srd-5.1:class:fighter", "srd-5.1:item:greatsword", "srd-5.1:item:longsword"],
+  "contentFiles": ["_overlays.json"],
+  "content": [
+    {
+      "kind": "feature",
+      "uid": "srd-5.1:feature:fighter-fighting-style",
+      "slug": "fighter-fighting-style",
+      "name": "Fighting Style",
+      "data": { "description": "Fighting style (golden: Great Weapon Fighting automated)." },
+      "choices": [
+        {
+          "type": "choice",
+          "key": "fighting-style",
+          "name": "Fighting Style",
+          "count": 1,
+          "from": {
+            "kind": "optionSet",
+            "options": [
+              {
+                "id": "great-weapon-fighting",
+                "name": "Great Weapon Fighting",
+                "effects": [
+                  {
+                    "type": "action.rerollDamageDice",
+                    "values": [1, 2],
+                    "once": true,
+                    "appliesTo": "melee",
+                    "condition": { "leaf": "ctx.twoHanded" }
+                  }
+                ]
+              },
+              {
+                "id": "defense",
+                "name": "Defense",
+                "effects": [
+                  {
+                    "type": "bonus",
+                    "target": "ac.bonus",
+                    "value": 1,
+                    "condition": { "leaf": "armor", "category": "any" }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "automation": { "level": "full" }
+    }
+  ],
+  "aggregate": {
+    "name": "Brick",
+    "definition": {
+      "baseAbilities": { "str": 16, "dex": 10, "con": 14, "int": 8, "wis": 10, "cha": 10 },
+      "classes": [{ "classUid": "srd-5.1:class:fighter", "level": 1, "order": 0 }],
+      "choices": {
+        "class:srd-5.1:class:fighter@1/skills": {
+          "kind": "skill",
+          "skills": ["athletics", "intimidation"]
+        },
+        "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style": {
+          "kind": "optionSet",
+          "options": ["great-weapon-fighting"]
+        }
+      }
+    },
+    "inventory": [
+      {
+        "id": "greatsword",
+        "itemUid": "srd-5.1:item:greatsword",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      },
+      {
+        "id": "longsword",
+        "itemUid": "srd-5.1:item:longsword",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      }
+    ]
+  },
+  "actions": [
+    {
+      "name": "greatsword rerolls 1s and 2s once",
+      "ref": { "kind": "weapon", "itemId": "greatsword" },
+      "expectPlan": {
+        "attack": { "bonus": 5, "mode": "normal" },
+        "damageIds": ["weapon"],
+        "damage": [
+          {
+            "id": "weapon",
+            "formula": "2d6ro1,2 + 3",
+            "critFormula": "4d6ro1,2 + 3",
+            "damageType": "slashing"
+          }
+        ],
+        "questions": []
+      },
+      "rolls": { "attack": { "natural": 12 }, "damage": { "weapon": 10 } },
+      "targetAc": 16,
+      "expectOutcome": {
+        "hit": true,
+        "critical": false,
+        "packets": [{ "id": "weapon", "amount": 10 }]
+      }
+    },
+    {
+      "name": "longsword in one hand gets no reroll",
+      "ref": { "kind": "weapon", "itemId": "longsword" },
+      "expectPlan": {
+        "damage": [{ "id": "weapon", "formula": "1d8 + 3", "critFormula": "2d8 + 3" }]
+      }
+    },
+    {
+      "name": "longsword in two hands uses the versatile die and rerolls",
+      "ref": { "kind": "weapon", "itemId": "longsword", "twoHanded": true },
+      "expectPlan": {
+        "damage": [{ "id": "weapon", "formula": "1d10ro1,2 + 3", "critFormula": "2d10ro1,2 + 3" }]
+      }
+    },
+    {
+      "name": "unarmed strike",
+      "ref": { "kind": "unarmed" },
+      "expectPlan": {
+        "attack": { "bonus": 5 },
+        "damage": [{ "id": "unarmed", "formula": "4", "damageType": "bludgeoning" }]
+      }
+    },
+    {
+      "name": "a skill check carries the sheet bonus",
+      "ref": { "kind": "check", "skill": "athletics" },
+      "expectPlan": { "damageIds": [] }
+    }
+  ]
+}

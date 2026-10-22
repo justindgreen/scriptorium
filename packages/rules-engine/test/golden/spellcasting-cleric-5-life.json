@@ -1,0 +1,284 @@
+{
+  "name": "spellcasting-cleric-5-life",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": [
+    "srd-5.1:class:cleric",
+    "srd-5.1:subclass:life",
+    "srd-5.1:spell:cure-wounds",
+    "srd-5.1:spell:guiding-bolt",
+    "srd-5.1:spell:sacred-flame",
+    "srd-5.1:spell:bless",
+    "srd-5.1:spell:fireball",
+    "srd-5.1:spell:lesser-restoration",
+    "srd-5.1:spell:spiritual-weapon",
+    "srd-5.1:spell:beacon-of-hope",
+    "srd-5.1:spell:revivify",
+    "srd-5.1:item:chain-mail"
+  ],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Sister Maren",
+    "definition": {
+      "baseAbilities": {
+        "str": 12,
+        "dex": 10,
+        "con": 14,
+        "int": 10,
+        "wis": 16,
+        "cha": 12
+      },
+      "classes": [
+        {
+          "classUid": "srd-5.1:class:cleric",
+          "subclassUid": "srd-5.1:subclass:life",
+          "level": 5,
+          "order": 0
+        }
+      ],
+      "spells": [
+        {
+          "spellUid": "srd-5.1:spell:cure-wounds",
+          "origin": "class:srd-5.1:class:cleric",
+          "known": true,
+          "prepared": true,
+          "alwaysPrepared": false
+        },
+        {
+          "spellUid": "srd-5.1:spell:guiding-bolt",
+          "origin": "class:srd-5.1:class:cleric",
+          "known": true,
+          "prepared": true,
+          "alwaysPrepared": false
+        },
+        {
+          "spellUid": "srd-5.1:spell:sacred-flame",
+          "origin": "class:srd-5.1:class:cleric",
+          "known": true,
+          "prepared": false,
+          "alwaysPrepared": false
+        },
+        {
+          "spellUid": "srd-5.1:spell:fireball",
+          "origin": "class:srd-5.1:class:cleric",
+          "known": true,
+          "prepared": true,
+          "alwaysPrepared": false
+        }
+      ]
+    },
+    "state": {
+      "spellSlotsUsed": {
+        "1": 4
+      }
+    }
+  },
+  "expectSheet": {
+    "spell.saveDC": 14,
+    "spell.attack": 6,
+    "spell.prepared.max": 8
+  },
+  "expectSpellcasting": {
+    "casterLevel": 5,
+    "slots": [
+      {
+        "level": 1,
+        "max": 4,
+        "used": 4
+      },
+      {
+        "level": 2,
+        "max": 3
+      },
+      {
+        "level": 3,
+        "max": 2
+      }
+    ],
+    "pact": null,
+    "sources": [
+      {
+        "id": "srd-5.1:class:cleric",
+        "saveDC": 14,
+        "attack": 6,
+        "preparedMax": 8,
+        "cantripsKnown": 4
+      }
+    ],
+    "knownUids": ["srd-5.1:spell:cure-wounds", "srd-5.1:spell:bless", "srd-5.1:spell:revivify"],
+    "alwaysPreparedUids": [
+      "srd-5.1:spell:bless",
+      "srd-5.1:spell:cure-wounds",
+      "srd-5.1:spell:lesser-restoration",
+      "srd-5.1:spell:spiritual-weapon",
+      "srd-5.1:spell:beacon-of-hope",
+      "srd-5.1:spell:revivify"
+    ],
+    "preparedCount": 2
+  },
+  "expectDiagnostics": [
+    {
+      "code": "INVALID_SELECTION",
+      "severity": "warning"
+    }
+  ],
+  "actions": [
+    {
+      "name": "Cure Wounds picks the lowest free slot when the first-level slots are spent",
+      "ref": {
+        "kind": "spell",
+        "spellUid": "srd-5.1:spell:cure-wounds"
+      },
+      "expectPlan": {
+        "healing": "2d8 + 3",
+        "costs": [
+          {
+            "kind": "slot",
+            "level": 2,
+            "available": 3,
+            "sufficient": true
+          }
+        ],
+        "damageIds": [],
+        "concentration": false,
+        "blocked": null
+      }
+    },
+    {
+      "name": "Cure Wounds upcast to third level",
+      "ref": {
+        "kind": "spell",
+        "spellUid": "srd-5.1:spell:cure-wounds",
+        "slotLevel": 3
+      },
+      "expectPlan": {
+        "healing": "3d8 + 3",
+        "costs": [
+          {
+            "kind": "slot",
+            "level": 3,
+            "available": 2
+          }
+        ]
+      },
+      "rolls": {
+        "healing": 17
+      },
+      "expectOutcome": {
+        "healing": 17
+      }
+    },
+    {
+      "name": "insisting on a spent slot level is blocked",
+      "ref": {
+        "kind": "spell",
+        "spellUid": "srd-5.1:spell:cure-wounds",
+        "slotLevel": 1
+      },
+      "expectPlan": {
+        "costs": [
+          {
+            "kind": "slot",
+            "level": 1,
+            "available": 0,
+            "sufficient": false
+          }
+        ],
+        "blocked": "not enough level 1 spell slots"
+      }
+    },
+    {
+      "name": "Sacred Flame is a free cantrip with a save",
+      "ref": {
+        "kind": "spell",
+        "spellUid": "srd-5.1:spell:sacred-flame"
+      },
+      "expectPlan": {
+        "costs": [],
+        "save": {
+          "ability": "dex",
+          "dc": 14,
+          "onSuccess": "none"
+        },
+        "blocked": null
+      }
+    },
+    {
+      "name": "Guiding Bolt is a spell attack",
+      "ref": {
+        "kind": "spell",
+        "spellUid": "srd-5.1:spell:guiding-bolt"
+      },
+      "expectPlan": {
+        "attack": {
+          "attackType": "spell",
+          "bonus": 6,
+          "mode": "normal"
+        },
+        "costs": [
+          {
+            "kind": "slot",
+            "level": 2
+          }
+        ]
+      },
+      "rolls": {
+        "attack": {
+          "natural": 15
+        }
+      },
+      "targetAc": 13,
+      "expectOutcome": {
+        "hit": true,
+        "critical": false,
+        "packets": []
+      }
+    },
+    {
+      "name": "Bless needs concentration",
+      "ref": {
+        "kind": "spell",
+        "spellUid": "srd-5.1:spell:bless"
+      },
+      "expectPlan": {
+        "concentration": true,
+        "costs": [
+          {
+            "kind": "slot",
+            "level": 2
+          }
+        ]
+      }
+    }
+  ],
+  "variants": [
+    {
+      "name": "armor without proficiency blocks casting",
+      "aggregate": {
+        "inventory": [
+          {
+            "id": "mail",
+            "itemUid": "srd-5.1:item:chain-mail",
+            "quantity": 1,
+            "equipped": true,
+            "attuned": false
+          }
+        ]
+      },
+      "expectSpellcasting": {
+        "blocked": "cannot cast spells while wearing armor without proficiency"
+      },
+      "actions": [
+        {
+          "name": "Cure Wounds is blocked",
+          "ref": {
+            "kind": "spell",
+            "spellUid": "srd-5.1:spell:cure-wounds"
+          },
+          "expectPlan": {
+            "blocked": "cannot cast spells while wearing armor without proficiency"
+          }
+        }
+      ]
+    }
+  ]
+}

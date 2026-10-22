@@ -123,6 +123,8 @@ export function buildActionTemplates(ctx: TemplateContext): ActionTemplate[] {
       riders: ridersFor(ctx, weapon.item.id),
       properties,
       source: weapon.source,
+      weaponCategory: data.category,
+      magical: Boolean(weapon.entry.data.magic),
     }
     if (data.range === 'ranged' && data.normalRange !== undefined) {
       template.range = {

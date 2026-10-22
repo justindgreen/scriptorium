@@ -8,6 +8,7 @@ import type {
   ProficiencyView,
   ResourceView,
   RulesetProfile,
+  SheetFacts,
   SourceRef,
   StatValue,
 } from '../types.js'
@@ -17,6 +18,7 @@ import { FormulaError, type FormulaScope } from './formula.js'
 import { collectGrants, type Grants } from './grants.js'
 import { evaluateStaticPredicate, type PredicateEnv } from './predicates.js'
 import { CycleError, StatResolver } from './resolver.js'
+import { registerSpellcasting } from './spellcasting.js'
 import { buildActionTemplates } from './templates.js'
 
 /**
@@ -63,6 +65,16 @@ export function computeSheet(
   const outputs = createEffectOutputs()
   applyEffects(grants.effects, resolver, grants.proficiencies, outputs, diagnostic)
   addEngineContributions({ aggregate, grants, ruleset, resolver, diagnostic })
+  const finishSpellcasting = registerSpellcasting({
+    aggregate,
+    grants,
+    outputs,
+    ruleset,
+    resolver,
+    snapshot,
+    scope,
+    diagnostic,
+  })
   aggregate.definition.overrides.forEach((override, index) => {
     const source: SourceRef = {
       kind: 'override',
@@ -154,6 +166,11 @@ export function computeSheet(
 
   const actionTemplates = buildActionTemplates({ grants, outputs, resolver, predicateEnv, scope })
 
+  const armorBlocked = diagnostics.some((d) => d.code === 'PROFICIENCY_VIOLATION')
+  const spellcasting = finishSpellcasting(
+    stats,
+    armorBlocked ? 'cannot cast spells while wearing armor without proficiency' : undefined,
+  )
   const hpMax = numberOf(stats['hp.max'])
   return {
     engineVersion: ENGINE_VERSION,
@@ -189,7 +206,29 @@ export function computeSheet(
       current: Math.min(aggregate.state.hpCurrent, hpMax),
       temp: aggregate.state.hpTemp,
     },
-    spellcasting: null,
+    spellcasting,
+    facts: serializeFacts(grants.facts),
+    actionEffects: outputs.actionEffects.map((e) => ({
+      effect: e.effect,
+      source: e.source,
+      ...(e.self ? { itemId: e.self.itemId } : {}),
+    })),
+  }
+}
+
+function serializeFacts(facts: Grants['facts']): SheetFacts {
+  return {
+    level: facts.level,
+    classLevels: Object.fromEntries(facts.classLevels),
+    speciesChain: [...facts.speciesChain],
+    subclasses: [...facts.subclasses],
+    features: [...facts.features],
+    conditions: [...facts.conditions],
+    activeToggles: [...facts.activeToggles],
+    armorCategory: facts.armorCategory,
+    shield: facts.shield,
+    equippedItems: [...facts.equippedItems],
+    attunedItems: [...facts.attunedItems],
   }
 }
 
@@ -217,6 +256,9 @@ function createScope(
     proficiencyBonus: () => resolver().lookup.number('proficiencyBonus'),
     level: () => grants.facts.level,
     classLevel: (uid) => classLevels.get(uid) ?? 0,
+    slotLevel: () => {
+      throw new FormulaError('slotLevel is only available when casting a spell', 'UNKNOWN_VARIABLE')
+    },
     castingMod: () => {
       if (!castingAbility)
         throw new FormulaError(

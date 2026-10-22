@@ -1,4 +1,5 @@
 import { keptCount } from './analyze.js'
+import { normalizeDice } from './normalize.js'
 import type { DiceNode, Node } from './types.js'
 
 export type ExpectedContext = {
@@ -13,6 +14,10 @@ export type ExpectedContext = {
  * expression. Never rolls anything.
  */
 export function expectedValue(node: Node, context: ExpectedContext = {}): number | null {
+  return expectedOf(normalizeDice(node), context)
+}
+
+function expectedOf(node: Node, context: ExpectedContext): number | null {
   switch (node.type) {
     case 'number':
       return node.value
@@ -23,12 +28,12 @@ export function expectedValue(node: Node, context: ExpectedContext = {}): number
     case 'dice':
       return expectedDice(node)
     case 'unary': {
-      const v = expectedValue(node.operand, context)
+      const v = expectedOf(node.operand, context)
       return v === null ? null : -v
     }
     case 'binary': {
-      const a = expectedValue(node.left, context)
-      const b = expectedValue(node.right, context)
+      const a = expectedOf(node.left, context)
+      const b = expectedOf(node.right, context)
       if (a === null || b === null) return null
       switch (node.op) {
         case '+':
@@ -51,7 +56,7 @@ export function expectedValue(node: Node, context: ExpectedContext = {}): number
           values.push(arg.value)
           continue
         }
-        const v = expectedValue(arg, context)
+        const v = expectedOf(arg, context)
         if (v === null) return null
         values.push(v)
       }

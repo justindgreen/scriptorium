@@ -39,6 +39,8 @@ export type ClassGrant = {
   level: number
   order: number
   hitDiceRolls: number[]
+  source: SourceRef
+  subclassSource?: SourceRef
 }
 
 export type ArmorData = NonNullable<ItemData['armor']>
@@ -421,6 +423,7 @@ class Walker {
         level: taken.level,
         order: taken.order,
         hitDiceRolls: taken.hitDiceRolls ?? [],
+        source,
       }
       this.result.classes.push(grant)
 
@@ -535,6 +538,7 @@ class Walker {
           `subclass:${subclass.uid}`,
           subclass.uid,
         )
+        grant.subclassSource = subSource
         this.expandEntry(subclass, subSource, { classUid: entry.uid })
         for (const row of subclass.data.levels) {
           if (row.level > taken.level) continue

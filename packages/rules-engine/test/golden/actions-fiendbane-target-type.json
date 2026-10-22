@@ -1,0 +1,79 @@
+{
+  "name": "actions-fiendbane-target-type",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": ["srd-5.1:class:fighter"],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Vance",
+    "definition": {
+      "baseAbilities": { "str": 16, "dex": 10, "con": 12, "int": 10, "wis": 10, "cha": 10 },
+      "classes": [{ "classUid": "srd-5.1:class:fighter", "level": 1, "order": 0 }]
+    },
+    "inventory": [
+      {
+        "id": "fiendbane",
+        "itemUid": "golden:item:fiendbane-longsword",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": true
+      }
+    ]
+  },
+  "actions": [
+    {
+      "name": "against a fiend the rider applies",
+      "ref": { "kind": "weapon", "itemId": "fiendbane" },
+      "ctx": { "target": { "creatureType": "fiend" } },
+      "expectPlan": {
+        "attack": { "bonus": 6 },
+        "damageIds": ["weapon", "fiendbane"],
+        "damage": [
+          { "id": "weapon", "formula": "1d8 + 4", "damageType": "slashing", "magical": true },
+          { "id": "fiendbane", "formula": "1d8", "critFormula": "2d8", "damageType": "radiant" }
+        ],
+        "questions": []
+      },
+      "rolls": { "attack": { "natural": 1 }, "damage": { "weapon": 8, "fiendbane": 5 } },
+      "targetAc": 5,
+      "expectOutcome": { "hit": false, "packets": [] }
+    },
+    {
+      "name": "against a humanoid it does not",
+      "ref": { "kind": "weapon", "itemId": "fiendbane" },
+      "ctx": { "target": { "creatureType": "humanoid" } },
+      "expectPlan": { "damageIds": ["weapon"], "questions": [] }
+    },
+    {
+      "name": "with no target the engine asks and assumes nothing",
+      "ref": { "kind": "weapon", "itemId": "fiendbane" },
+      "expectPlan": {
+        "damageIds": ["weapon"],
+        "questions": ["target.creatureType"],
+        "assumptions": [{ "id": "target.creatureType" }]
+      }
+    },
+    {
+      "name": "an explicit answer settles it",
+      "ref": { "kind": "weapon", "itemId": "fiendbane" },
+      "ctx": { "options": { "answers": { "target.creatureType": "undead" } } },
+      "expectPlan": { "damageIds": ["weapon", "fiendbane"], "questions": [], "assumptions": [] }
+    }
+  ],
+  "variants": [
+    {
+      "name": "a stored assumption is used and reported",
+      "aggregate": { "state": { "assumptions": { "target.creatureType": "undead" } } },
+      "actions": [
+        {
+          "name": "assumed undead",
+          "ref": { "kind": "weapon", "itemId": "fiendbane" },
+          "expectPlan": {
+            "damageIds": ["weapon", "fiendbane"],
+            "questions": ["target.creatureType"],
+            "assumptions": [{ "id": "target.creatureType", "value": "undead" }]
+          }
+        }
+      ]
+    }
+  ]
+}
