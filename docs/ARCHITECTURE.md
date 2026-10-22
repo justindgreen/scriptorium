@@ -79,7 +79,7 @@ procedure -> core/commands.run({ commandId, aggregateId, expectedRevision, comma
   6. post-commit: recompute sheet (memoised), emit SSE to subscribers permitted to see the character
 ```
 
-Snapshots are written before level-up, rests, imports, content-update acceptance and on manual request; retention is configurable. Undo is a compensating command for the latest reversible event (see `RULES_ENGINE.md` §8 for the exact limits).
+Snapshots are written before level-up, rests, imports, content-update acceptance and on manual request; retention is configurable (20 automatic snapshots per character; manual ones are kept). Implementation notes (M2.5): `core/commands.ts` is the runner; the content snapshot is loaded from `character_content_refs` (pinned versions) plus the uids the command itself introduces, and the refs are rewritten after every command so new references are pinned at their head version; the `characters` module owns the repository, the snapshot loader, the service (ownership: owner or administrator) and the tRPC router; a post-commit `character.changed` event goes to the in-process bus that SSE will subscribe to. Undo is a compensating command for the latest reversible event (see `RULES_ENGINE.md` §8 for the exact limits).
 
 ## 6. The encounter action coordinator
 

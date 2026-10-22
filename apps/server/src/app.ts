@@ -52,6 +52,9 @@ export async function buildApp(deps: AppDeps): Promise<App> {
         : {}),
     },
     trustProxy: config.TRUST_PROXY,
+    // tRPC batches join procedure paths with commas in one route parameter; Fastify's default of
+    // 100 characters answers 414 for a page that issues five queries at once.
+    maxParamLength: 5000,
   }) as unknown as App
 
   const db = deps.database.db

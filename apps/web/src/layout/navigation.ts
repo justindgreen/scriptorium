@@ -3,6 +3,7 @@ import {
   HomeIcon,
   KeyRoundIcon,
   ScrollTextIcon,
+  UsersRoundIcon,
   SettingsIcon,
   UsersIcon,
   type LucideIcon,
@@ -10,6 +11,8 @@ import {
 
 export type AppPath =
   | '/'
+  | '/characters'
+  | '/characters/new'
   | '/admin/users'
   | '/admin/invites'
   | '/admin/audit'
@@ -32,6 +35,13 @@ export type NavItem = {
  */
 export const navItems: NavItem[] = [
   { to: '/', label: 'Home', icon: HomeIcon, group: 'main' },
+  {
+    to: '/characters',
+    label: 'Characters',
+    icon: UsersRoundIcon,
+    group: 'main',
+    keywords: ['sheet', 'builder', 'party'],
+  },
   {
     to: '/admin/users',
     label: 'Users',

@@ -16,6 +16,9 @@ import { AdminBackupsPage } from '@/pages/AdminBackupsPage'
 import { AdminInvitesPage } from '@/pages/AdminInvitesPage'
 import { AdminSettingsPage } from '@/pages/AdminSettingsPage'
 import { AdminUsersPage } from '@/pages/AdminUsersPage'
+import { CharacterBuilderPage } from '@/pages/CharacterBuilderPage'
+import { CharacterPage } from '@/pages/CharacterPage'
+import { CharactersPage } from '@/pages/CharactersPage'
 import { HomePage } from '@/pages/HomePage'
 import { LicensesPage } from '@/pages/LicensesPage'
 import { LoginPage } from '@/pages/LoginPage'
@@ -62,6 +65,21 @@ const appLayout = createRoute({
 })
 
 const indexRoute = createRoute({ getParentRoute: () => appLayout, path: '/', component: HomePage })
+const charactersRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/characters',
+  component: CharactersPage,
+})
+const characterNewRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/characters/new',
+  component: CharacterBuilderPage,
+})
+const characterRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/characters/$characterId',
+  component: CharacterPage,
+})
 const adminUsersRoute = createRoute({
   getParentRoute: () => appLayout,
   path: '/admin/users',
@@ -135,6 +153,9 @@ const licensesRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   appLayout.addChildren([
     indexRoute,
+    charactersRoute,
+    characterNewRoute,
+    characterRoute,
     adminUsersRoute,
     adminInvitesRoute,
     adminAuditRoute,

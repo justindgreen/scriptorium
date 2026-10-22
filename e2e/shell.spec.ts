@@ -65,6 +65,8 @@ test('the shell adapts to the viewport and every admin page passes the accessibi
 test('the command palette navigates and switches theme', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Keyboard shortcut is a desktop affordance')
   await signInAs(page, admin.username, admin.password)
+  // The shortcut listener mounts with the shell; pressing before the navigation renders is a race.
+  await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible()
   await page.keyboard.press('Control+k')
   const palette = page.getByRole('dialog', { name: 'Command palette' })
   await expect(palette).toBeVisible()
