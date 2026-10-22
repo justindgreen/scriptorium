@@ -678,6 +678,28 @@ describe('encounters', () => {
       'Pip the Bold',
     )
     expect(asPlayer.actions).toEqual({})
+    // D-3: no DM-only field reaches a player through the log either; the DM still gets them.
+    const dmOnly = ['targetHp', 'hpCurrent', 'hpMax', 'hpTemp', 'dmNotesMd', 'actions']
+    const leaked = asPlayer.events.flatMap((ev) =>
+      Object.keys(ev.payload).filter((k) => dmOnly.includes(k)),
+    )
+    expect(leaked).toEqual([])
+    expect('dmNotesMd' in asPlayer).toBe(false)
+    const asDm = await encounter()
+    const attackEvent = asDm.events.find((ev) => ev.type === 'attack' && ev.payload['hit'] === true)
+    expect(attackEvent?.payload['targetHp']).toBeDefined()
+    expect(asDm.events.find((ev) => ev.type === 'hpAdjusted')?.payload['hpCurrent']).toBe(0)
+    expect(
+      asDm.participants
+        .filter((p) => p.kind === 'monster')
+        .every((p) => typeof p.hpCurrent === 'number' && typeof p.ac === 'number'),
+    ).toBe(true)
+    expect(
+      asPlayer.participants.filter((p) => p.kind === 'monster').every((p) => p.ac === null),
+    ).toBe(true)
+    expect(asPlayer.participants.map((p) => Object.keys(p).sort())).toEqual(
+      asDm.participants.map((p) => Object.keys(p).sort()),
+    )
     const ended = await trpcMutation<{ version: number }>(
       t.app,
       'encounters.end',

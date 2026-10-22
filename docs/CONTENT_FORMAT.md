@@ -70,9 +70,9 @@ Characters pin version ids, so re-importing a package never changes an existing 
 ## Commands
 
 ```bash
-pnpm -F @scriptorium/server cli -- import-content <file.package.json|ruleset.json>...
-pnpm -F @scriptorium/server cli -- seed [dir]      # bundled content (also runs at server start)
-pnpm -F @scriptorium/server cli -- sources         # installed sources with entry counts
+pnpm -F @scriptorium/server cli import-content <file.package.json|ruleset.json>...
+pnpm -F @scriptorium/server cli seed [dir]      # bundled content (also runs at server start)
+pnpm -F @scriptorium/server cli sources         # installed sources with entry counts
 ```
 
 Administrators can also import a package through the API (`content.importPackage`); the web upload UI arrives with the homebrew milestones.

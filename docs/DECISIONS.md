@@ -260,3 +260,13 @@ Decisions:
 6. **Invites are hashed codes with expiry and use counts**, mirroring instance invites; the join page takes the code from the link.
 
 Consequences: a solo sheet attack and an encounter attack share the roll step and the engine but not the commit procedure (two thin wrappers over the same core). Players cannot yet act in the tracker (the DM resolves every attack); concentration prompts, legendary actions, hidden combatants and monster actions through `planAction` remain M5.3. The engine's own combat tests still prove the reset rules; the server test proves the tracker issues the commands.
+
+## ADR-0038 Gate A1: conditional pass with a limited coverage exception (owner decision, 2026-10-22)
+
+Status: accepted (owner).
+
+Context: `docs/ALPHA_GATE_REVIEW.md` found the architecture sound, every suite green and the two-instance restore acceptance passing, but the alpha coverage gate unmet: 63.1% of all class and subclass feature rows, 81.7% of non-placeholder rows, 89.5% after the ten narrative or table-adjudicated rows, against ≥ 95%, with six features conflicting with the rule that numeric or resource-bearing mechanics be `full`.
+
+Decision (owner): conditional pass of Gate A1 with an explicit, limited exception. The original metrics stand unchanged and the exception is not compliance with the threshold. The 34 structural placeholder rows are non-mechanical for future reporting; the 10 narrative rows are named A1 exceptions with their allow-list reasons; the target of ≥ 95% `full`/`partial` of eligible mechanical features, with numeric or resource-bearing mechanics `full`, is preserved. The 11 incomplete mechanical features are a mandatory remediation workstream at the beginning of M3.2, and the six numeric conflicts must be resolved, not waived; broad SRD class expansion waits for that workstream or an approved revised plan. D-1, D-2 and D-4 are early M3.2 deliverables; the other deferrals keep their recorded destinations. Before Phase 3: D-3 (no monster hit points or other DM-only fields through any player-visible encounter response, with regression tests), D-6 (CLI documentation) and D-7 (backup documentation), narrowly scoped. A1 is not marked verified; owner acceptance testing remains outstanding.
+
+Consequences: the plan's M3.2 definition and `TEST_STRATEGY.md` §4 carry the clarified reporting rule; `AUTOMATION_COVERAGE.md` keeps reporting both the all-rows and the non-placeholder shares. Usage continues to be reported from the account tool's cumulative figure (owner checkpoint $239.92), never as per-milestone billing.

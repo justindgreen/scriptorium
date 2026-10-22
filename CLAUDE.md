@@ -45,7 +45,7 @@ pnpm lint && pnpm format:check && pnpm typecheck && pnpm test
 pnpm build                  # server bundle (tsup) + web (vite)
 pnpm test:e2e               # builds, serves apps/web/dist from the server on :3100, runs Playwright
 pnpm exec playwright install chromium   # once per machine, before test:e2e
-pnpm -F @scriptorium/server cli -- <command>   # migrate | seed [dir] | import-content <file...> | sources
+pnpm -F @scriptorium/server cli <command>   # migrate | seed [dir] | import-content <file...> | sources | backup | backups | verify-backup <dir> | restore <dir> | prune [keep] (no `--`: pnpm 12 passes the arguments through)
 pnpm -F @scriptorium/srd-import download -- --out <abs dir>              # upstream 5e-bits dataset (gitignored under .data/)
 pnpm -F @scriptorium/srd-import convert -- --source <abs dir> --out <abs content/srd-5.1>   # regenerate packages with overlays
 pnpm -F @scriptorium/srd-import generate-overlays   # rewrite the alpha mechanics overlays and fixtures from the generator

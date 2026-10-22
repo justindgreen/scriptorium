@@ -25,7 +25,6 @@ Scriptorium runs as one application container plus a PostgreSQL 17 container. Ev
 | `CONTENT_DIR`      | no       | `/app/content`          | bundled content directory                                                         |
 | `BACKUP_CRON`      | no       | —                       | cron expression for automatic backups, e.g. `0 4 * * *`                           |
 | `BACKUP_RETENTION` | no       | `14`                    | backups to keep                                                                   |
-| `PG_BIN_DIR`       | no       | —                       | directory with `pg_dump`/`pg_restore` if not on PATH                              |
 
 ## Unraid (no Compose needed)
 

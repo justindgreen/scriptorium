@@ -283,6 +283,18 @@ export function createEncounterService(deps: {
     return { plan: { kind: 'character', plan, targetAc: ac }, attacker, target }
   }
 
+  /** Fields in event payloads that reveal monster hit points; players never receive them (D-3). */
+  const DM_ONLY_PAYLOAD_FIELDS = ['targetHp', 'hpCurrent', 'hpMax', 'hpTemp'] as const
+
+  function serializeEvent(
+    e: { payload: unknown } & Record<string, unknown>,
+    role: 'dm' | 'player',
+  ) {
+    const payload = { ...(e.payload as Record<string, unknown>) }
+    if (role === 'player') for (const key of DM_ONLY_PAYLOAD_FIELDS) delete payload[key]
+    return { ...e, payload }
+  }
+
   function serializeParticipant(p: ParticipantRow, role: 'dm' | 'player') {
     const hidden = role === 'player' && p.kind === 'monster'
     return {
@@ -358,7 +370,7 @@ export function createEncounterService(deps: {
         role,
         participants: order.map((p) => serializeParticipant(p, role)),
         actions,
-        events: events.map((e) => ({ ...e, payload: e.payload as Record<string, unknown> })),
+        events: events.map((e) => serializeEvent(e, role)),
         ...(role === 'dm' ? { dmNotesMd: encounter.dmNotesMd } : {}),
       }
     },
