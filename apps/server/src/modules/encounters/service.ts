@@ -286,10 +286,10 @@ export function createEncounterService(deps: {
   /** Fields in event payloads that reveal monster hit points; players never receive them (D-3). */
   const DM_ONLY_PAYLOAD_FIELDS = ['targetHp', 'hpCurrent', 'hpMax', 'hpTemp'] as const
 
-  function serializeEvent(
-    e: { payload: unknown } & Record<string, unknown>,
+  function serializeEvent<T extends { payload: unknown }>(
+    e: T,
     role: 'dm' | 'player',
-  ) {
+  ): Omit<T, 'payload'> & { payload: Record<string, unknown> } {
     const payload = { ...(e.payload as Record<string, unknown>) }
     if (role === 'player') for (const key of DM_ONLY_PAYLOAD_FIELDS) delete payload[key]
     return { ...e, payload }

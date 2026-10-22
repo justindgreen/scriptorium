@@ -24,6 +24,7 @@ type Participant = {
   initiative: number | null
   hpCurrent: number | null
   hpMax: number | null
+  ac: number | null
   conditions: Array<{ uid: string }>
   combat: { turn?: { turnId: string; ownTurn: boolean } }
   defeated: boolean
