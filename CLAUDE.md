@@ -48,7 +48,7 @@ pnpm exec playwright install chromium   # once per machine, before test:e2e
 pnpm -F @scriptorium/server cli -- <command>   # migrate | seed [dir] | import-content <file...> | sources
 ```
 
-Toolchain notes: TypeScript is pinned to 6.x until typescript-eslint supports 7.x (ADR-0023). pnpm only runs build scripts listed under `allowBuilds` in `pnpm-workspace.yaml`.
+Toolchain notes: TypeScript is pinned to 6.x until typescript-eslint supports 7.x (ADR-0023). pnpm 12 reads its own settings from `pnpm-workspace.yaml` (build-script allow list, overrides, peer and fetch settings); keys in `.npmrc` are ignored or rejected, so never put pnpm settings there. Docker image builds and `pnpm install` depend on registry.npmjs.org; when it is degraded (status.npmjs.org) builds fail at `pnpm install` and should simply be retried.
 
 ## Non-negotiable rules
 
