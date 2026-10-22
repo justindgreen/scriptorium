@@ -93,6 +93,6 @@ The image build and install path are verified in three places:
 - In CI (`.github/workflows/ci.yml`, job `image`): the same build and smoke test on every push.
 - By the automated restore acceptance test (`apps/server/test/backup.test.ts`), which backs up one instance and restores into a fresh one.
 
-The first run on the Unraid host remains the final check for that environment. Image size is about 614 MB; roughly 100 MB of that is development toolchain packages that `pnpm deploy --legacy` copies along with the production dependencies, a known inefficiency recorded in ADR-0029 and scheduled for the hardening milestone.
+The first run on the Unraid host remains the final check for that environment. Image size is about 427MB with a production `node_modules` of about 72 MB (peers are declared explicitly and development packages are not copied; ADR-0029, ADR-0030).
 
 After a restore finishes, the running server can answer with the maintenance notice for up to one more second while it re-checks the marker.

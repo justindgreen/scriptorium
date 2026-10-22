@@ -159,7 +159,7 @@ snapshots:
 lockfileVersion: '9.0'
 
 settings:
-  autoInstallPeers: true
+  autoInstallPeers: false
   excludeLinksFromLockfile: false
 
 overrides:
@@ -260,6 +260,9 @@ importers:
       zod:
         specifier: ^4.6.7
         version: 4.6.7
+      zod-openapi:
+        specifier: ^5.4.6
+        version: 5.4.6(zod@4.6.7)
     devDependencies:
       '@types/node':
         specifier: ^26.6.5
