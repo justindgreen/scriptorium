@@ -12,6 +12,7 @@ export default defineConfig({
       },
       'apps/*',
       'packages/*',
+      'tools/*',
     ],
   },
 })

@@ -194,6 +194,9 @@ importers:
       globals:
         specifier: ^17.13.0
         version: 17.13.0
+      jsdom:
+        specifier: ^30.1.3
+        version: 30.1.3(@noble/hashes@2.4.0)
       prettier:
         specifier: ^3.9.10
         version: 3.9.10
