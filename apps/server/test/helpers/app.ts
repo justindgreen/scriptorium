@@ -1,22 +1,29 @@
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import type { LightMyRequestResponse } from 'fastify'
 import { buildApp, type App } from '../../src/app.js'
 import { syntheticEmail } from '../../src/core/auth.js'
 import { loadConfig } from '../../src/core/config.js'
 import { createTestDatabase, type TestDatabase } from './database.js'
 
-export type TestApp = { app: App; tdb: TestDatabase; close: () => Promise<void> }
+export type TestApp = { app: App; tdb: TestDatabase; dataDir: string; close: () => Promise<void> }
 
 export const TEST_SECRET = 'test-secret-'.padEnd(48, 'x')
 
 /** Builds a full application instance on a fresh migrated database. */
 export async function createTestApp(existing?: TestDatabase): Promise<TestApp> {
   const tdb = existing ?? (await createTestDatabase())
+  // Each app gets its own data directory: the maintenance marker and backups must never leak
+  // between test files running in parallel.
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scriptorium-test-'))
   const config = loadConfig({
     NODE_ENV: 'test',
     LOG_LEVEL: 'silent',
     DATABASE_URL: tdb.url,
     APP_SECRET: TEST_SECRET,
     PUBLIC_URL: 'http://localhost:3000',
+    DATA_DIR: dataDir,
   })
   const app = await buildApp({
     config,
@@ -27,9 +34,11 @@ export async function createTestApp(existing?: TestDatabase): Promise<TestApp> {
   return {
     app,
     tdb,
+    dataDir,
     close: async () => {
       await app.close()
       if (!existing) await tdb.drop()
+      fs.rmSync(dataDir, { recursive: true, force: true })
     },
   }
 }
@@ -43,9 +52,16 @@ export type TrpcResult<T> = {
 function parseTrpc<T>(res: LightMyRequestResponse): TrpcResult<T> {
   const body = res.json<{
     result?: { data: T }
-    error?: { message: string; data?: { code: string } }
+    error?: { message: string; data?: { code: string } } | string
   }>()
   if (body.error) {
+    // A string error body is not a tRPC error: the maintenance gate or another layer answered.
+    if (typeof body.error === 'string') {
+      return {
+        status: res.statusCode,
+        error: { code: `HTTP_${res.statusCode}`, message: body.error },
+      }
+    }
     return {
       status: res.statusCode,
       error: { code: body.error.data?.code ?? 'UNKNOWN', message: body.error.message },
