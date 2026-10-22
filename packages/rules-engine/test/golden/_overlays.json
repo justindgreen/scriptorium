@@ -1,0 +1,896 @@
+[
+  {
+    "kind": "species",
+    "uid": "srd-5.1:species:human",
+    "slug": "human",
+    "name": "Human",
+    "data": {
+      "description": "Human (golden overlay).",
+      "size": "medium",
+      "speed": 30,
+      "traits": []
+    },
+    "effects": [
+      {
+        "type": "abilityScore.bonus",
+        "ability": "str",
+        "value": 1
+      },
+      {
+        "type": "abilityScore.bonus",
+        "ability": "dex",
+        "value": 1
+      },
+      {
+        "type": "abilityScore.bonus",
+        "ability": "con",
+        "value": 1
+      },
+      {
+        "type": "abilityScore.bonus",
+        "ability": "int",
+        "value": 1
+      },
+      {
+        "type": "abilityScore.bonus",
+        "ability": "wis",
+        "value": 1
+      },
+      {
+        "type": "abilityScore.bonus",
+        "ability": "cha",
+        "value": 1
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "species",
+    "uid": "srd-5.1:species:dwarf",
+    "slug": "dwarf",
+    "name": "Dwarf",
+    "data": {
+      "description": "Dwarf (golden overlay).",
+      "size": "medium",
+      "speed": 25,
+      "traits": [
+        {
+          "uid": "srd-5.1:feature:darkvision",
+          "name": "Darkvision"
+        },
+        {
+          "uid": "srd-5.1:feature:dwarven-resilience",
+          "name": "Dwarven Resilience"
+        }
+      ]
+    },
+    "effects": [
+      {
+        "type": "abilityScore.bonus",
+        "ability": "con",
+        "value": 2
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "species",
+    "uid": "srd-5.1:species:hill-dwarf",
+    "slug": "hill-dwarf",
+    "name": "Hill Dwarf",
+    "data": {
+      "description": "Hill dwarf (golden overlay).",
+      "parent": "srd-5.1:species:dwarf",
+      "traits": [
+        {
+          "uid": "srd-5.1:feature:dwarven-toughness",
+          "name": "Dwarven Toughness"
+        }
+      ]
+    },
+    "effects": [
+      {
+        "type": "abilityScore.bonus",
+        "ability": "wis",
+        "value": 1
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "species",
+    "uid": "srd-5.1:species:elf",
+    "slug": "elf",
+    "name": "Elf",
+    "data": {
+      "description": "Elf (golden overlay).",
+      "size": "medium",
+      "speed": 30,
+      "traits": [
+        {
+          "uid": "srd-5.1:feature:darkvision",
+          "name": "Darkvision"
+        },
+        {
+          "uid": "srd-5.1:feature:keen-senses",
+          "name": "Keen Senses"
+        }
+      ]
+    },
+    "effects": [
+      {
+        "type": "abilityScore.bonus",
+        "ability": "dex",
+        "value": 2
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "species",
+    "uid": "srd-5.1:species:high-elf",
+    "slug": "high-elf",
+    "name": "High Elf",
+    "data": {
+      "description": "High elf (golden overlay).",
+      "parent": "srd-5.1:species:elf",
+      "traits": []
+    },
+    "effects": [
+      {
+        "type": "abilityScore.bonus",
+        "ability": "int",
+        "value": 1
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "srd-5.1:feature:darkvision",
+    "slug": "darkvision",
+    "name": "Darkvision",
+    "data": {
+      "description": "You can see in dim light within 60 feet as if it were bright light."
+    },
+    "effects": [
+      {
+        "type": "sense.grant",
+        "sense": "darkvision",
+        "range": 60
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "srd-5.1:feature:dwarven-resilience",
+    "slug": "dwarven-resilience",
+    "name": "Dwarven Resilience",
+    "data": {
+      "description": "Advantage on saving throws against poison and resistance to poison damage."
+    },
+    "effects": [
+      {
+        "type": "advantage",
+        "on": "save.vs.poison"
+      },
+      {
+        "type": "damage.resistance",
+        "damageType": "poison"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "srd-5.1:feature:dwarven-toughness",
+    "slug": "dwarven-toughness",
+    "name": "Dwarven Toughness",
+    "data": {
+      "description": "Your hit point maximum increases by 1, and by 1 every time you gain a level."
+    },
+    "effects": [
+      {
+        "type": "hp.bonusPerLevel",
+        "value": 1
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "srd-5.1:feature:keen-senses",
+    "slug": "keen-senses",
+    "name": "Keen Senses",
+    "data": {
+      "description": "You have proficiency in the Perception skill."
+    },
+    "effects": [
+      {
+        "type": "proficiency.grant",
+        "kind": "skill",
+        "target": "perception"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "srd-5.1:feature:fighter-fighting-style",
+    "slug": "fighter-fighting-style",
+    "name": "Fighting Style",
+    "data": {
+      "description": "You adopt a particular style of fighting as your specialty."
+    },
+    "choices": [
+      {
+        "type": "choice",
+        "key": "fighting-style",
+        "name": "Fighting Style",
+        "count": 1,
+        "from": {
+          "kind": "optionSet",
+          "options": [
+            {
+              "id": "archery",
+              "name": "Archery",
+              "effects": [
+                {
+                  "type": "bonus",
+                  "target": "attack.ranged",
+                  "value": 2
+                }
+              ]
+            },
+            {
+              "id": "defense",
+              "name": "Defense",
+              "effects": [
+                {
+                  "type": "bonus",
+                  "target": "ac.bonus",
+                  "value": 1,
+                  "condition": {
+                    "leaf": "armor",
+                    "category": "any"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "great-weapon-fighting",
+              "name": "Great Weapon Fighting",
+              "effects": [
+                {
+                  "type": "manual",
+                  "text": "Reroll 1s and 2s on damage dice of two-handed melee weapons."
+                }
+              ]
+            },
+            {
+              "id": "protection",
+              "name": "Protection",
+              "prerequisite": {
+                "leaf": "abilityScore",
+                "ability": "str",
+                "gte": 13
+              },
+              "effects": [
+                {
+                  "type": "manual",
+                  "text": "Impose disadvantage on an attack against an adjacent ally (golden prerequisite test)."
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["Great Weapon Fighting rerolls", "Protection reaction"]
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "srd-5.1:feature:second-wind",
+    "slug": "second-wind",
+    "name": "Second Wind",
+    "data": {
+      "description": "Regain 1d10 + fighter level hit points as a bonus action once per short rest."
+    },
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "second-wind",
+          "name": "Second Wind",
+          "max": 1,
+          "recharge": "shortRest"
+        }
+      },
+      {
+        "type": "action.grant",
+        "name": "Second Wind",
+        "actionType": "bonus",
+        "healing": "1d10 + classLevel('srd-5.1:class:fighter')",
+        "cost": {
+          "resource": "second-wind",
+          "amount": 1
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "srd-5.1:feature:action-surge-1-use",
+    "slug": "action-surge-1-use",
+    "name": "Action Surge",
+    "data": {
+      "description": "Take one additional action on your turn."
+    },
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "action-surge",
+          "name": "Action Surge",
+          "max": "table('action-surges', classLevel('srd-5.1:class:fighter'))",
+          "recharge": "shortRest"
+        }
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["the extra action itself"]
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "srd-5.1:feature:improved-critical",
+    "slug": "improved-critical",
+    "name": "Improved Critical",
+    "data": {
+      "description": "Your weapon attacks score a critical hit on a roll of 19 or 20."
+    },
+    "effects": [
+      {
+        "type": "crit.range",
+        "min": 19
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "srd-5.1:feature:extra-attack-1",
+    "slug": "extra-attack-1",
+    "name": "Extra Attack",
+    "data": {
+      "description": "You can attack twice whenever you take the Attack action."
+    },
+    "effects": [
+      {
+        "type": "attack.extra",
+        "count": 1
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "srd-5.1:feature:rogue-expertise-1",
+    "slug": "rogue-expertise-1",
+    "name": "Expertise",
+    "data": {
+      "description": "Choose two skill proficiencies; your proficiency bonus is doubled for them."
+    },
+    "choices": [
+      {
+        "type": "choice",
+        "key": "expertise",
+        "name": "Expertise",
+        "count": 2,
+        "from": {
+          "kind": "expertise"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "condition",
+    "uid": "srd-5.1:condition:grappled",
+    "slug": "grappled",
+    "name": "Grappled",
+    "data": {
+      "description": "A grappled creature's speed becomes 0."
+    },
+    "effects": [
+      {
+        "type": "replaceFinal",
+        "target": "speed.walk",
+        "value": 0,
+        "priority": 10
+      },
+      {
+        "type": "replaceFinal",
+        "target": "speed.fly",
+        "value": 0,
+        "priority": 10
+      },
+      {
+        "type": "replaceFinal",
+        "target": "speed.swim",
+        "value": 0,
+        "priority": 10
+      },
+      {
+        "type": "replaceFinal",
+        "target": "speed.climb",
+        "value": 0,
+        "priority": 10
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "item",
+    "uid": "golden:item:gauntlets-of-ogre-power",
+    "slug": "gauntlets-of-ogre-power",
+    "name": "Gauntlets of Ogre Power",
+    "data": {
+      "category": "wondrous",
+      "description": "Your Strength is 19 while you wear these gauntlets.",
+      "magic": true,
+      "rarity": "uncommon",
+      "requiresAttunement": true
+    },
+    "effects": [
+      {
+        "type": "abilityScore.atLeast",
+        "ability": "str",
+        "value": 19
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "item",
+    "uid": "golden:item:headband-of-intellect",
+    "slug": "headband-of-intellect",
+    "name": "Headband of Intellect",
+    "data": {
+      "category": "wondrous",
+      "description": "Your Intelligence is 19 while you wear this headband.",
+      "magic": true,
+      "rarity": "uncommon",
+      "requiresAttunement": true
+    },
+    "effects": [
+      {
+        "type": "abilityScore.atLeast",
+        "ability": "int",
+        "value": 19
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "item",
+    "uid": "golden:item:ring-of-protection",
+    "slug": "ring-of-protection",
+    "name": "Ring of Protection",
+    "data": {
+      "category": "ring",
+      "description": "+1 to AC and saving throws.",
+      "magic": true,
+      "rarity": "rare",
+      "requiresAttunement": true
+    },
+    "effects": [
+      {
+        "type": "bonus",
+        "target": "ac.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.str.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.dex.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.con.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.int.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.wis.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.cha.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "item",
+    "uid": "golden:item:boots-of-striding",
+    "slug": "boots-of-striding",
+    "name": "Boots of Striding",
+    "data": {
+      "category": "wondrous",
+      "description": "Your walking speed increases by 10 feet.",
+      "magic": true,
+      "rarity": "uncommon",
+      "requiresAttunement": false
+    },
+    "effects": [
+      {
+        "type": "speed.bonus",
+        "mode": "walk",
+        "value": 10
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "item",
+    "uid": "golden:item:fiendbane-longsword",
+    "slug": "fiendbane-longsword",
+    "name": "Fiendbane Longsword",
+    "data": {
+      "category": "weapon",
+      "description": "A +1 longsword that burns fiends and undead.",
+      "magic": true,
+      "rarity": "rare",
+      "requiresAttunement": true,
+      "weapon": {
+        "category": "martial",
+        "range": "melee",
+        "damage": {
+          "dice": "1d8",
+          "damageType": "slashing"
+        },
+        "versatileDamage": "1d10",
+        "properties": ["versatile", "magical"]
+      }
+    },
+    "effects": [
+      {
+        "type": "bonus",
+        "target": "attack.weapon.self",
+        "value": 1
+      },
+      {
+        "type": "bonus",
+        "target": "damage.weapon.self",
+        "value": 1
+      },
+      {
+        "type": "action.damageAdd",
+        "formula": "1d8",
+        "damageType": "radiant",
+        "label": "Fiendbane",
+        "condition": {
+          "leaf": "ctx.targetType",
+          "types": ["fiend", "undead"]
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "class",
+    "uid": "golden:class:scholar",
+    "slug": "scholar",
+    "name": "Scholar",
+    "data": {
+      "description": "A bookish class with no armor training (golden fixture).",
+      "hitDie": "d6",
+      "primaryAbilities": ["int"],
+      "savingThrows": ["int", "wis"],
+      "proficiencies": {
+        "armor": [],
+        "weapons": ["daggers", "quarterstaffs"],
+        "tools": [],
+        "skills": {
+          "count": 2,
+          "from": ["arcana", "history", "insight", "investigation", "medicine", "religion"]
+        }
+      },
+      "levels": [
+        {
+          "level": 1,
+          "proficiencyBonus": 2,
+          "features": [],
+          "columns": {}
+        }
+      ],
+      "subclassLevel": 2,
+      "subclassTitle": "School"
+    }
+  },
+  {
+    "kind": "class",
+    "uid": "golden:class:ascetic",
+    "slug": "ascetic",
+    "name": "Ascetic",
+    "data": {
+      "description": "An unarmored martial artist (golden fixture).",
+      "hitDie": "d8",
+      "primaryAbilities": ["dex", "wis"],
+      "savingThrows": ["str", "dex"],
+      "proficiencies": {
+        "armor": [],
+        "weapons": ["simple-weapons", "shortswords"],
+        "tools": [],
+        "skills": {
+          "count": 2,
+          "from": ["acrobatics", "athletics", "history", "insight", "religion", "stealth"]
+        }
+      },
+      "levels": [
+        {
+          "level": 1,
+          "proficiencyBonus": 2,
+          "features": ["golden:feature:unarmored-defense-wis"],
+          "columns": {
+            "unarmored-movement": 0
+          }
+        },
+        {
+          "level": 2,
+          "proficiencyBonus": 2,
+          "features": ["golden:feature:unarmored-movement"],
+          "columns": {
+            "unarmored-movement": 10
+          }
+        },
+        {
+          "level": 3,
+          "proficiencyBonus": 2,
+          "features": [],
+          "columns": {
+            "unarmored-movement": 10
+          }
+        },
+        {
+          "level": 4,
+          "proficiencyBonus": 2,
+          "features": [],
+          "columns": {
+            "unarmored-movement": 10
+          }
+        },
+        {
+          "level": 5,
+          "proficiencyBonus": 3,
+          "features": [],
+          "columns": {
+            "unarmored-movement": 10
+          }
+        },
+        {
+          "level": 6,
+          "proficiencyBonus": 3,
+          "features": [],
+          "columns": {
+            "unarmored-movement": 15
+          }
+        }
+      ],
+      "subclassLevel": 3,
+      "subclassTitle": "Tradition"
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "golden:feature:unarmored-defense-wis",
+    "slug": "unarmored-defense-wis",
+    "name": "Unarmored Defense",
+    "data": {
+      "description": "While unarmored and without a shield, AC = 10 + DEX + WIS."
+    },
+    "effects": [
+      {
+        "type": "ac.formula",
+        "formula": "10 + DEX + WIS",
+        "label": "Unarmored Defense",
+        "condition": {
+          "all": [
+            {
+              "leaf": "armor",
+              "category": "none"
+            },
+            {
+              "leaf": "shield",
+              "value": false
+            }
+          ]
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "golden:feature:unarmored-movement",
+    "slug": "unarmored-movement",
+    "name": "Unarmored Movement",
+    "data": {
+      "description": "Your speed increases while unarmored and without a shield."
+    },
+    "effects": [
+      {
+        "type": "hook",
+        "hook": "unarmoredMovement",
+        "params": {
+          "column": "unarmored-movement"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    }
+  },
+  {
+    "kind": "class",
+    "uid": "golden:class:berserker",
+    "slug": "berserker",
+    "name": "Berserker",
+    "data": {
+      "description": "A raging warrior (golden fixture).",
+      "hitDie": "d12",
+      "primaryAbilities": ["str"],
+      "savingThrows": ["str", "con"],
+      "proficiencies": {
+        "armor": ["light-armor", "medium-armor", "shields"],
+        "weapons": ["simple-weapons", "martial-weapons"],
+        "tools": [],
+        "skills": {
+          "count": 2,
+          "from": [
+            "animal-handling",
+            "athletics",
+            "intimidation",
+            "nature",
+            "perception",
+            "survival"
+          ]
+        }
+      },
+      "levels": [
+        {
+          "level": 1,
+          "proficiencyBonus": 2,
+          "features": ["golden:feature:rage"],
+          "columns": {
+            "rages": 2
+          }
+        }
+      ],
+      "subclassLevel": 3,
+      "subclassTitle": "Path"
+    }
+  },
+  {
+    "kind": "feature",
+    "uid": "golden:feature:rage",
+    "slug": "rage",
+    "name": "Rage",
+    "data": {
+      "description": "While raging you deal +2 melee damage and resist bludgeoning, piercing and slashing damage."
+    },
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "rage",
+          "name": "Rages",
+          "max": "table('rages', classLevel('golden:class:berserker'))",
+          "recharge": "longRest"
+        }
+      },
+      {
+        "type": "toggle.define",
+        "toggle": {
+          "id": "rage",
+          "name": "Rage",
+          "cost": {
+            "resource": "rage",
+            "amount": 1
+          },
+          "durationNote": "1 minute",
+          "effects": [
+            {
+              "type": "bonus",
+              "target": "damage.melee",
+              "value": 2,
+              "stackKey": "rage"
+            },
+            {
+              "type": "damage.resistance",
+              "damageType": "bludgeoning"
+            },
+            {
+              "type": "damage.resistance",
+              "damageType": "piercing"
+            },
+            {
+              "type": "damage.resistance",
+              "damageType": "slashing"
+            }
+          ]
+        }
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["ending rage early", "advantage on Strength checks"]
+    }
+  }
+]

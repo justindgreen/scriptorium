@@ -1,0 +1,72 @@
+{
+  "name": "multiclass-fighter-1-rogue-1",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": [
+    "srd-5.1:class:fighter",
+    "srd-5.1:class:rogue",
+    "srd-5.1:feature:sneak-attack",
+    "srd-5.1:feature:thieves-cant"
+  ],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Two Hats",
+    "definition": {
+      "baseAbilities": {
+        "str": 14,
+        "dex": 16,
+        "con": 12,
+        "int": 10,
+        "wis": 10,
+        "cha": 10
+      },
+      "classes": [
+        {
+          "classUid": "srd-5.1:class:fighter",
+          "level": 1,
+          "order": 0
+        },
+        {
+          "classUid": "srd-5.1:class:rogue",
+          "level": 1,
+          "order": 1
+        }
+      ]
+    }
+  },
+  "expectSheet": {
+    "proficiencyBonus": 2,
+    "save.str.proficiency": 1,
+    "save.con.proficiency": 1,
+    "save.dex.proficiency": 0,
+    "save.int.proficiency": 0,
+    "hitDice.d10.max": 1,
+    "hitDice.d8.max": 1,
+    "hp.max": 17
+  },
+  "expectHitDice": [
+    {
+      "die": "d8",
+      "max": 1
+    },
+    {
+      "die": "d10",
+      "max": 1
+    }
+  ],
+  "expectProficiencies": {
+    "armor": ["all-armor", "light-armor", "shields"]
+  },
+  "expectPendingChoices": [
+    {
+      "key": "class:srd-5.1:class:fighter@1/skills",
+      "remaining": 2,
+      "options": 8
+    },
+    {
+      "key": "class:srd-5.1:class:rogue@1/feature:rogue-expertise-1/expertise",
+      "remaining": 2
+    }
+  ],
+  "expectFeatures": ["srd-5.1:feature:second-wind", "srd-5.1:feature:rogue-expertise-1"],
+  "expectNoDiagnostics": ["MISSING_CONTENT"]
+}

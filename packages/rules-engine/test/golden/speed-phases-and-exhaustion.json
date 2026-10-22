@@ -1,0 +1,65 @@
+{
+  "name": "speed-phases-and-exhaustion",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": ["srd-5.1:class:fighter"],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Fleet",
+    "definition": {
+      "baseAbilities": { "str": 14, "dex": 14, "con": 14, "int": 10, "wis": 10, "cha": 10 },
+      "speciesUid": "srd-5.1:species:human",
+      "classes": [{ "classUid": "srd-5.1:class:fighter", "level": 1, "order": 0 }]
+    },
+    "inventory": [
+      {
+        "id": "boots",
+        "itemUid": "golden:item:boots-of-striding",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      }
+    ],
+    "state": {
+      "activeEffects": [
+        {
+          "id": "haste",
+          "name": "Haste",
+          "effects": [{ "type": "multiply", "target": "speed.walk", "value": 2 }]
+        }
+      ]
+    }
+  },
+  "expectSheet": { "speed.walk": 80, "hp.max": 12 },
+  "variants": [
+    {
+      "name": "grappled: replaceFinal beats every bonus and multiplier",
+      "aggregate": { "state": { "conditions": [{ "uid": "srd-5.1:condition:grappled" }] } },
+      "expectSheet": { "speed.walk": 0, "speed.fly": 0 }
+    },
+    {
+      "name": "exhaustion 2 halves speed after bonuses",
+      "aggregate": { "state": { "activeEffects": [], "exhaustion": 2 } },
+      "expectSheet": {
+        "speed.walk": 20,
+        "roll.disadvantage.check.str": true,
+        "roll.disadvantage.check.athletics": true,
+        "hp.max": 12
+      }
+    },
+    {
+      "name": "exhaustion 4 also halves hit points and imposes disadvantage on attacks and saves",
+      "aggregate": { "state": { "activeEffects": [], "exhaustion": 4 } },
+      "expectSheet": {
+        "speed.walk": 20,
+        "hp.max": 6,
+        "roll.disadvantage.attack.melee": true,
+        "roll.disadvantage.save.dex": true
+      }
+    },
+    {
+      "name": "exhaustion 5 reduces speed to 0",
+      "aggregate": { "state": { "exhaustion": 5 } },
+      "expectSheet": { "speed.walk": 0 }
+    }
+  ]
+}

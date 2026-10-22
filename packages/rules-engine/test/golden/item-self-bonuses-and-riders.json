@@ -1,0 +1,85 @@
+{
+  "name": "item-self-bonuses-and-riders",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": ["srd-5.1:class:fighter", "srd-5.1:item:longsword"],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Vance",
+    "definition": {
+      "baseAbilities": { "str": 16, "dex": 10, "con": 12, "int": 10, "wis": 10, "cha": 10 },
+      "classes": [{ "classUid": "srd-5.1:class:fighter", "level": 1, "order": 0 }]
+    },
+    "inventory": [
+      {
+        "id": "fiendbane",
+        "itemUid": "golden:item:fiendbane-longsword",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": true
+      },
+      {
+        "id": "spare",
+        "itemUid": "srd-5.1:item:longsword",
+        "quantity": 1,
+        "equipped": false,
+        "attuned": false
+      }
+    ]
+  },
+  "expectSheet": { "attack.melee": 0, "damage.melee": 0 },
+  "expectTemplates": [
+    {
+      "name": "Fiendbane Longsword",
+      "attackBonus": 6,
+      "damage": ["1d8 + 4 slashing", "1d10 + 4 slashing"],
+      "riders": 1,
+      "properties": ["versatile", "magical"]
+    }
+  ],
+  "variants": [
+    {
+      "name": "unattuned: the sword is a plain longsword",
+      "aggregate": {
+        "inventory": [
+          {
+            "id": "fiendbane",
+            "itemUid": "golden:item:fiendbane-longsword",
+            "quantity": 1,
+            "equipped": true,
+            "attuned": false
+          }
+        ]
+      },
+      "expectTemplates": [
+        {
+          "name": "Fiendbane Longsword",
+          "attackBonus": 5,
+          "damage": ["1d8 + 3 slashing", "1d10 + 3 slashing"],
+          "riders": 0
+        }
+      ]
+    },
+    {
+      "name": "the spare sword only appears when equipped",
+      "aggregate": {
+        "inventory": [
+          {
+            "id": "spare",
+            "itemUid": "srd-5.1:item:longsword",
+            "quantity": 1,
+            "equipped": true,
+            "attuned": false
+          }
+        ]
+      },
+      "expectTemplates": [
+        {
+          "name": "Longsword",
+          "attackBonus": 5,
+          "damage": ["1d8 + 3 slashing", "1d10 + 3 slashing"],
+          "riders": 0
+        }
+      ]
+    }
+  ]
+}

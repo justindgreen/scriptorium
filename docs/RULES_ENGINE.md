@@ -27,6 +27,8 @@ Pipeline:
 3. **Resolve stats** with the contribution model (§3).
 4. **Output** `ComputedSheet`: every value is `{ value, breakdown: [{ source, op, amount, note }], override?: { auto, manual }, error?: true }`, plus `pendingChoices`, `diagnostics`, `actionTemplates`, `spellcasting`, `resources`, `defenses`.
 
+**Implementation notes (M2.2).** The engine adds no hidden bonuses: a shield is an item of category `shield` whose `+2` is an ordinary `bonus ac.bonus` effect on the item (the SRD converter emits it), armor AC comes from the item's structured `armor` data as a member of the `ac.base` formula group, and weapon lines come from structured `weapon` data. Effects on an item that target `attack.weapon.self` / `damage.weapon.self` apply only to that item's own templates. Item effects are active while the item is equipped (and attuned when it requires attunement); a second equipped shield or suit of armor is inactive with a warning. Exhaustion (2014 table) and the consequences of unproficient armor (disadvantage on STR/DEX checks, saves and attacks; `speed.walk -10` below the heavy-armor Strength minimum; Stealth disadvantage) are engine rules. Hit points: first character level maxed, then the fixed average or the stored roll per level, each level at least 1, plus `hp.perLevel` (CON modifier plus `hp.bonusPerLevel`) per level. Passive scores add or subtract 5 under advantage or disadvantage on that check. Static formulas never evaluate dice; a formula with dice belongs on an action template (`FORMULA_ERROR` otherwise). Spellcasting effects are collected but not computed until M2.3 (`UNSUPPORTED_EFFECT`, info).
+
 ## 3. Contribution model
 
 A stat is a node with a value kind: `number`, `set<string>`, `die`, `boolean`, `formulaGroup`. Effects produce contributions:
@@ -61,7 +63,7 @@ Resolution per stat, in phase order:
 
 1. `BASE`: exactly one, supplied by engine/ruleset (`10 + DEX` is the default member of the `ac.base` group; species speed is the `speed.walk` base).
 2. `REPLACE`: candidates compete; highest `priority` wins, ties broken by highest value, then source order. Use `atLeast` when the rule means "becomes X if that is higher" (Headband of Intellect: `atLeast 19` on `ability.int.score`).
-3. Formula groups: mutually exclusive calculations (AC: `10+DEX`, armor-derived, `13+DEX`, `10+DEX+CON`, `10+DEX+WIS`). Each candidate is evaluated with its own dependencies; the group picks the maximum unless `selection: userChoice` and a stored choice exists. Losing candidates stay in the breakdown.
+3. Formula groups: mutually exclusive calculations (AC: `10+DEX`, armor-derived, `13+DEX`, `10+DEX+CON`, `10+DEX+WIS`). Each candidate is evaluated with its own dependencies; the group picks the maximum unless `selection: userChoice` and a stored choice exists (stored under the choice key `stat:<path>`, e.g. `stat:ac.base`, as an `optionSet` selection naming the member's label). Losing candidates stay in the breakdown.
 4. `ADD`: sum; contributions sharing a `stackKey` collapse to the highest (same-named effects do not stack; different sources do).
 5. `MULTIPLY`: product (Haste, Slow).
 6. `CLAMP`: `value = min(max(value, max(atLeast…)), min(atMost…))`; ability score caps (20, raised by `abilityScore.maxIncrease`) live here.
@@ -108,7 +110,7 @@ Set-valued stats (proficiencies, languages, resistances, condition immunities, s
 
 ## 5. Choice points
 
-`choice { key, count, from: optionSet | skill | tool | language | abilityIncrease | feat | content(kind, filter) | expertise(fromProficient), prerequisite? }`. The engine computes the legal options per character (prerequisites, duplicates removed) and emits `pendingChoices`. The builder stores selections under the stable `choice_key` (e.g. `class:srd-5.1:class:fighter@1/fighting-style`); selections grant further effects recursively.
+`choice { key, count, from: optionSet | skill | tool | language | abilityIncrease | feat | content(kind, filter) | expertise(fromProficient), prerequisite? }`. The engine computes the legal options per character (prerequisites, duplicates removed) and emits `pendingChoices`. The builder stores selections under the stable `choice_key` = `<owner path>/<choice key>`, where the owner path is the grants path of the entry declaring the choice (e.g. `class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style`; class skill choices use `class:<uid>@1/skills`, background languages `background:<uid>/languages`). A selection is typed by the choice kind (`{ kind: 'skill', skills: [...] }`, `{ kind: 'optionSet', options: [...] }`, `{ kind: 'abilityIncrease', increases: {...} }`, `{ kind: 'asiOrFeat', choice, increases?, feat? }`, …); a selection of the wrong kind or with illegal entries is reported (`INVALID_SELECTION`) and ignored. Options the engine can enumerate (option sets, skills, tools, languages, abilities) are listed on the pending choice with `disabledReason` when a prerequisite is unmet; feats and content choices are enumerated by the server. Selections grant further effects recursively (an option's effects or feature, a feat's effects and choices).
 
 ## 6. Contextual action resolution
 
@@ -146,19 +148,22 @@ Every write is a command validated and applied by `applyCommand` against the cur
 
 ## 10. Hooks (controlled extension points)
 
-A registry of named, parameterised TypeScript hooks inside the engine. Content may reference only registered hooks; unknown ids fail validation. 1.0 registry: `spellSlots.multiclass` (internal), `sorcerer.fontOfMagic`, `scalingDieTable`, `unarmoredMovement`. Wild Shape and Polymorph form replacement are not in 1.0 (diagnostic + manual).
+A registry of named, parameterised TypeScript hooks inside the engine. Content may reference only registered hooks; unknown ids fail validation. 1.0 registry: `spellSlots.multiclass` (internal), `sorcerer.fontOfMagic`, `scalingDieTable`, `unarmoredMovement`. Wild Shape and Polymorph form replacement are not in 1.0 (diagnostic + manual). Status: `unarmoredMovement { column, class? }` is implemented (expands to a conditional `speed.bonus` from the class table); `scalingDieTable` and `sorcerer.fontOfMagic` are registered but report `UNSUPPORTED_EFFECT` until M2.4 / M3.2.
 
 ## 11. Diagnostics
 
-Structured `{ code, severity, message, statPath?, sources[] }`. Codes: `CYCLE_DETECTED`, `UNKNOWN_VARIABLE`, `SCOPE_VIOLATION`, `UNSUPPORTED_EFFECT`, `UNKNOWN_HOOK`, `CONFLICTING_REPLACE`, `PREREQ_UNMET`, `PROFICIENCY_VIOLATION` (with the automatic consequences applied: disadvantage on STR/DEX checks, saves and attacks and no spellcasting in unproficient armor), `MANUAL_FEATURE`, `PARTIAL_AUTOMATION`.
+Structured `{ code, severity, message, statPath?, sources[] }`. Codes: `CYCLE_DETECTED`, `UNKNOWN_VARIABLE`, `SCOPE_VIOLATION`, `UNSUPPORTED_EFFECT`, `UNKNOWN_HOOK`, `CONFLICTING_REPLACE`, `PREREQ_UNMET`, `PROFICIENCY_VIOLATION` (with the automatic consequences applied: disadvantage on STR/DEX checks, saves and attacks and no spellcasting in unproficient armor), `MANUAL_FEATURE`, `PARTIAL_AUTOMATION`, `FORMULA_ERROR` (a static formula that cannot be evaluated to a number: syntax, dice, unknown table), `MISSING_CONTENT` (a referenced uid is not in the snapshot), `INVALID_SELECTION` (a stored choice selection or override that is illegal), `HP_ROLL_MISSING` (rolled hit points without a stored roll; the average was used). Severity: `error` for cycles, formula and scope problems and missing content; `warning` for conflicts, prerequisites, proficiency violations and invalid selections; `info` for manual/partial/pending features and deferred effects.
 
 ## 12. Ambiguity register
 
 Record each ambiguous 2014 rule with the assumption taken and the test that pins it.
 
-| Id         | Rule | Assumption | Test |
-| ---------- | ---- | ---------- | ---- |
-| (none yet) |      |            |      |
+| Id    | Rule                                                                    | Assumption                                                                                                                                                                  | Test                                   |
+| ----- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| A-001 | Multiclass saving throw proficiencies                                   | Only the first class taken (`order` 0) grants saving throw proficiencies; later classes grant the multiclassing proficiencies listed on the class (PHB multiclassing table) | `multiclass-fighter-1-rogue-1`         |
+| A-002 | `castingMod` for a character with several spellcasting sources          | Resolves to the ability of the first active `spellcasting.grant`, else the first class with spellcasting data; revisited with per-class spellcasting in M2.3                | `formula-and-choices.test.ts`          |
+| A-003 | `table(name, level)` when more than one class has a column of that name | The first class in order whose level table has the column is used                                                                                                           | `hill-dwarf-champion-5` (Action Surge) |
+| A-004 | Keep/drop ties in dice pools                                            | Ties are broken by roll order (the earlier die is kept) so a given die sequence always yields the same result                                                               | `dice/test/roll.test.ts`               |
 
 ## 13. Manual-feature allow-list (official content)
 

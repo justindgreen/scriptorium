@@ -1,0 +1,166 @@
+{
+  "name": "fighter-1-human-chain-mail",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": [
+    "srd-5.1:class:fighter",
+    "srd-5.1:background:acolyte",
+    "srd-5.1:item:chain-mail",
+    "srd-5.1:item:shield",
+    "srd-5.1:item:longsword"
+  ],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Bram",
+    "definition": {
+      "baseAbilities": { "str": 15, "dex": 13, "con": 14, "int": 8, "wis": 12, "cha": 10 },
+      "speciesUid": "srd-5.1:species:human",
+      "backgroundUid": "srd-5.1:background:acolyte",
+      "classes": [{ "classUid": "srd-5.1:class:fighter", "level": 1, "order": 0 }],
+      "choices": {
+        "class:srd-5.1:class:fighter@1/skills": {
+          "kind": "skill",
+          "skills": ["athletics", "perception"]
+        },
+        "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style": {
+          "kind": "optionSet",
+          "options": ["defense"]
+        },
+        "background:srd-5.1:background:acolyte/languages": {
+          "kind": "language",
+          "languages": ["celestial", "infernal"]
+        }
+      }
+    },
+    "inventory": [
+      {
+        "id": "i1",
+        "itemUid": "srd-5.1:item:chain-mail",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      },
+      {
+        "id": "i2",
+        "itemUid": "srd-5.1:item:shield",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      },
+      {
+        "id": "i3",
+        "itemUid": "srd-5.1:item:longsword",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      }
+    ],
+    "state": { "hpCurrent": 12 }
+  },
+  "expectSheet": {
+    "ability.str.score": 16,
+    "ability.str.mod": 3,
+    "ability.dex.mod": 2,
+    "ability.con.mod": 2,
+    "ability.int.mod": -1,
+    "ability.wis.mod": 1,
+    "ability.cha.mod": 0,
+    "proficiencyBonus": 2,
+    "save.str.bonus": 5,
+    "save.con.bonus": 4,
+    "save.dex.bonus": 2,
+    "save.wis.bonus": 1,
+    "skill.athletics.bonus": 5,
+    "skill.perception.bonus": 3,
+    "skill.insight.bonus": 3,
+    "skill.religion.bonus": 1,
+    "skill.stealth.bonus": 2,
+    "roll.disadvantage.check.stealth": true,
+    "passive.perception": 13,
+    "passive.stealth": 7,
+    "ac.base": 16,
+    "ac.bonus": 3,
+    "ac.total": 19,
+    "hp.perLevel": 2,
+    "hp.max": 12,
+    "hitDice.d10.max": 1,
+    "speed.walk": 30,
+    "initiative.bonus": 2,
+    "carry.capacity": 240,
+    "size": "medium",
+    "crit.range": 20,
+    "attacks.perAction": 1
+  },
+  "expectProficiencies": {
+    "armor": ["all-armor", "shields"],
+    "weapons": ["martial-weapons", "simple-weapons"],
+    "languages": ["celestial", "infernal"]
+  },
+  "expectTemplates": [
+    {
+      "name": "Longsword",
+      "attackBonus": 5,
+      "damage": ["1d8 + 3 slashing", "1d10 + 3 slashing"],
+      "properties": ["versatile"]
+    },
+    { "name": "Unarmed Strike", "attackBonus": 5, "damage": ["4 bludgeoning"] },
+    { "name": "Second Wind", "healing": "1d10 + 1" }
+  ],
+  "expectResources": [{ "id": "second-wind", "max": 1, "current": 1 }],
+  "expectHitDice": [{ "die": "d10", "max": 1 }],
+  "expectFeatures": ["srd-5.1:feature:second-wind", "srd-5.1:feature:fighter-fighting-style"],
+  "expectNoPendingChoices": true,
+  "expectNoDiagnostics": [
+    "CYCLE_DETECTED",
+    "MISSING_CONTENT",
+    "PROFICIENCY_VIOLATION",
+    "INVALID_SELECTION",
+    "UNKNOWN_VARIABLE",
+    "FORMULA_ERROR"
+  ],
+  "variants": [
+    {
+      "name": "archery without a shield",
+      "aggregate": {
+        "definition": {
+          "choices": {
+            "class:srd-5.1:class:fighter@1/skills": {
+              "kind": "skill",
+              "skills": ["athletics", "perception"]
+            },
+            "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style": {
+              "kind": "optionSet",
+              "options": ["archery"]
+            },
+            "background:srd-5.1:background:acolyte/languages": {
+              "kind": "language",
+              "languages": ["celestial", "infernal"]
+            }
+          }
+        },
+        "inventory": [
+          {
+            "id": "i1",
+            "itemUid": "srd-5.1:item:chain-mail",
+            "quantity": 1,
+            "equipped": true,
+            "attuned": false
+          },
+          {
+            "id": "i3",
+            "itemUid": "srd-5.1:item:longsword",
+            "quantity": 1,
+            "equipped": true,
+            "attuned": false
+          }
+        ]
+      },
+      "expectSheet": { "ac.bonus": 0, "ac.total": 16, "attack.ranged": 2, "attack.melee": 0 },
+      "expectTemplates": [{ "name": "Longsword", "attackBonus": 5 }]
+    },
+    {
+      "name": "resource spent is clamped to the maximum",
+      "aggregate": { "state": { "resources": { "second-wind": 0 } } },
+      "expectResources": [{ "id": "second-wind", "max": 1, "current": 0 }]
+    }
+  ]
+}

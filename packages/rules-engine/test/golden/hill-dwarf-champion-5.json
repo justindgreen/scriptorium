@@ -1,0 +1,159 @@
+{
+  "name": "hill-dwarf-champion-5",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": [
+    "srd-5.1:class:fighter",
+    "srd-5.1:subclass:champion",
+    "srd-5.1:item:longsword",
+    "srd-5.1:feature:martial-archetype",
+    "srd-5.1:feature:fighter-ability-score-improvement-1"
+  ],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Thorga",
+    "definition": {
+      "baseAbilities": {
+        "str": 16,
+        "dex": 12,
+        "con": 14,
+        "int": 10,
+        "wis": 12,
+        "cha": 8
+      },
+      "speciesUid": "srd-5.1:species:hill-dwarf",
+      "classes": [
+        {
+          "classUid": "srd-5.1:class:fighter",
+          "subclassUid": "srd-5.1:subclass:champion",
+          "level": 5,
+          "order": 0
+        }
+      ],
+      "choices": {
+        "class:srd-5.1:class:fighter@1/skills": {
+          "kind": "skill",
+          "skills": ["athletics", "perception"]
+        },
+        "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style": {
+          "kind": "optionSet",
+          "options": ["defense"]
+        }
+      }
+    },
+    "inventory": [
+      {
+        "id": "sword",
+        "itemUid": "srd-5.1:item:longsword",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      }
+    ],
+    "state": {
+      "resources": {
+        "action-surge": 0
+      }
+    }
+  },
+  "expectSheet": {
+    "ability.con.score": 16,
+    "ability.wis.score": 13,
+    "proficiencyBonus": 3,
+    "hp.perLevel": 4,
+    "hp.max": 54,
+    "hitDice.d10.max": 5,
+    "crit.range": 19,
+    "attacks.perAction": 2,
+    "speed.walk": 25,
+    "sense.darkvision": 60,
+    "defense.resistance.poison": true,
+    "roll.advantage.save.vs.poison": true,
+    "ac.bonus": 0,
+    "ac.total": 11,
+    "size": "medium",
+    "carry.capacity": 240
+  },
+  "expectBreakdown": {
+    "ac.bonus": {
+      "lost": ["Defense"]
+    }
+  },
+  "expectDefenses": [
+    {
+      "kind": "resistance",
+      "damageType": "poison"
+    }
+  ],
+  "expectResources": [
+    {
+      "id": "second-wind",
+      "max": 1
+    },
+    {
+      "id": "action-surge",
+      "max": 1,
+      "current": 0
+    }
+  ],
+  "expectTemplates": [
+    {
+      "name": "Longsword",
+      "attackBonus": 6,
+      "damage": ["1d8 + 3 slashing", "1d10 + 3 slashing"]
+    }
+  ],
+  "expectFeatures": [
+    "srd-5.1:feature:improved-critical",
+    "srd-5.1:feature:extra-attack-1",
+    "srd-5.1:feature:dwarven-toughness",
+    "srd-5.1:feature:dwarven-resilience"
+  ],
+  "expectNoDiagnostics": ["MISSING_CONTENT", "UNKNOWN_HOOK", "FORMULA_ERROR", "CYCLE_DETECTED"],
+  "variants": [
+    {
+      "name": "a second Extra Attack source does not stack",
+      "aggregate": {
+        "state": {
+          "activeEffects": [
+            {
+              "id": "extra",
+              "name": "Borrowed Extra Attack",
+              "effects": [
+                {
+                  "type": "attack.extra",
+                  "count": 1
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expectSheet": {
+        "attacks.perAction": 2
+      }
+    },
+    {
+      "name": "a wrong subclass is reported",
+      "aggregate": {
+        "definition": {
+          "classes": [
+            {
+              "classUid": "srd-5.1:class:fighter",
+              "subclassUid": "srd-5.1:subclass:thief",
+              "level": 5,
+              "order": 0
+            }
+          ]
+        }
+      },
+      "expectDiagnostics": [
+        {
+          "code": "MISSING_CONTENT"
+        }
+      ],
+      "expectSheet": {
+        "crit.range": 20
+      }
+    }
+  ]
+}

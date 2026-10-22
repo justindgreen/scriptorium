@@ -56,7 +56,7 @@ export default tseslint.config(
 
   // --- Boundary: the rules engine is pure and may import only content-schema and dice/ast.
   {
-    files: ['packages/rules-engine/**/*.ts'],
+    files: ['packages/rules-engine/src/**/*.ts'],
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',

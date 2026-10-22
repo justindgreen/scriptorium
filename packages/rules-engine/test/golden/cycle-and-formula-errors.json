@@ -1,0 +1,48 @@
+{
+  "name": "cycle-and-formula-errors",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": ["srd-5.1:class:fighter"],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Ouroboros",
+    "definition": {
+      "baseAbilities": { "str": 12, "dex": 14, "con": 10, "int": 10, "wis": 10, "cha": 10 },
+      "classes": [{ "classUid": "srd-5.1:class:fighter", "level": 1, "order": 0 }]
+    },
+    "state": {
+      "activeEffects": [
+        {
+          "id": "mirror-a",
+          "name": "Mirror A",
+          "effects": [{ "type": "set", "target": "ability.str.score", "value": "DEXscore" }]
+        },
+        {
+          "id": "mirror-b",
+          "name": "Mirror B",
+          "effects": [{ "type": "set", "target": "ability.dex.score", "value": "STRscore" }]
+        },
+        {
+          "id": "bad",
+          "name": "Bad Formula",
+          "effects": [
+            { "type": "bonus", "target": "skill.athletics.bonus", "value": "STR + nonsense" }
+          ]
+        }
+      ]
+    }
+  },
+  "expectSheet": {
+    "ability.str.score": 12,
+    "ability.dex.score": 12,
+    "skill.athletics.bonus": 1
+  },
+  "expectError": { "ability.str.score": true, "ability.dex.score": false },
+  "expectDiagnostics": [
+    { "code": "CYCLE_DETECTED", "statPath": "ability.str.score", "severity": "error" },
+    { "code": "UNKNOWN_VARIABLE", "statPath": "skill.athletics.bonus", "severity": "error" }
+  ],
+  "expectBreakdown": {
+    "ability.str.score": { "applied": ["Base score"], "lost": ["DEXscore"] },
+    "skill.athletics.bonus": { "lost": ["STR + nonsense"] }
+  }
+}

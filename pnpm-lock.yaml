@@ -406,6 +406,10 @@ importers:
       '@scriptorium/dice':
         specifier: workspace:*
         version: link:../dice
+    devDependencies:
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
 
   tools/spikes:
     dependencies:

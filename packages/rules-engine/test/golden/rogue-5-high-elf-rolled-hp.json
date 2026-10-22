@@ -1,0 +1,157 @@
+{
+  "name": "rogue-5-high-elf-rolled-hp",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": [
+    "srd-5.1:class:rogue",
+    "srd-5.1:item:leather-armor",
+    "srd-5.1:item:rapier",
+    "srd-5.1:item:shortbow",
+    "srd-5.1:feature:sneak-attack",
+    "srd-5.1:feature:thieves-cant",
+    "srd-5.1:feature:cunning-action",
+    "srd-5.1:feature:roguish-archetype",
+    "srd-5.1:feature:rogue-ability-score-improvement-1",
+    "srd-5.1:feature:uncanny-dodge"
+  ],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Sable",
+    "definition": {
+      "baseAbilities": {
+        "str": 10,
+        "dex": 16,
+        "con": 12,
+        "int": 12,
+        "wis": 10,
+        "cha": 14
+      },
+      "speciesUid": "srd-5.1:species:high-elf",
+      "hpMode": "rolled",
+      "classes": [
+        {
+          "classUid": "srd-5.1:class:rogue",
+          "level": 5,
+          "order": 0,
+          "hitDiceRolls": [8, 5, 6, 3, 7]
+        }
+      ],
+      "choices": {
+        "class:srd-5.1:class:rogue@1/skills": {
+          "kind": "skill",
+          "skills": ["stealth", "acrobatics", "perception", "deception"]
+        },
+        "class:srd-5.1:class:rogue@1/feature:rogue-expertise-1/expertise": {
+          "kind": "expertise",
+          "skills": ["stealth", "perception"]
+        }
+      }
+    },
+    "inventory": [
+      {
+        "id": "armor",
+        "itemUid": "srd-5.1:item:leather-armor",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      },
+      {
+        "id": "rapier",
+        "itemUid": "srd-5.1:item:rapier",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      },
+      {
+        "id": "bow",
+        "itemUid": "srd-5.1:item:shortbow",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      }
+    ]
+  },
+  "expectSheet": {
+    "ability.dex.score": 18,
+    "ability.dex.mod": 4,
+    "ability.int.score": 13,
+    "proficiencyBonus": 3,
+    "skill.stealth.proficiency": 2,
+    "skill.stealth.bonus": 10,
+    "skill.perception.bonus": 6,
+    "skill.acrobatics.bonus": 7,
+    "skill.deception.bonus": 5,
+    "skill.athletics.bonus": 0,
+    "save.dex.bonus": 7,
+    "save.int.bonus": 4,
+    "save.str.bonus": 0,
+    "sense.darkvision": 60,
+    "ac.base": 15,
+    "ac.total": 15,
+    "hp.max": 34,
+    "hitDice.d8.max": 5,
+    "speed.walk": 30
+  },
+  "expectTemplates": [
+    {
+      "name": "Rapier",
+      "attackBonus": 7,
+      "damage": ["1d8 + 4 piercing"],
+      "properties": ["finesse"]
+    },
+    {
+      "name": "Shortbow",
+      "attackBonus": 7,
+      "damage": ["1d6 + 4 piercing"]
+    }
+  ],
+  "expectHitDice": [
+    {
+      "die": "d8",
+      "max": 5
+    }
+  ],
+  "expectFeatures": [
+    "srd-5.1:feature:darkvision",
+    "srd-5.1:feature:keen-senses",
+    "srd-5.1:feature:rogue-expertise-1"
+  ],
+  "expectNoDiagnostics": ["HP_ROLL_MISSING", "MISSING_CONTENT", "INVALID_SELECTION"],
+  "variants": [
+    {
+      "name": "missing rolls fall back to the average with a warning",
+      "aggregate": {
+        "definition": {
+          "classes": [
+            {
+              "classUid": "srd-5.1:class:rogue",
+              "level": 5,
+              "order": 0,
+              "hitDiceRolls": [8, 5]
+            }
+          ]
+        }
+      },
+      "expectSheet": {
+        "hp.max": 33
+      },
+      "expectDiagnostics": [
+        {
+          "code": "HP_ROLL_MISSING",
+          "statPath": "hp.max",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "name": "fixed hit points",
+      "aggregate": {
+        "definition": {
+          "hpMode": "fixed"
+        }
+      },
+      "expectSheet": {
+        "hp.max": 33
+      }
+    }
+  ]
+}

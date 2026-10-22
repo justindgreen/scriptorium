@@ -1,0 +1,60 @@
+{
+  "name": "toggles-rage",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": ["srd-5.1:item:longsword"],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Grukk",
+    "definition": {
+      "baseAbilities": { "str": 16, "dex": 12, "con": 14, "int": 8, "wis": 10, "cha": 8 },
+      "classes": [{ "classUid": "golden:class:berserker", "level": 1, "order": 0 }],
+      "choices": {
+        "class:golden:class:berserker@1/skills": {
+          "kind": "skill",
+          "skills": ["athletics", "survival"]
+        }
+      }
+    },
+    "inventory": [
+      {
+        "id": "sword",
+        "itemUid": "srd-5.1:item:longsword",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      }
+    ]
+  },
+  "expectSheet": { "damage.melee": 0, "hp.max": 14, "hitDice.d12.max": 1 },
+  "expectResources": [{ "id": "rage", "max": 2, "current": 2 }],
+  "expectToggles": [{ "id": "rage", "active": false }],
+  "expectDefenses": [],
+  "expectTemplates": [
+    { "name": "Longsword", "attackBonus": 5, "damage": ["1d8 + 3 slashing", "1d10 + 3 slashing"] }
+  ],
+  "variants": [
+    {
+      "name": "raging",
+      "aggregate": { "state": { "toggles": { "rage": true }, "resources": { "rage": 1 } } },
+      "expectSheet": {
+        "damage.melee": 2,
+        "defense.resistance.slashing": true,
+        "defense.resistance.piercing": true
+      },
+      "expectToggles": [{ "id": "rage", "active": true }],
+      "expectDefenses": [
+        { "kind": "resistance", "damageType": "bludgeoning" },
+        { "kind": "resistance", "damageType": "piercing" },
+        { "kind": "resistance", "damageType": "slashing" }
+      ],
+      "expectResources": [{ "id": "rage", "max": 2, "current": 1 }],
+      "expectTemplates": [
+        {
+          "name": "Longsword",
+          "attackBonus": 5,
+          "damage": ["1d8 + 5 slashing", "1d10 + 5 slashing"]
+        }
+      ]
+    }
+  ]
+}

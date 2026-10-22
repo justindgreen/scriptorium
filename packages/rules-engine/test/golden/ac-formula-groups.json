@@ -1,0 +1,81 @@
+{
+  "name": "ac-formula-groups",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": ["srd-5.1:item:leather-armor"],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Quiet Hand",
+    "definition": {
+      "baseAbilities": { "str": 10, "dex": 16, "con": 12, "int": 10, "wis": 14, "cha": 10 },
+      "classes": [{ "classUid": "golden:class:ascetic", "level": 2, "order": 0 }],
+      "choices": {
+        "class:golden:class:ascetic@1/skills": {
+          "kind": "skill",
+          "skills": ["acrobatics", "stealth"]
+        }
+      }
+    },
+    "inventory": [
+      {
+        "id": "leather",
+        "itemUid": "srd-5.1:item:leather-armor",
+        "quantity": 1,
+        "equipped": false,
+        "attuned": false
+      }
+    ],
+    "state": {
+      "activeEffects": [
+        {
+          "id": "mage-armor",
+          "name": "Mage Armor",
+          "effects": [{ "type": "ac.formula", "formula": "13 + DEX", "label": "Mage Armor" }]
+        }
+      ]
+    }
+  },
+  "expectSheet": { "ac.base": 16, "ac.total": 16, "speed.walk": 40 },
+  "expectBreakdown": {
+    "ac.base": { "applied": ["Mage Armor"], "lost": ["Unarmored Defense", "Unarmored"] }
+  },
+  "expectNoDiagnostics": ["UNKNOWN_HOOK", "FORMULA_ERROR", "UNKNOWN_VARIABLE"],
+  "variants": [
+    {
+      "name": "the player picks a losing formula",
+      "aggregate": {
+        "definition": {
+          "choices": {
+            "class:golden:class:ascetic@1/skills": {
+              "kind": "skill",
+              "skills": ["acrobatics", "stealth"]
+            },
+            "stat:ac.base": { "kind": "optionSet", "options": ["Unarmored Defense"] }
+          }
+        }
+      },
+      "expectSheet": { "ac.base": 15, "ac.total": 15 },
+      "expectBreakdown": {
+        "ac.base": { "applied": ["Unarmored Defense"], "lost": ["Mage Armor", "Unarmored"] }
+      }
+    },
+    {
+      "name": "armor disables Unarmored Defense and Unarmored Movement",
+      "aggregate": {
+        "inventory": [
+          {
+            "id": "leather",
+            "itemUid": "srd-5.1:item:leather-armor",
+            "quantity": 1,
+            "equipped": true,
+            "attuned": false
+          }
+        ],
+        "state": { "activeEffects": [] }
+      },
+      "expectSheet": { "ac.base": 14, "ac.total": 14, "speed.walk": 30 },
+      "expectBreakdown": {
+        "ac.base": { "applied": ["Leather Armor"], "lost": ["Unarmored", "Unarmored Defense"] }
+      }
+    }
+  ]
+}

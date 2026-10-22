@@ -1,0 +1,55 @@
+{
+  "name": "proficiency-violation",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": ["srd-5.1:item:chain-mail"],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Bookworm",
+    "definition": {
+      "baseAbilities": { "str": 10, "dex": 12, "con": 10, "int": 16, "wis": 12, "cha": 10 },
+      "classes": [{ "classUid": "golden:class:scholar", "level": 1, "order": 0 }],
+      "choices": {
+        "class:golden:class:scholar@1/skills": { "kind": "skill", "skills": ["arcana", "history"] }
+      }
+    },
+    "inventory": [
+      {
+        "id": "mail",
+        "itemUid": "srd-5.1:item:chain-mail",
+        "quantity": 1,
+        "equipped": true,
+        "attuned": false
+      }
+    ]
+  },
+  "expectSheet": {
+    "ac.base": 16,
+    "ac.total": 16,
+    "speed.walk": 20,
+    "roll.disadvantage.check.str": true,
+    "roll.disadvantage.check.dex": true,
+    "roll.disadvantage.save.dex": true,
+    "roll.disadvantage.attack.melee": true,
+    "roll.disadvantage.check.stealth": true,
+    "skill.arcana.bonus": 5
+  },
+  "expectDiagnostics": [{ "code": "PROFICIENCY_VIOLATION", "severity": "warning" }],
+  "variants": [
+    {
+      "name": "strong enough for heavy armor but still untrained",
+      "aggregate": {
+        "definition": {
+          "baseAbilities": { "str": 13, "dex": 12, "con": 10, "int": 16, "wis": 12, "cha": 10 }
+        }
+      },
+      "expectSheet": { "speed.walk": 30, "roll.disadvantage.check.str": true },
+      "expectDiagnostics": [{ "code": "PROFICIENCY_VIOLATION" }]
+    },
+    {
+      "name": "unarmored scholar",
+      "aggregate": { "inventory": [] },
+      "expectSheet": { "ac.total": 11, "speed.walk": 30 },
+      "expectNoDiagnostics": ["PROFICIENCY_VIOLATION"]
+    }
+  ]
+}

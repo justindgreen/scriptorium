@@ -1,0 +1,87 @@
+{
+  "name": "pending-choices",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": ["srd-5.1:class:fighter", "srd-5.1:background:acolyte"],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Undecided",
+    "definition": {
+      "baseAbilities": { "str": 10, "dex": 10, "con": 10, "int": 10, "wis": 10, "cha": 10 },
+      "backgroundUid": "srd-5.1:background:acolyte",
+      "classes": [{ "classUid": "srd-5.1:class:fighter", "level": 1, "order": 0 }]
+    }
+  },
+  "expectPendingChoices": [
+    { "key": "class:srd-5.1:class:fighter@1/skills", "remaining": 2, "options": 8 },
+    {
+      "key": "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style",
+      "remaining": 1,
+      "options": 4,
+      "disabled": ["protection"]
+    },
+    { "key": "background:srd-5.1:background:acolyte/languages", "remaining": 2 }
+  ],
+  "expectSheet": { "skill.athletics.proficiency": 0, "skill.insight.proficiency": 1 },
+  "variants": [
+    {
+      "name": "a partial selection with an illegal skill",
+      "aggregate": {
+        "definition": {
+          "choices": {
+            "class:srd-5.1:class:fighter@1/skills": {
+              "kind": "skill",
+              "skills": ["athletics", "arcana"]
+            }
+          }
+        }
+      },
+      "expectPendingChoices": [{ "key": "class:srd-5.1:class:fighter@1/skills", "remaining": 1 }],
+      "expectSheet": { "skill.athletics.proficiency": 1, "skill.arcana.proficiency": 0 },
+      "expectDiagnostics": [{ "code": "INVALID_SELECTION" }]
+    },
+    {
+      "name": "a selection of the wrong kind is ignored",
+      "aggregate": {
+        "definition": {
+          "choices": {
+            "class:srd-5.1:class:fighter@1/skills": {
+              "kind": "optionSet",
+              "options": ["athletics"]
+            }
+          }
+        }
+      },
+      "expectPendingChoices": [{ "key": "class:srd-5.1:class:fighter@1/skills", "remaining": 2 }],
+      "expectDiagnostics": [{ "code": "INVALID_SELECTION" }]
+    },
+    {
+      "name": "picking an option whose prerequisite is unmet is flagged",
+      "aggregate": {
+        "definition": {
+          "choices": {
+            "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style": {
+              "kind": "optionSet",
+              "options": ["protection"]
+            }
+          }
+        }
+      },
+      "expectDiagnostics": [{ "code": "PREREQ_UNMET" }]
+    },
+    {
+      "name": "meeting the prerequisite enables the option",
+      "aggregate": {
+        "definition": {
+          "baseAbilities": { "str": 13, "dex": 10, "con": 10, "int": 10, "wis": 10, "cha": 10 }
+        }
+      },
+      "expectPendingChoices": [
+        {
+          "key": "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style",
+          "remaining": 1,
+          "disabled": []
+        }
+      ]
+    }
+  ]
+}

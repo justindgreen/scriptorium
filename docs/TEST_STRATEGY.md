@@ -15,29 +15,45 @@ Testing is part of implementation. A milestone is done only when its tests exist
 
 ## 2. Golden case format
 
+Cases live in `packages/rules-engine/test/golden/*.json`; files starting with `_` hold shared inline content (overlays). The runner (`golden.test.ts`) builds the snapshot from `snapshotRefs` (uids resolved from the committed SRD packages), `contentFiles` and inline `content` (inline entries override SRD entries with the same uid, exactly like mechanics overlays, and must pass the content schema), fills the aggregate with `createAggregate`, computes the sheet, checks every expectation, recomputes to prove determinism and recomputes with the inventory and temporary effects reversed to prove independence from storage order. `variants` deep-merge a patch into the aggregate (objects merge, arrays replace) and carry their own expectations. Action plans and commands join the format in M2.3 and M2.5.
+
 ```json
 {
-  "name": "rogue-5-sneak-attack-once-per-turn",
+  "name": "fighter-1-human-chain-mail",
   "ruleset": "srd5.1-2014",
-  "aggregate": { "...": "definition, inventory, state" },
-  "snapshotRefs": ["srd-5.1:class:rogue@1", "..."],
-  "expectSheet": { "skill.stealth.bonus": 9, "attacks.perAction": 1 },
-  "actions": [
-    {
-      "ref": { "kind": "weapon", "itemId": "rapier" },
-      "ctx": { "situation": { "advantageSources": ["hidden"] } },
-      "expectPlan": {
-        "damagePackets": [
-          { "type": "piercing", "dice": "1d8+4" },
-          { "type": "piercing", "dice": "3d6", "source": "Sneak Attack" }
-        ]
-      }
-    }
+  "snapshotRefs": ["srd-5.1:class:fighter", "srd-5.1:item:chain-mail"],
+  "contentFiles": ["_overlays.json"],
+  "content": [],
+  "aggregate": {
+    "definition": { "...": "classes, choices, abilities" },
+    "inventory": [],
+    "state": {}
+  },
+  "expectSheet": {
+    "ac.total": 19,
+    "skill.stealth.bonus": 2,
+    "roll.disadvantage.check.stealth": true
+  },
+  "expectError": { "ability.str.score": true },
+  "expectOverride": { "ac.total": { "auto": 10, "manual": 20 } },
+  "expectBreakdown": { "ac.base": { "applied": ["Mage Armor"], "lost": ["Unarmored"] } },
+  "expectDiagnostics": [{ "code": "CYCLE_DETECTED", "statPath": "ability.str.score" }],
+  "expectNoDiagnostics": ["MISSING_CONTENT"],
+  "expectPendingChoices": [
+    { "key": "class:srd-5.1:class:fighter@1/skills", "remaining": 2, "options": 8 }
   ],
-  "commands": [
+  "expectProficiencies": { "armor": ["all-armor", "shields"] },
+  "expectTemplates": [{ "name": "Longsword", "attackBonus": 5, "damage": ["1d8 + 3 slashing"] }],
+  "expectResources": [{ "id": "second-wind", "max": 1 }],
+  "expectDefenses": [{ "kind": "resistance", "damageType": "poison" }],
+  "expectToggles": [{ "id": "rage", "active": true }],
+  "expectHitDice": [{ "die": "d10", "max": 1 }],
+  "expectFeatures": ["srd-5.1:feature:second-wind"],
+  "variants": [
     {
-      "command": { "type": "applyDamage", "amount": 12, "damageType": "slashing" },
-      "expectState": { "hp_current": 20 }
+      "name": "without a shield",
+      "aggregate": { "inventory": [] },
+      "expectSheet": { "ac.total": 16 }
     }
   ]
 }

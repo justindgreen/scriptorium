@@ -1,0 +1,32 @@
+{
+  "name": "overrides",
+  "ruleset": "srd5.1-2014",
+  "snapshotRefs": ["srd-5.1:class:fighter"],
+  "contentFiles": ["_overlays.json"],
+  "aggregate": {
+    "name": "Ruled",
+    "definition": {
+      "baseAbilities": { "str": 10, "dex": 10, "con": 14, "int": 10, "wis": 10, "cha": 10 },
+      "classes": [{ "classUid": "srd-5.1:class:fighter", "level": 1, "order": 0 }],
+      "overrides": [
+        { "statPath": "ac.total", "value": 20, "note": "DM ruling: enchanted hide" },
+        { "statPath": "hp.max", "value": 50 },
+        { "statPath": "speed.walk", "value": "fast" }
+      ]
+    }
+  },
+  "expectSheet": { "ac.total": 20, "hp.max": 50, "speed.walk": 30 },
+  "expectOverride": {
+    "ac.total": { "auto": 10, "manual": 20, "note": "DM ruling: enchanted hide" },
+    "hp.max": { "auto": 12, "manual": 50 }
+  },
+  "expectDiagnostics": [{ "code": "INVALID_SELECTION", "statPath": "speed.walk" }],
+  "variants": [
+    {
+      "name": "clearing the override restores the automatic value",
+      "aggregate": { "definition": { "overrides": [] } },
+      "expectSheet": { "ac.total": 10, "hp.max": 12 },
+      "expectNoDiagnostics": ["INVALID_SELECTION"]
+    }
+  ]
+}
