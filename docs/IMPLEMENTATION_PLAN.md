@@ -1,7 +1,5 @@
 # Implementation Plan
 
-| M2.7 | 2026-10-22 | 601,924 tokens (60% of 1M; cumulative with M2.6 in the same window) | not exposed | not exposed | weekly window 0% used (new week); extra usage spent to date $207.76 (rose $31.03 since M2.6 closed; account-level, may include other sessions) | `get_usage` |
-
 Milestone-driven delivery. Work one milestone at a time in dependency order; keep the application runnable at every commit. Each milestone closes with a report (template in §4) and its row below is updated with status, evidence and measured usage.
 
 Sizes: S ≤ 1 session, M 1–2, L 2–4, XL 4+ (a session is one focused Claude Code working session). Status: `not started`, `in progress`, `done` (criteria met, tests green), `verified` (owner confirmed in the running app).
@@ -124,3 +122,4 @@ What the session usage tooling exposes: the session's current context-window siz
 | M2.4      | 2026-10-22 | 738,370 tokens (74% of 1M; cumulative with M2.1–M2.3 in the same session)                                           | not exposed   | not exposed | weekly window 29% used; extra usage spent to date $135.53 (rose $13.17 since M2.3 closed; account-level, may include other sessions)                           | `get_usage` |
 | M2.5      | 2026-10-22 | 912,680 tokens (91% of 1M; cumulative with M2.1–M2.4 in the same session)                                           | not exposed   | not exposed | weekly window 29% used; extra usage spent to date $153.05 (rose $17.52 since M2.4 closed; account-level, may include other sessions)                           | `get_usage` |
 | M2.6      | 2026-10-22 | 323,854 tokens (32% of 1M; the session was compacted after M2.5, so this is not cumulative with the M2.1–M2.5 rows) | not exposed   | not exposed | weekly window 29% used; extra usage spent to date $176.73 (rose $23.68 since M2.5 closed; account-level, may include other sessions)                           | `get_usage` |
+| M2.7      | 2026-10-22 | 601,924 tokens (60% of 1M; cumulative with M2.6 in the same window)                                                 | not exposed   | not exposed | weekly window 0% used (new week); extra usage spent to date $207.76 (rose $31.03 since M2.6 closed; account-level, may include other sessions)                 | `get_usage` |
