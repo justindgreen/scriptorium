@@ -46,7 +46,7 @@ docs/
 Enforced by per-directory `@typescript-eslint/no-restricted-imports` rules in `eslint.config.js` (proven by `test/boundaries.test.ts`), package `exports`, and, from M1.3, `eslint-plugin-boundaries` for intra-server layering:
 
 - `rules-engine` imports only `content-schema` and `dice/ast`. No Node built-ins, DB, HTTP, React or `dice/roll`.
-- `dice/ast` has no dependencies; `dice/roll` depends on `dice/ast` and takes an RNG function.
+- `dice/ast` has no dependencies; `dice/roll` depends on `dice/ast` and takes an injected die roller (crypto RNG in production, seeded in tests, scripted for physical dice).
 - `content-schema` depends only on Zod.
 - `web` imports the server's `AppRouter` type only, plus `rules-engine`, `dice/ast` and `content-schema` for previews and validation. No stat arithmetic in components.
 - `server` modules depend on `core/*` and on `rules-engine`, `dice`, `content-schema`. Modules do not import each other's repos; cross-module needs go through services.
