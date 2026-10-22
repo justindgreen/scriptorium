@@ -1,0 +1,80 @@
+import { z } from 'zod'
+import { procedureFor, router } from '../../core/trpc.js'
+import { commandRequestSchema, createCharacterSchema } from './schemas.js'
+
+const byId = z.object({ characterId: z.string().uuid() })
+
+export const charactersRouter = router({
+  list: procedureFor('character.read').query(({ ctx }) => ctx.characters.list(ctx.scope)),
+
+  create: procedureFor('character.create')
+    .input(createCharacterSchema)
+    .mutation(async ({ ctx, input }) => {
+      const created = await ctx.characters.create(ctx.scope, input)
+      await ctx.audit.record({
+        actorId: ctx.scope.userId,
+        action: 'character.created',
+        targetType: 'character',
+        targetId: created.id,
+        ip: ctx.ip,
+      })
+      return created
+    }),
+
+  get: procedureFor('character.read')
+    .input(byId)
+    .query(({ ctx, input }) => ctx.characters.get(ctx.scope, input.characterId)),
+
+  command: procedureFor('character.write')
+    .input(commandRequestSchema)
+    .mutation(({ ctx, input }) => ctx.characters.command(ctx.scope, input)),
+
+  undo: procedureFor('character.write')
+    .input(byId.extend({ expectedRevision: z.number().int().min(0) }))
+    .mutation(({ ctx, input }) =>
+      ctx.characters.undo(ctx.scope, input.characterId, input.expectedRevision),
+    ),
+
+  undoAvailability: procedureFor('character.read')
+    .input(byId)
+    .query(({ ctx, input }) => ctx.characters.undoAvailability(ctx.scope, input.characterId)),
+
+  events: procedureFor('character.read')
+    .input(byId.extend({ limit: z.number().int().min(1).max(200).default(50) }))
+    .query(({ ctx, input }) => ctx.characters.events(ctx.scope, input.characterId, input.limit)),
+
+  snapshots: router({
+    list: procedureFor('character.read')
+      .input(byId)
+      .query(({ ctx, input }) => ctx.characters.snapshots(ctx.scope, input.characterId)),
+    take: procedureFor('character.write')
+      .input(byId)
+      .mutation(({ ctx, input }) => ctx.characters.takeSnapshot(ctx.scope, input.characterId)),
+    restore: procedureFor('character.write')
+      .input(
+        byId.extend({ snapshotId: z.string().uuid(), expectedRevision: z.number().int().min(0) }),
+      )
+      .mutation(({ ctx, input }) =>
+        ctx.characters.restoreSnapshot(
+          ctx.scope,
+          input.characterId,
+          input.snapshotId,
+          input.expectedRevision,
+        ),
+      ),
+  }),
+
+  delete: procedureFor('character.write')
+    .input(byId)
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.characters.remove(ctx.scope, input.characterId)
+      await ctx.audit.record({
+        actorId: ctx.scope.userId,
+        action: 'character.deleted',
+        targetType: 'character',
+        targetId: input.characterId,
+        ip: ctx.ip,
+      })
+      return result
+    }),
+})

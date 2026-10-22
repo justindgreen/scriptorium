@@ -16,6 +16,10 @@ import { APP_VERSION } from './core/version.js'
 import type { Db } from './db/client.js'
 import { createInviteService } from './modules/admin/invites.js'
 import { createContentRepo } from './modules/content/repo.js'
+import { createCommandRunner } from './core/commands.js'
+import { createEventBus } from './core/events.js'
+import { createCharacterRepo } from './modules/characters/repo.js'
+import { createCharacterService } from './modules/characters/service.js'
 import { appRouter, type AppRouter } from './router.js'
 
 export type App = FastifyInstance & { services: Services }
@@ -55,6 +59,10 @@ export async function buildApp(deps: AppDeps): Promise<App> {
   const settings = createSettings(db)
   const invites = createInviteService(db)
   const content = createContentRepo(db)
+  const events = createEventBus()
+  const characterRepo = createCharacterRepo(db)
+  const commands = createCommandRunner({ db, characters: characterRepo, content, events })
+  const characters = createCharacterService({ db, repo: characterRepo, commands, events })
   const maintenance = createMaintenanceGate(config.DATA_DIR)
   maintenance.register(app)
   const auth = createAuth({ db, config, secret: deps.secret, audit, invites, settings })
@@ -67,6 +75,8 @@ export async function buildApp(deps: AppDeps): Promise<App> {
     invites,
     settings,
     content,
+    characters,
+    events,
     databaseUrl: deps.database.url,
     maintenance,
   }

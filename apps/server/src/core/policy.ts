@@ -17,6 +17,9 @@ export const anonymousScope: Scope = { userId: null, role: null }
 export type Action =
   | 'me.read'
   | 'content.read'
+  | 'character.create'
+  | 'character.read'
+  | 'character.write'
   | 'admin.content.manage'
   | 'admin.users.manage'
   | 'admin.invites.manage'
@@ -39,6 +42,10 @@ export function can(scope: Scope, action: Action): boolean {
   switch (action) {
     case 'me.read':
     case 'content.read':
+    // Ownership of a character is checked by the characters service; any signed-in user may own characters.
+    case 'character.create':
+    case 'character.read':
+    case 'character.write':
       return true
     default:
       return false

@@ -7,6 +7,9 @@ const player: Scope = { userId: 'p', role: 'user' }
 const matrix: Array<[Action, boolean, boolean, boolean]> = [
   // action, anonymous, player, admin
   ['me.read', false, true, true],
+  ['character.create', false, true, true],
+  ['character.read', false, true, true],
+  ['character.write', false, true, true],
   ['admin.users.manage', false, false, true],
   ['admin.invites.manage', false, false, true],
   ['admin.audit.read', false, false, true],
