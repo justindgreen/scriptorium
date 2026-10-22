@@ -56,6 +56,10 @@ export async function buildApp(deps: AppDeps): Promise<App> {
     // tRPC batches join procedure paths with commas in one route parameter; Fastify's default of
     // 100 characters answers 414 for a page that issues five queries at once.
     maxParamLength: 5000,
+    // Live-update streams (Server-Sent Events) are requests that never end on their own; a
+    // graceful close must drop them or SIGTERM would hang until the orchestrator kills the
+    // process. Clients reconnect and refetch on the revision gap.
+    forceCloseConnections: true,
   }) as unknown as App
 
   const db = deps.database.db

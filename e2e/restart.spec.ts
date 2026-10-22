@@ -26,10 +26,16 @@ async function restartServer(request: APIRequestContext): Promise<void> {
   // With an external database (CI) nothing has created the data directory yet.
   fs.mkdirSync(dataDir, { recursive: true })
   fs.writeFileSync(path.join(dataDir, 'restart.request'), String(Date.now()))
-  // Wait until a new process answers: its uptime is lower than the old one's.
+  // Wait until a new process answers: its uptime is lower than the old one's (-1 while down).
   await expect
-    .poll(async () => uptime(request), { timeout: 120_000, intervals: [1_000] })
-    .toBeLessThan(Math.max(1, before))
+    .poll(
+      async () => {
+        const now = await uptime(request)
+        return now >= 0 && now < Math.max(1, before)
+      },
+      { timeout: 120_000, intervals: [1_000] },
+    )
+    .toBe(true)
   await expect
     .poll(async () => (await request.get('/readyz').catch(() => null))?.status() ?? 0, {
       timeout: 60_000,

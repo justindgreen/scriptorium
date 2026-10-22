@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import fs from 'node:fs'
 import type { AddressInfo } from 'node:net'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { ActionPlan, CharacterAggregate, ComputedSheet } from '@scriptorium/rules-engine'
@@ -243,5 +244,32 @@ describe('live updates', () => {
     expect(text).toContain(`"revision":${revision}`)
     controller.abort()
     await reader.cancel().catch(() => undefined)
+  }, 30_000)
+})
+
+describe('shutdown with a live stream open', () => {
+  it('closes within seconds instead of waiting for the subscription to end', async () => {
+    const other = await createTestApp(t.tdb)
+    await other.app.listen({ port: 0, host: '127.0.0.1' })
+    const port = (other.app.server.address() as AddressInfo).port
+    const input = encodeURIComponent(JSON.stringify({ characterId: id }))
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/trpc/characters.subscribe?input=${input}`,
+      { headers: { accept: 'text/event-stream', cookie: admin.cookie } },
+    )
+    expect(response.status).toBe(200)
+    const reader = response.body!.getReader()
+    await reader.read() // the ready frame: the stream is live
+    const started = Date.now()
+    await other.app.close()
+    expect(Date.now() - started).toBeLessThan(5_000)
+    // The client sees the stream end (an error or done), never a hang.
+    await expect(
+      reader
+        .read()
+        .then((r) => r.done)
+        .catch(() => true),
+    ).resolves.toBe(true)
+    fs.rmSync(other.dataDir, { recursive: true, force: true })
   }, 30_000)
 })
