@@ -2,6 +2,10 @@
 
 Portable, versioned JSON for everything the compendium holds. Schemas live in `packages/content-schema`; this document is the human-readable contract. The format is designed so privately owned content can be added without touching application code, and so homebrew round-trips between instances.
 
+## Homebrew entries (M2.7)
+
+Homebrew items are authored through the editor rather than packages, but they are stored as the same entry shape: `data` (item block with optional `weapon`, `armor`, `charges`), `effects`, an inferred `automation` and no `tests`. The uid is `<source slug>:item:<slug of the name>`; the source slug is derived from the source name. The Effect Builder writes `bonus` (static stat bonuses), `action.damageAdd` with a `ctx.targetType` condition (extra damage against creature types), `spell.grant` (`chargeCost`, `uses` or `atWill`) and `manual`; anything else stays editable only as raw JSON until the advanced editor (M3.3).
+
 ## Package: `scriptorium-content-package` version 1
 
 ```json

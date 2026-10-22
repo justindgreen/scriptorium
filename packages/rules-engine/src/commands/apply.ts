@@ -90,9 +90,16 @@ export function applyCommand(
       }
       if (command.itemUid) row.itemUid = command.itemUid
       if (command.customItem) row.customItem = command.customItem
+      const content =
+        command.customItem ??
+        (command.itemUid && context.snapshot
+          ? entryOfKind(context.snapshot, command.itemUid, 'item')
+          : undefined)
+      const fullCharges = content?.data.charges?.max
       if (command.chargesCurrent !== undefined) row.chargesCurrent = command.chargesCurrent
+      else if (typeof fullCharges === 'number') row.chargesCurrent = fullCharges
       inventory().push(row)
-      summary = `Added ${command.customItem?.name ?? command.itemUid}`
+      summary = `Added ${content?.name ?? command.itemUid}`
       break
     }
     case 'removeItem': {

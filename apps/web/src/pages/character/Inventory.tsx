@@ -14,6 +14,7 @@ export function Inventory({ view, send }: { view: CharacterView; send: SendFn })
     ...trpc.content.entries.list.queryOptions({ kind: 'item', q: query || undefined, limit: 20 }),
     enabled: query.length >= 2,
   })
+  const views = new Map(view.sheet.items.map((item) => [item.itemId, item]))
   return (
     <Card data-testid="inventory">
       <CardHeader>
@@ -33,15 +34,22 @@ export function Inventory({ view, send }: { view: CharacterView; send: SendFn })
               className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 text-sm"
             >
               <span>
-                {i.customItem?.name ?? uidLabel(i.itemUid)}
+                {views.get(i.id)?.name ?? i.customItem?.name ?? uidLabel(i.itemUid)}
                 {i.quantity > 1 ? ` ×${i.quantity}` : ''}{' '}
                 {i.equipped ? <Badge variant="secondary">equipped</Badge> : null}{' '}
                 {i.attuned ? <Badge>attuned</Badge> : null}
-                {i.chargesCurrent !== undefined ? (
+                {views.get(i.id)?.charges ? (
                   <span className="text-muted-foreground" data-testid={`charges-${i.id}`}>
                     {' '}
-                    {i.chargesCurrent} charges
+                    {views.get(i.id)!.charges!.current}
+                    {views.get(i.id)!.charges!.max !== null
+                      ? `/${views.get(i.id)!.charges!.max}`
+                      : ''}{' '}
+                    charges
                   </span>
+                ) : null}
+                {views.get(i.id)?.inactiveReason && i.equipped ? (
+                  <Badge variant="outline">{views.get(i.id)!.inactiveReason}</Badge>
                 ) : null}
               </span>
               <span className="flex gap-1 print:hidden">

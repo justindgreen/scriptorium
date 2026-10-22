@@ -1,6 +1,7 @@
 import { and, asc, count, desc, eq, ilike, inArray, isNull, or, sql, type SQL } from 'drizzle-orm'
 import type { ContentKind } from '@scriptorium/content-schema'
 import type { Db } from '../../db/client.js'
+import type { Scope } from '../../core/policy.js'
 import { schema } from '../../db/client.js'
 
 export type EntryListFilters = {
@@ -13,9 +14,19 @@ export type EntryListFilters = {
   offset: number
 }
 
-/** Read access to published content. Visibility narrows further when campaigns arrive (M2.8). */
+/** Who is reading: global sources are visible to all, private ones to their owner and administrators. */
+export type Viewer = Pick<Scope, 'userId' | 'role'>
+
+/** Read access to published content. Campaign sharing narrows this further (M2.8). */
 export function createContentRepo(db: Db) {
   const enabledOnly = eq(schema.contentSources.isEnabled, true)
+  const visibleTo = (viewer: Viewer | undefined): SQL => {
+    if (viewer?.role === 'admin') return sql`true`
+    const global = eq(schema.contentSources.visibility, 'global')
+    return viewer?.userId
+      ? or(global, eq(schema.contentSources.ownerUserId, viewer.userId))!
+      : global
+  }
 
   return {
     async listSources() {
@@ -67,10 +78,11 @@ export function createContentRepo(db: Db) {
       return row?.config ?? null
     },
 
-    async listEntries(filters: EntryListFilters) {
+    async listEntries(filters: EntryListFilters, viewer?: Viewer) {
       const conditions: SQL[] = [
         isNull(schema.contentEntries.deletedAt),
         eq(schema.contentEntries.status, 'published'),
+        visibleTo(viewer),
       ]
       if (!filters.includeDisabledSources) conditions.push(enabledOnly)
       if (filters.kind) conditions.push(eq(schema.contentEntries.kind, filters.kind))
@@ -148,10 +160,14 @@ export function createContentRepo(db: Db) {
       return { items: rows, total: total?.n ?? 0 }
     },
 
-    async getEntry(uid: string, options: { includeDisabledSources?: boolean } = {}) {
+    async getEntry(
+      uid: string,
+      options: { includeDisabledSources?: boolean; viewer?: Viewer } = {},
+    ) {
       const conditions: SQL[] = [
         eq(schema.contentEntries.uid, uid),
         isNull(schema.contentEntries.deletedAt),
+        visibleTo(options.viewer),
       ]
       if (!options.includeDisabledSources) conditions.push(enabledOnly)
       const [row] = await db

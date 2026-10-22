@@ -38,6 +38,8 @@ Registration rule, enforced in the user-creation database hook rather than the U
 
 Content kinds: `class, subclass, species, background, feat, feature, spell, spell_list, item, monster, condition, rule, resource`. Projection tables are rebuilt from `data` on publish; other kinds filter via jsonb GIN and tags.
 
+Notes (M2.7): a homebrew source is `kind = homebrew`, `visibility = private`, `owner_user_id` set; `draft_version_id` points at a version row that saves rewrite until `publish` moves `head_version_id` to it (then the next save opens a new draft version). The content repository filters by viewer: global sources for everyone, private sources for their owner and administrators.
+
 Notes (M1.5): entries also carry `search_text` (tsvector + trigram indexes); relations store the target `to_uid` rather than an id so they can point at entries imported later; `content_source_access` and `content_entry_shares` arrive with campaigns (ADR-0027).
 
 ## 3. Characters (one aggregate, one revision)

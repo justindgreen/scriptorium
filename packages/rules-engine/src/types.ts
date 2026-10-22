@@ -289,6 +289,22 @@ export type DefenseView = {
   source: SourceRef
 }
 
+/** One inventory row as the engine resolved it: name from content, activation, charges. */
+export type ItemView = {
+  itemId: string
+  uid?: string
+  name: string
+  category?: string
+  quantity: number
+  equipped: boolean
+  attuned: boolean
+  requiresAttunement: boolean
+  /** Whether its effects apply right now. */
+  active: boolean
+  inactiveReason?: string
+  charges?: { current: number; max: number | null }
+}
+
 export type ToggleView = {
   id: string
   name: string
@@ -356,6 +372,7 @@ export type ComputedSheet = {
   defenses: DefenseView[]
   conditionImmunities: Array<{ condition: string; source: SourceRef }>
   toggles: ToggleView[]
+  items: ItemView[]
   actionTemplates: ActionTemplate[]
   pendingChoices: PendingChoice[]
   diagnostics: Diagnostic[]

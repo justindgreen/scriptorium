@@ -13,6 +13,7 @@ import { CommandError, summaryOf, type CommandRunner } from '../../core/commands
 import { newId } from '../../core/ids.js'
 import type { Scope } from '../../core/policy.js'
 import type { DomainEvent, EventBus } from '../../core/events.js'
+import type { ContentRepo } from '../content/repo.js'
 import type { CharacterRepo } from './repo.js'
 import { characterRootUids, loadSnapshot } from './snapshot.js'
 import type { createCharacterSchema } from './schemas.js'
@@ -34,6 +35,7 @@ export function createCharacterService(deps: {
   repo: CharacterRepo
   commands: CommandRunner
   events: EventBus
+  content: ContentRepo
 }) {
   const { repo, commands } = deps
 
@@ -176,6 +178,15 @@ export function createCharacterService(deps: {
       const row = await repo.getRow(deps.db, request.characterId)
       if (!row) throw new TRPCError({ code: 'NOT_FOUND', message: 'Character not found.' })
       assertOwner(scope, row.ownerUserId)
+      if (request.command.type === 'addItem' && request.command.itemUid) {
+        // Private homebrew is usable only by people who can see it (rule 3: never rely on the UI).
+        const visible = await deps.content.getEntry(request.command.itemUid, { viewer: scope })
+        if (!visible)
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `Unknown content ${request.command.itemUid}.`,
+          })
+      }
       try {
         const result = await commands.run({ ...request, actorUserId: scope.userId ?? null })
         return {

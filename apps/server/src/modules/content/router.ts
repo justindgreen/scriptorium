@@ -58,19 +58,22 @@ export const contentRouter = router({
         }),
       )
       .query(({ ctx, input }) =>
-        ctx.content.listEntries({
-          ...(input.kind ? { kind: input.kind } : {}),
-          ...(input.sourceSlugs ? { sourceSlugs: input.sourceSlugs } : {}),
-          ...(input.q ? { q: input.q } : {}),
-          ...(input.tags ? { tags: input.tags } : {}),
-          limit: input.limit,
-          offset: input.offset,
-        }),
+        ctx.content.listEntries(
+          {
+            ...(input.kind ? { kind: input.kind } : {}),
+            ...(input.sourceSlugs ? { sourceSlugs: input.sourceSlugs } : {}),
+            ...(input.q ? { q: input.q } : {}),
+            ...(input.tags ? { tags: input.tags } : {}),
+            limit: input.limit,
+            offset: input.offset,
+          },
+          ctx.scope,
+        ),
       ),
     get: procedureFor('content.read')
       .input(z.object({ uid: z.string().min(3).max(200) }))
       .query(async ({ ctx, input }) => {
-        const entry = await ctx.content.getEntry(input.uid)
+        const entry = await ctx.content.getEntry(input.uid, { viewer: ctx.scope })
         if (!entry) throw new TRPCError({ code: 'NOT_FOUND', message: 'Content not found.' })
         return entry
       }),

@@ -21,6 +21,8 @@ import { createEventBus } from './core/events.js'
 import { createCharacterRepo } from './modules/characters/repo.js'
 import { createCharacterService } from './modules/characters/service.js'
 import { createRollService } from './modules/characters/rolls.js'
+import { createHomebrewRepo } from './modules/homebrew/repo.js'
+import { createHomebrewService } from './modules/homebrew/service.js'
 import { appRouter, type AppRouter } from './router.js'
 
 export type App = FastifyInstance & { services: Services }
@@ -70,7 +72,13 @@ export async function buildApp(deps: AppDeps): Promise<App> {
   const events = createEventBus()
   const characterRepo = createCharacterRepo(db)
   const commands = createCommandRunner({ db, characters: characterRepo, content, events })
-  const characters = createCharacterService({ db, repo: characterRepo, commands, events })
+  const characters = createCharacterService({ db, repo: characterRepo, commands, events, content })
+  const homebrew = createHomebrewService({
+    db,
+    repo: createHomebrewRepo(db),
+    characters: characterRepo,
+    commands,
+  })
   const rolls = createRollService({ db, repo: characterRepo, commands })
   const maintenance = createMaintenanceGate(config.DATA_DIR)
   maintenance.register(app)
@@ -86,6 +94,7 @@ export async function buildApp(deps: AppDeps): Promise<App> {
     content,
     characters,
     rolls,
+    homebrew,
     events,
     databaseUrl: deps.database.url,
     maintenance,

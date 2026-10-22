@@ -197,6 +197,7 @@ export function computeSheet(
     defenses: outputs.defenses,
     conditionImmunities: outputs.conditionImmunities,
     toggles: grants.toggles,
+    items: grants.items,
     actionTemplates,
     pendingChoices: grants.pendingChoices,
     diagnostics,

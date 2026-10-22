@@ -53,6 +53,8 @@ Enforced by per-directory `@typescript-eslint/no-restricted-imports` rules in `e
 - Every tRPC procedure asserts policy before data access. Repos take a `Scope` and filter rows in SQL.
 - All character writes go through `core/commands`.
 
+The `homebrew` module (M2.7) owns personal sources, item drafts, publishing and previews; it writes only through its repository and reads characters through the command runner's `view`.
+
 ## 4. Request lifecycle
 
 1. Fastify receives the request; the session plugin resolves the user (or anonymous) and builds the tRPC context `{ user, scope, db, policy, sse, logger, requestId }`.

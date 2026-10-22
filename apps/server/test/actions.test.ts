@@ -122,7 +122,8 @@ describe('the roll step', () => {
       admin.cookie,
     )
     expect(first.status).toBe(200)
-    expect(first.data!.outcome.attack!.hit).toBe(true)
+    // Against AC 1 everything hits except a natural 1, which always misses.
+    expect(first.data!.outcome.attack!.hit).toBe(rolled.data!.results.attack!.natural !== 1)
     expect(first.data!.revision).toBe(revision + 1)
     revision = first.data!.revision
 

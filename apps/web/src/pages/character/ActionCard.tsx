@@ -134,7 +134,7 @@ export function ActionCard({
         onClick={() => setOpen((o) => !o)}
         data-testid={`${testId}-toggle`}
       >
-        <span className="font-medium">{title}</span>
+        <span className="font-medium">{title}</span>{' '}
         {summary ? <span className="text-muted-foreground">{summary}</span> : null}
       </button>
       {open ? (

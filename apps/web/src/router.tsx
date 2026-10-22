@@ -19,6 +19,8 @@ import { AdminUsersPage } from '@/pages/AdminUsersPage'
 import { CharacterBuilderPage } from '@/pages/CharacterBuilderPage'
 import { CharacterPage } from '@/pages/CharacterPage'
 import { CharactersPage } from '@/pages/CharactersPage'
+import { HomebrewPage } from '@/pages/HomebrewPage'
+import { ItemEditorPage } from '@/pages/homebrew/ItemEditorPage'
 import { HomePage } from '@/pages/HomePage'
 import { LicensesPage } from '@/pages/LicensesPage'
 import { LoginPage } from '@/pages/LoginPage'
@@ -79,6 +81,16 @@ const characterRoute = createRoute({
   getParentRoute: () => appLayout,
   path: '/characters/$characterId',
   component: CharacterPage,
+})
+const homebrewRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/homebrew',
+  component: HomebrewPage,
+})
+const homebrewItemRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/homebrew/items/$entryId',
+  component: ItemEditorPage,
 })
 const adminUsersRoute = createRoute({
   getParentRoute: () => appLayout,
@@ -156,6 +168,8 @@ const routeTree = rootRoute.addChildren([
     charactersRoute,
     characterNewRoute,
     characterRoute,
+    homebrewRoute,
+    homebrewItemRoute,
     adminUsersRoute,
     adminInvitesRoute,
     adminAuditRoute,

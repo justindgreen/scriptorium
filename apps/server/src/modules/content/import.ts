@@ -65,7 +65,7 @@ function excerpt(value: unknown, max = 1500): string {
   return value.replace(/\s+/g, ' ').slice(0, max)
 }
 
-function searchTextFor(entry: ContentEntry): string {
+export function searchTextFor(entry: ContentEntry): string {
   const data = entry.data as Record<string, unknown>
   const description = excerpt(data['description'])
   const extra =
@@ -76,7 +76,7 @@ function searchTextFor(entry: ContentEntry): string {
 }
 
 /** Relations implied by the data, in addition to the explicit `relations` array. */
-function impliedRelations(entry: ContentEntry): Array<{ toUid: string; relation: string }> {
+export function impliedRelations(entry: ContentEntry): Array<{ toUid: string; relation: string }> {
   const out: Array<{ toUid: string; relation: string }> = []
   switch (entry.kind) {
     case 'subclass':

@@ -20,6 +20,8 @@ export type Action =
   | 'character.create'
   | 'character.read'
   | 'character.write'
+  | 'homebrew.read'
+  | 'homebrew.write'
   | 'admin.content.manage'
   | 'admin.users.manage'
   | 'admin.invites.manage'
@@ -40,12 +42,14 @@ export function can(scope: Scope, action: Action): boolean {
   if (!scope.userId || !scope.role) return false
   if (adminActions.has(action)) return scope.role === 'admin'
   switch (action) {
-    // Ownership of a character is checked by the characters service; any signed-in user may own characters.
+    // Ownership of characters and homebrew is checked by their services; any signed-in user may own both.
     case 'me.read':
     case 'content.read':
     case 'character.create':
     case 'character.read':
     case 'character.write':
+    case 'homebrew.read':
+    case 'homebrew.write':
       return true
     default:
       return false

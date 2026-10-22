@@ -174,6 +174,13 @@ export async function loadSnapshot(
   return { snapshot: createSnapshot(entries.values()), refs }
 }
 
+/** Every content uid mentioned anywhere in a value (an entry, a command, a draft). */
+export function referencedUids(value: unknown): string[] {
+  const out = new Set<string>()
+  collectUids(value, out)
+  return [...out]
+}
+
 /** Every uid a character definition, inventory and state refer to. */
 export function characterRootUids(
   aggregate: {

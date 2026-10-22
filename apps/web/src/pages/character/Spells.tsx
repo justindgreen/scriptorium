@@ -118,6 +118,26 @@ export function Spells({
             </li>
           ))}
         </ul>
+        {casting.granted.length > 0 ? (
+          <ul className="grid gap-1 border-t pt-3 text-sm" data-testid="granted-spells">
+            {casting.granted.map((g) => (
+              <li key={`${g.source.path}:${g.spellUid}`}>
+                <span className="font-medium">{uidLabel(g.spellUid)}</span>
+                <span className="text-muted-foreground">
+                  {` · granted by ${g.source.name}`}
+                  {g.chargeCost
+                    ? ` · ${g.chargeCost} charge${g.chargeCost === 1 ? '' : 's'}`
+                    : g.uses
+                      ? ` · ${g.uses.max} per ${g.uses.recharge}`
+                      : g.atWill
+                        ? ' · at will'
+                        : ''}
+                  {g.castAtLevel ? ` · cast at level ${g.castAtLevel}` : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
         {cast ? (
           <div className="grid gap-2 print:hidden" data-testid="cast-area">
             {cast.level > 0 ? (

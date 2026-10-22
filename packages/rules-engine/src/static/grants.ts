@@ -20,6 +20,7 @@ import type {
   SourceKind,
   SourceRef,
   ToggleView,
+  ItemView,
 } from '../types.js'
 import { applySelection, type ChoiceDefinition, type ResolvedChoice } from './choices.js'
 import { FormulaError, evaluateNumeric } from './formula.js'
@@ -81,6 +82,7 @@ export type Grants = {
   choiceDefinitions: ChoiceDefinition[]
   pendingChoices: PendingChoice[]
   toggles: ToggleView[]
+  items: ItemView[]
   classes: ClassGrant[]
   species: ContentEntryOf<'species'>[]
   speciesSpeed?: number
@@ -129,6 +131,7 @@ class Walker {
       choiceDefinitions: [],
       pendingChoices: [],
       toggles: [],
+      items: [],
       classes: [],
       species: [],
       weapons: [],
@@ -650,6 +653,17 @@ class Walker {
         (item.itemUid ? entryOfKind(this.snapshot, item.itemUid, 'item') : undefined)
       if (!entry) {
         this.missing(item.itemUid ?? item.id, 'item', this.result.engineSource)
+        this.result.items.push({
+          itemId: item.id,
+          ...(item.itemUid ? { uid: item.itemUid } : {}),
+          name: item.customItem?.name ?? item.itemUid ?? item.id,
+          quantity: item.quantity,
+          equipped: item.equipped,
+          attuned: item.attuned,
+          requiresAttunement: false,
+          active: false,
+          inactiveReason: 'content missing',
+        })
         continue
       }
       const source = this.source('item', entry.name, `item:${item.id}`, entry.uid)
@@ -701,6 +715,27 @@ class Walker {
           active: item.equipped,
         })
       }
+      const chargeMax = entry.data.charges?.max
+      this.result.items.push({
+        itemId: item.id,
+        uid: entry.uid,
+        name: entry.name,
+        category: entry.data.category,
+        quantity: item.quantity,
+        equipped: item.equipped,
+        attuned: item.attuned,
+        requiresAttunement: needsAttunement,
+        active,
+        ...(inactiveReason ? { inactiveReason } : {}),
+        ...(entry.data.charges
+          ? {
+              charges: {
+                current: item.chargesCurrent ?? 0,
+                max: typeof chargeMax === 'number' ? chargeMax : null,
+              },
+            }
+          : {}),
+      })
       this.expandEntry(entry, source, { self, active, inactiveReason })
     }
   }
