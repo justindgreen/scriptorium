@@ -63,7 +63,7 @@ export function applyCommand(
   }
   const item = (id: string) => next.inventory.find((i) => i.id === id)
   const hpMax = sheet.hp.max
-  let summary = ''
+  let summary: string
 
   switch (command.type) {
     // ------------------------------------------------------------------------- inventory

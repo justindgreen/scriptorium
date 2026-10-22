@@ -40,9 +40,9 @@ export function can(scope: Scope, action: Action): boolean {
   if (!scope.userId || !scope.role) return false
   if (adminActions.has(action)) return scope.role === 'admin'
   switch (action) {
+    // Ownership of a character is checked by the characters service; any signed-in user may own characters.
     case 'me.read':
     case 'content.read':
-    // Ownership of a character is checked by the characters service; any signed-in user may own characters.
     case 'character.create':
     case 'character.read':
     case 'character.write':
