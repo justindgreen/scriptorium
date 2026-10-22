@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import EmbeddedPostgres from 'embedded-postgres'
 import { Client } from 'pg'
 
 export type EmbeddedOptions = {
@@ -28,6 +27,8 @@ export async function startEmbeddedPostgres(options: EmbeddedOptions): Promise<E
   fs.mkdirSync(path.dirname(dataDir), { recursive: true })
   await reclaimDataDir(dataDir)
 
+  // Development-only dependency, loaded on demand so production images never need the package.
+  const { default: EmbeddedPostgres } = await import('embedded-postgres')
   const pg = new EmbeddedPostgres({
     databaseDir: dataDir,
     user: USER,

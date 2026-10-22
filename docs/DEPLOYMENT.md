@@ -85,6 +85,14 @@ docker exec scriptorium scriptorium restore /data/backups/<timestamp>
 
 While it runs, a maintenance marker makes the running server answer `503` to everything except health endpoints; the marker is removed when the restore finishes or fails. The command verifies the backup first, brings the schema to the running version with migrations, truncates the application tables and loads the CSV files in dependency order inside one transaction, swaps the uploads directory atomically, and re-verifies the restored files. A backup can be restored into the same or a newer application version, never an older one. To restore into a brand-new database on another host, point `DATABASE_URL` at the empty database and run the same command; then start the server.
 
-## Local image build and the first production run
+## Verification
 
-The Dockerfile is validated by the CI workflow (`docker build`) and on the Unraid host; the development workstation for this project has no Docker, so builds are not run there. The restore procedure is covered by an automated acceptance test that backs up one instance and restores into a fresh one (`apps/server/test/backup.test.ts`).
+The image build and install path are verified in three places:
+
+- Locally with Docker Desktop: `docker build -f deploy/docker/Dockerfile -t scriptorium:local .` then `bash deploy/docker/smoke-test.sh`, which brings up a fresh Compose stack, completes the setup wizard through the API, checks the seeded SRD content, creates a backup inside the container, restarts the app and confirms the session survived, restores the backup into the running stack and confirms the instance is healthy afterwards.
+- In CI (`.github/workflows/ci.yml`, job `image`): the same build and smoke test on every push.
+- By the automated restore acceptance test (`apps/server/test/backup.test.ts`), which backs up one instance and restores into a fresh one.
+
+The first run on the Unraid host remains the final check for that environment. Image size is about 614 MB; roughly 100 MB of that is development toolchain packages that `pnpm deploy --legacy` copies along with the production dependencies, a known inefficiency recorded in ADR-0029 and scheduled for the hardening milestone.
+
+After a restore finishes, the running server can answer with the maintenance notice for up to one more second while it re-checks the marker.

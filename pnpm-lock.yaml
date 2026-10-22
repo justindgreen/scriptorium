@@ -236,9 +236,6 @@ importers:
       drizzle-orm:
         specifier: ^0.45.4
         version: 0.45.4(@types/pg@8.23.1)(kysely@0.29.7)(pg@8.23.1)
-      embedded-postgres:
-        specifier: 17.9.0-beta.17
-        version: 17.9.0-beta.17
       fastify:
         specifier: ^5.12.7
         version: 5.12.7
@@ -273,6 +270,9 @@ importers:
       drizzle-kit:
         specifier: ^0.31.11
         version: 0.31.11
+      embedded-postgres:
+        specifier: 17.9.0-beta.17
+        version: 17.9.0-beta.17
       pino-pretty:
         specifier: ^13.2.0
         version: 13.2.0

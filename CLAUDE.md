@@ -81,6 +81,6 @@ Toolchain notes: TypeScript is pinned to 6.x until typescript-eslint supports 7.
 
 ## Environment notes
 
-- Development workstation is Windows 11 with Node 24 and git; no Docker. The dev database approach is fixed by spike S1 in M1.2 (embedded PostgreSQL 17 by default, PGlite as fallback).
-- Production target is Unraid with the official `postgres:17` image. The Docker image is validated in CI or on the Unraid host.
+- Development workstation is Windows 11 with Node 24, git and Docker Desktop (Linux engine). Development and tests use the embedded PostgreSQL 17 (spike S1); Docker is for image builds and the install smoke test (`deploy/docker/smoke-test.sh`).
+- Production target is Unraid with the official `postgres:17` image. The image and install path are verified locally and in CI (`image` job); the repository is `https://github.com/justindgreen/scriptorium`.
 - Licensing: SRD 5.1 is CC-BY-4.0; attribution text is stored with the source and shown in the app. Never import proprietary content or scrape D&D Beyond.

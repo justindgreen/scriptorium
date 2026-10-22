@@ -27,13 +27,13 @@ ENV NODE_ENV=production \
     WEB_DIST_DIR=/app/web
 RUN apt-get update && apt-get install -y --no-install-recommends tini && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY --from=build /out/server/node_modules ./node_modules
-COPY --from=build /repo/apps/server/dist ./dist
-COPY --from=build /repo/apps/server/drizzle ./drizzle
-COPY --from=build /repo/apps/web/dist ./web
-COPY --from=build /repo/content ./content
+COPY --from=build --chown=node:node /out/server/node_modules ./node_modules
+COPY --from=build --chown=node:node /repo/apps/server/dist ./dist
+COPY --from=build --chown=node:node /repo/apps/server/drizzle ./drizzle
+COPY --from=build --chown=node:node /repo/apps/web/dist ./web
+COPY --from=build --chown=node:node /repo/content ./content
 COPY deploy/docker/entrypoint.sh /usr/local/bin/scriptorium
-RUN chmod +x /usr/local/bin/scriptorium && mkdir -p /data && chown -R node:node /data /app
+RUN chmod +x /usr/local/bin/scriptorium && mkdir -p /data && chown node:node /data
 USER node
 VOLUME ["/data"]
 EXPOSE 3000

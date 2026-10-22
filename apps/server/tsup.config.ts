@@ -9,4 +9,6 @@ export default defineConfig({
   clean: true,
   // Workspace packages are TypeScript sources; bundle them into the server build.
   noExternal: [/^@scriptorium\//],
+  // Development-only database, loaded with a dynamic import; never bundled, absent in production.
+  external: ['embedded-postgres'],
 })
