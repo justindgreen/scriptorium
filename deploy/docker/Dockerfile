@@ -4,7 +4,8 @@
 
 FROM node:24-bookworm-slim AS build
 WORKDIR /repo
-RUN corepack enable && corepack prepare pnpm@12.14.0 --activate
+# Install the pinned pnpm with npm: one registry fetch, no corepack bootstrap, no self-switching.
+RUN npm install -g pnpm@12.14.0
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
 COPY apps/server/package.json apps/server/
 COPY apps/web/package.json apps/web/

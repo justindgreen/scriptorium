@@ -19,9 +19,6 @@ overrides:
 # Peers are declared explicitly; never pull in optional drivers by accident.
 autoInstallPeers: false
 
-# corepack / pnpm-action already pin 12.14.0; do not re-download the binary during installs.
-managePackageManagerVersions: false
-
 # Tolerate a slow or flaky registry during installs (Docker builds, CI).
 fetchRetries: 5
 fetchRetryMintimeout: 20000
