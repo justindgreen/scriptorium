@@ -48,6 +48,7 @@ pnpm exec playwright install chromium   # once per machine, before test:e2e
 pnpm -F @scriptorium/server cli -- <command>   # migrate | seed [dir] | import-content <file...> | sources
 pnpm -F @scriptorium/srd-import download -- --out <abs dir>              # upstream 5e-bits dataset (gitignored under .data/)
 pnpm -F @scriptorium/srd-import convert -- --source <abs dir> --out <abs content/srd-5.1>   # regenerate packages with overlays
+pnpm -F @scriptorium/srd-import generate-overlays   # rewrite the alpha mechanics overlays and fixtures from the generator
 pnpm coverage:automation   # conformance run; regenerates docs/AUTOMATION_COVERAGE.md
 ```
 
