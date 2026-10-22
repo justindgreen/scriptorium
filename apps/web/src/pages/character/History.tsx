@@ -55,10 +55,13 @@ export function History({
           onClick={() => undo.mutate()}
           data-testid="undo"
         >
-          {undoable.data?.ok
-            ? `Undo ${undoable.data.eventType}`
-            : `Undo unavailable${undoable.data && !undoable.data.ok ? `: ${undoable.data.reason}` : ''}`}
+          {undoable.data?.ok ? `Undo ${undoable.data.eventType}` : 'Undo'}
         </Button>
+        {undoable.data && !undoable.data.ok ? (
+          <p className="text-xs text-muted-foreground" data-testid="undo-reason">
+            Undo unavailable: {undoable.data.reason}
+          </p>
+        ) : null}
         <Button
           variant="ghost"
           size="sm"

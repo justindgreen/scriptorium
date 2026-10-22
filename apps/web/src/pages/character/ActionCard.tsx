@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { modifier, useInvalidateCharacter } from '@/lib/characters'
 import { errorMessage, trpc, trpcClient } from '@/lib/trpc'
-import { CREATURE_TYPES, SIZES, selectClass, type SendFn } from './shared'
+import { CREATURE_TYPES, SIZES, selectBase, selectClass, type SendFn } from './shared'
 
 /** The plan as the API serializes it (optional fields may be absent after JSON). */
 type ActionPlan = Awaited<ReturnType<typeof trpcClient.characters.plan.query>>
@@ -211,7 +211,7 @@ function PlanView({
               .filter((l) => l.applied)
               .map(
                 (l) =>
-                  `${l.source.name} ${typeof l.value === 'number' ? modifier(l.value) : String(l.value)}`,
+                  `${l.source.kind === 'engine' ? (l.label ?? l.source.name) : l.source.name} ${typeof l.value === 'number' ? modifier(l.value) : String(l.value)}`,
               )
               .join(', ')}
             )
@@ -322,7 +322,7 @@ function Prompts({
             />
           ) : q.kind === 'creatureType' || q.kind === 'size' ? (
             <select
-              className={`${selectClass} w-auto`}
+              className={`${selectBase} w-auto`}
               value={String(value ?? '')}
               onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
               aria-label={q.text}

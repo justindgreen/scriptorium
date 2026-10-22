@@ -54,7 +54,7 @@ export function OverridesPanel({ view, send }: { view: CharacterView; send: Send
         ) : (
           <p className="text-muted-foreground">No overrides.</p>
         )}
-        <div className="grid gap-2 print:hidden sm:grid-cols-[1fr_6rem_1fr_auto] sm:items-end">
+        <div className="grid gap-2 print:hidden">
           <FormField id="override-path" label="Stat">
             <select
               id="override-path"
@@ -71,35 +71,37 @@ export function OverridesPanel({ view, send }: { view: CharacterView; send: Send
               ))}
             </select>
           </FormField>
-          <FormField id="override-value" label="Value">
-            <Input
-              id="override-value"
-              type="number"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              data-testid="override-value"
-            />
-          </FormField>
-          <FormField id="override-note" label="Note">
-            <Input id="override-note" value={note} onChange={(e) => setNote(e.target.value)} />
-          </FormField>
-          <Button
-            variant="outline"
-            disabled={!statPath || value === ''}
-            onClick={() => {
-              void send({
-                type: 'setOverride',
-                statPath,
-                value: Number(value),
-                ...(note ? { note } : {}),
-              })
-              setValue('')
-              setNote('')
-            }}
-            data-testid="override-set"
-          >
-            Override
-          </Button>
+          <div className="grid grid-cols-[5rem_minmax(0,1fr)_auto] items-end gap-2">
+            <FormField id="override-value" label="Value">
+              <Input
+                id="override-value"
+                type="number"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                data-testid="override-value"
+              />
+            </FormField>
+            <FormField id="override-note" label="Note">
+              <Input id="override-note" value={note} onChange={(e) => setNote(e.target.value)} />
+            </FormField>
+            <Button
+              variant="outline"
+              disabled={!statPath || value === ''}
+              onClick={() => {
+                void send({
+                  type: 'setOverride',
+                  statPath,
+                  value: Number(value),
+                  ...(note ? { note } : {}),
+                })
+                setValue('')
+                setNote('')
+              }}
+              data-testid="override-set"
+            >
+              Override
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

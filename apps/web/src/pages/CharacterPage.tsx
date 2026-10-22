@@ -77,8 +77,8 @@ export function CharacterPage() {
         }
       />
       <FormError message={error} />
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr] print:block">
-        <div className="grid gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] print:block">
+        <div className="grid min-w-0 grid-cols-1 gap-6">
           <Vitals view={data} send={send} />
           <ActionsPanel view={data} send={send} onError={setError} />
           <PendingChoices view={data} send={send} />
@@ -86,7 +86,7 @@ export function CharacterPage() {
           <Inventory view={data} send={send} />
           {sheet.spellcasting ? <Spells view={data} send={send} onError={setError} /> : null}
         </div>
-        <div className="grid gap-6 self-start">
+        <div className="grid min-w-0 grid-cols-1 gap-6 self-start">
           <ConditionsPanel view={data} send={send} />
           <CurrencyPanel view={data} send={send} />
           <OverridesPanel view={data} send={send} />

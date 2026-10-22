@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { uidLabel, type CharacterView } from '@/lib/characters'
 import { trpc } from '@/lib/trpc'
-import { selectClass, type SendFn } from './shared'
+import { selectBase, selectClass, type SendFn } from './shared'
 
 export function ConditionsPanel({ view, send }: { view: CharacterView; send: SendFn }) {
   const { sheet, aggregate } = view
@@ -41,7 +41,7 @@ export function ConditionsPanel({ view, send }: { view: CharacterView; send: Sen
           ))}
         </ul>
         <div className="flex flex-wrap items-end gap-2 print:hidden">
-          <label className="grid flex-1 gap-1">
+          <label className="grid min-w-0 flex-1 gap-1">
             Add a condition
             <select
               className={selectClass}
@@ -74,7 +74,7 @@ export function ConditionsPanel({ view, send }: { view: CharacterView; send: Sen
         <label className="flex items-center justify-between gap-2">
           <span>Exhaustion</span>
           <select
-            className={`${selectClass} w-24`}
+            className={`${selectBase} w-24`}
             value={aggregate.state.exhaustion}
             onChange={(e) => void send({ type: 'setExhaustion', level: Number(e.target.value) })}
             data-testid="exhaustion"

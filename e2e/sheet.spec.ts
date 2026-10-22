@@ -145,5 +145,5 @@ test('a short rest spends hit dice rolled on the server', async ({ page }, testI
   await expect(page.getByTestId('event-log').locator('li').first()).toContainText(/Short rest/)
   // Rests are not undoable: the limit is enforced and explained.
   await expect(page.getByTestId('undo')).toBeDisabled()
-  await expect(page.getByTestId('undo')).toContainText(/snapshot/i)
+  await expect(page.getByTestId('undo-reason')).toContainText(/snapshot/i)
 })

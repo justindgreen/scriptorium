@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { modifier, uidLabel, type CharacterView } from '@/lib/characters'
 import { trpc } from '@/lib/trpc'
 import { ActionCard } from './ActionCard'
-import { selectClass, type SendFn } from './shared'
+import { selectBase, type SendFn } from './shared'
 
 export function Spells({
   view,
@@ -124,7 +124,7 @@ export function Spells({
               <label className="flex items-center gap-2 text-sm">
                 Cast with
                 <select
-                  className={`${selectClass} w-auto`}
+                  className={`${selectBase} w-auto`}
                   value={cast.slot}
                   onChange={(e) => setCast({ ...cast, slot: e.target.value })}
                   data-testid="cast-slot"

@@ -7,8 +7,10 @@ export type SendFn = (
 
 export const ABILITIES = Object.keys(ABILITY_NAMES) as AbilityKey[]
 
-export const selectClass =
-  'h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50'
+/** Native select styling without a width; `selectClass` adds `w-full`. */
+export const selectBase =
+  'h-9 min-w-0 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50'
+export const selectClass = `${selectBase} w-full`
 
 export function num(sheet: ComputedSheet, path: string): number {
   const v = sheet.stats[path]?.value

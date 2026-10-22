@@ -23,6 +23,8 @@ async function uptime(request: APIRequestContext): Promise<number> {
 async function restartServer(request: APIRequestContext): Promise<void> {
   const before = await uptime(request)
   expect(before).toBeGreaterThanOrEqual(0)
+  // With an external database (CI) nothing has created the data directory yet.
+  fs.mkdirSync(dataDir, { recursive: true })
   fs.writeFileSync(path.join(dataDir, 'restart.request'), String(Date.now()))
   // Wait until a new process answers: its uptime is lower than the old one's.
   await expect
