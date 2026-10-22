@@ -42,6 +42,43 @@ export type StoredRoll = {
   results: RollResults
 }
 
+/** Rolls everything a plan needs: the d20 with its mode, every packet (crit formula on a critical), healing. */
+export function rollForPlan(plan: ActionPlan, dice: DieRoller): RollResults {
+  const results: RollResults = {}
+  let critical = false
+  if (plan.attack) {
+    const d20 = rollD20({
+      dice,
+      mode: plan.attack.mode,
+      modifier: plan.attack.bonus,
+      critRange: plan.attack.critRange,
+    })
+    results.attack = { natural: d20.natural, total: d20.total }
+    results.d20 = d20.dice
+    critical = d20.isCritical
+  }
+  if (plan.check) {
+    const d20 = rollD20({ dice, mode: plan.check.mode, modifier: plan.check.bonus })
+    results.check = { natural: d20.natural, total: d20.total }
+    results.d20 = d20.dice
+  }
+  if (plan.damage.length > 0) {
+    results.damage = {}
+    results.damageDetails = {}
+    for (const packet of plan.damage) {
+      const rolled = rollExpression(critical ? packet.critFormula : packet.formula, { dice })
+      results.damage[packet.id] = rolled.total
+      results.damageDetails[packet.id] = rolled.breakdown
+    }
+  }
+  if (plan.healing !== undefined) {
+    const rolled = rollExpression(plan.healing, { dice })
+    results.healing = rolled.total
+    results.damageDetails = { ...results.damageDetails, healing: rolled.breakdown }
+  }
+  return results
+}
+
 export function createRollService(deps: {
   db: Db
   repo: CharacterRepo
@@ -97,38 +134,8 @@ export function createRollService(deps: {
           code: 'PRECONDITION_FAILED',
           message: `Cannot ${plan.name}: ${plan.blocked}.`,
         })
-      const results: RollResults = {}
-      let critical = false
-      if (plan.attack) {
-        const d20 = rollD20({
-          dice,
-          mode: plan.attack.mode,
-          modifier: plan.attack.bonus,
-          critRange: plan.attack.critRange,
-        })
-        results.attack = { natural: d20.natural, total: d20.total }
-        results.d20 = d20.dice
-        critical = d20.isCritical
-      }
-      if (plan.check) {
-        const d20 = rollD20({ dice, mode: plan.check.mode, modifier: plan.check.bonus })
-        results.check = { natural: d20.natural, total: d20.total }
-        results.d20 = d20.dice
-      }
-      if (plan.damage.length > 0) {
-        results.damage = {}
-        results.damageDetails = {}
-        for (const packet of plan.damage) {
-          const rolled = rollExpression(critical ? packet.critFormula : packet.formula, { dice })
-          results.damage[packet.id] = rolled.total
-          results.damageDetails[packet.id] = rolled.breakdown
-        }
-      }
-      if (plan.healing !== undefined) {
-        const rolled = rollExpression(plan.healing, { dice })
-        results.healing = rolled.total
-        results.damageDetails = { ...results.damageDetails, healing: rolled.breakdown }
-      }
+      const results = rollForPlan(plan, dice)
+      const critical = plan.attack ? (results.attack?.natural ?? 0) >= plan.attack.critRange : false
       const id = newId()
       await deps.db.insert(schema.rolls).values({
         id,

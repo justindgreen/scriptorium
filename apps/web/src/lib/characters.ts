@@ -56,7 +56,7 @@ export function useCharacterLive(characterId: string): { live: boolean } {
       { characterId },
       {
         onData: (event) => {
-          if (event.type === 'character.deleted') {
+          if (event.type !== 'ready' && event.type !== 'character.changed') {
             void invalidate()
             return
           }

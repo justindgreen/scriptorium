@@ -89,6 +89,8 @@ Reset rules are specified in `RULES_ENGINE.md` §7.
 | `campaign_awards`          | id, campaign_id, type `xp\|level\|item\|currency`, payload jsonb, recipient_character_ids uuid[], created_by, created_at                                                                 |
 | `roll_log`                 | id, campaign_id, character_id, user_id, expression, result jsonb, visibility `public\|dm\|private`, created_at                                                                           |
 
+Notes (M2.8): `campaign_members` carries the DM as a member row (`role = dm`); `campaign_characters` is the approval state and `characters.campaign_id` is set on approval; `campaign_content_sources` widens content visibility to every active member (see the content repository); `campaign_invites` stores a SHA-256 of the join code with expiry and use counts. Notes, NPCs, awards and the roll log arrive with M4.2.
+
 ## 5. Encounters (own aggregate)
 
 | Table                    | Columns                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -98,6 +100,8 @@ Reset rules are specified in `RULES_ENGINE.md` §7.
 | `encounter_events`       | id, encounter_id, actor_user_id, type, payload jsonb, action_id, created_at. Append-only.                                                                                                                                                                                                                                                                                                        |
 
 A participant representing a player character stores no HP of its own; the tracker issues character commands.
+
+Notes (M2.8): `encounter_participants` stores a monster's `entry_uid` and the pinned `version_id`, its hit points, AC, conditions and `combat.turn`; a character participant keeps `character_id` only. `encounter_events.version_after` orders the log; attack events carry the command id as `action_id`, the same id the character events of that attack carry. Receipts for encounter commands use `command_receipts` with `aggregate_type = encounter`.
 
 ## 6. Aggregates, locking and idempotency
 

@@ -23,9 +23,9 @@ export function createContentRepo(db: Db) {
   const visibleTo = (viewer: Viewer | undefined): SQL => {
     if (viewer?.role === 'admin') return sql`true`
     const global = eq(schema.contentSources.visibility, 'global')
-    return viewer?.userId
-      ? or(global, eq(schema.contentSources.ownerUserId, viewer.userId))!
-      : global
+    if (!viewer?.userId) return global
+    const sharedWithMe = sql`${schema.contentSources.id} in (select ${schema.campaignContentSources.sourceId} from ${schema.campaignContentSources} join ${schema.campaignMembers} on ${schema.campaignMembers.campaignId} = ${schema.campaignContentSources.campaignId} where ${schema.campaignMembers.userId} = ${viewer.userId} and ${schema.campaignMembers.status} = 'active' and ${schema.campaignContentSources.enabled})`
+    return or(global, eq(schema.contentSources.ownerUserId, viewer.userId), sharedWithMe)!
   }
 
   return {

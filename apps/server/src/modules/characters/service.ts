@@ -14,6 +14,7 @@ import { newId } from '../../core/ids.js'
 import type { Scope } from '../../core/policy.js'
 import type { DomainEvent, EventBus } from '../../core/events.js'
 import type { ContentRepo } from '../content/repo.js'
+import type { CampaignService } from '../campaigns/service.js'
 import type { CharacterRepo } from './repo.js'
 import { characterRootUids, loadSnapshot } from './snapshot.js'
 import type { createCharacterSchema } from './schemas.js'
@@ -36,8 +37,35 @@ export function createCharacterService(deps: {
   commands: CommandRunner
   events: EventBus
   content: ContentRepo
+  /** Set after construction (the campaign service is built later); DM permissions need it. */
+  campaigns?: CampaignService
 }) {
   const { repo, commands } = deps
+
+  /** Commands a DM may issue on an approved party character (docs/PRODUCT_SPEC.md §8: grant items, adjust). */
+  const DM_COMMANDS = new Set<CharacterCommand['type']>([
+    'addItem',
+    'applyDamage',
+    'heal',
+    'setTempHp',
+    'applyCondition',
+    'removeCondition',
+    'setExhaustion',
+    'turnStarted',
+  ])
+
+  async function isDm(scope: Scope, characterId: string): Promise<boolean> {
+    return deps.campaigns ? deps.campaigns.isDmOfCharacter(scope, characterId) : false
+  }
+
+  async function assertCanRead(
+    scope: Scope,
+    row: { id: string; ownerUserId: string },
+  ): Promise<void> {
+    if (scope.role === 'admin' || scope.userId === row.ownerUserId) return
+    if (await isDm(scope, row.id)) return
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'That character belongs to someone else.' })
+  }
 
   function assertOwner(scope: Scope, ownerUserId: string): void {
     if (scope.role === 'admin') return
@@ -48,7 +76,7 @@ export function createCharacterService(deps: {
   async function load(scope: Scope, characterId: string): Promise<CharacterView> {
     const current = await commands.view(characterId)
     if (!current) throw new TRPCError({ code: 'NOT_FOUND', message: 'Character not found.' })
-    assertOwner(scope, current.ownerUserId)
+    await assertCanRead(scope, { id: characterId, ownerUserId: current.ownerUserId })
     return {
       id: characterId,
       ownerUserId: current.ownerUserId,
@@ -99,7 +127,7 @@ export function createCharacterService(deps: {
       const queue: LiveEvent[] = []
       let wake: (() => void) | null = null
       const unsubscribe = deps.events.subscribe((event) => {
-        if (event.characterId !== characterId) return
+        if (!('characterId' in event) || event.characterId !== characterId) return
         queue.push(event)
         wake?.()
       })
@@ -177,7 +205,13 @@ export function createCharacterService(deps: {
     ) {
       const row = await repo.getRow(deps.db, request.characterId)
       if (!row) throw new TRPCError({ code: 'NOT_FOUND', message: 'Character not found.' })
-      assertOwner(scope, row.ownerUserId)
+      if (scope.role !== 'admin' && scope.userId !== row.ownerUserId) {
+        if (!DM_COMMANDS.has(request.command.type) || !(await isDm(scope, row.id)))
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'That character belongs to someone else.',
+          })
+      }
       if (request.command.type === 'addItem' && request.command.itemUid) {
         // Private homebrew is usable only by people who can see it (rule 3: never rely on the UI).
         const visible = await deps.content.getEntry(request.command.itemUid, { viewer: scope })

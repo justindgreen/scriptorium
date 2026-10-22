@@ -20,6 +20,10 @@ import { CharacterBuilderPage } from '@/pages/CharacterBuilderPage'
 import { CharacterPage } from '@/pages/CharacterPage'
 import { CharactersPage } from '@/pages/CharactersPage'
 import { HomebrewPage } from '@/pages/HomebrewPage'
+import { CampaignsPage } from '@/pages/CampaignsPage'
+import { CampaignPage } from '@/pages/CampaignPage'
+import { CampaignJoinPage } from '@/pages/CampaignJoinPage'
+import { EncounterPage } from '@/pages/EncounterPage'
 import { ItemEditorPage } from '@/pages/homebrew/ItemEditorPage'
 import { HomePage } from '@/pages/HomePage'
 import { LicensesPage } from '@/pages/LicensesPage'
@@ -91,6 +95,29 @@ const homebrewItemRoute = createRoute({
   getParentRoute: () => appLayout,
   path: '/homebrew/items/$entryId',
   component: ItemEditorPage,
+})
+const campaignsRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/campaigns',
+  component: CampaignsPage,
+})
+const campaignJoinRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/campaigns/join',
+  validateSearch: (search: Record<string, unknown>) => ({
+    code: typeof search['code'] === 'string' ? search['code'] : '',
+  }),
+  component: CampaignJoinPage,
+})
+const campaignRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/campaigns/$campaignId',
+  component: CampaignPage,
+})
+const encounterRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: '/encounters/$encounterId',
+  component: EncounterPage,
 })
 const adminUsersRoute = createRoute({
   getParentRoute: () => appLayout,
@@ -170,6 +197,10 @@ const routeTree = rootRoute.addChildren([
     characterRoute,
     homebrewRoute,
     homebrewItemRoute,
+    campaignsRoute,
+    campaignJoinRoute,
+    campaignRoute,
+    encounterRoute,
     adminUsersRoute,
     adminInvitesRoute,
     adminAuditRoute,

@@ -22,6 +22,11 @@ export type Action =
   | 'character.write'
   | 'homebrew.read'
   | 'homebrew.write'
+  | 'campaign.create'
+  | 'campaign.read'
+  | 'campaign.write'
+  | 'encounter.read'
+  | 'encounter.write'
   | 'admin.content.manage'
   | 'admin.users.manage'
   | 'admin.invites.manage'
@@ -50,6 +55,11 @@ export function can(scope: Scope, action: Action): boolean {
     case 'character.write':
     case 'homebrew.read':
     case 'homebrew.write':
+    case 'campaign.create':
+    case 'campaign.read':
+    case 'campaign.write':
+    case 'encounter.read':
+    case 'encounter.write':
       return true
     default:
       return false

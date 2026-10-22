@@ -136,7 +136,7 @@ Set-valued stats (proficiencies, languages, resistances, condition immunities, s
 | `reaction.usedOnTurnId`                                   | usable on any creature's turn                                                                                                      | regained at the start of the character's **own** turn                                                            |
 | `bonusAction.usedOnTurnId`, `actions.budget/usedOnTurnId` | only on the character's own turn; Action Surge adds 1 to the budget for that turn                                                  | at the start of the character's own turn                                                                         |
 
-The tracker issues `turnStarted { turnId, ownTurn }` to every participant when the marker moves. Limitation: outside a tracked encounter the bookkeeping is advisory because other creatures' turns are not observed.
+The tracker issues `turnStarted { turnId, ownTurn }` to every participant when the marker moves. Limitation: outside a tracked encounter the bookkeeping is advisory because other creatures' turns are not observed. Implementation (M2.8): turn ids are `<encounterId>:<round>:<turnIndex>`; the encounter service issues the commands inside the transaction that moves the marker and skips defeated participants when it advances.
 
 ## 8. Commands, events, undo
 

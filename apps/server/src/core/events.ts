@@ -8,6 +8,7 @@ export type DomainEvent =
       commandType: string
     }
   | { type: 'character.deleted'; characterId: string }
+  | { type: 'encounter.changed'; encounterId: string; campaignId: string; version: number }
 
 type Listener = (event: DomainEvent) => void
 

@@ -16,7 +16,9 @@ import type { Db } from '../db/client.js'
 import type { CharacterRepo, CharacterSummary } from '../modules/characters/repo.js'
 import type { ContentRepo } from '../modules/content/repo.js'
 import { characterRootUids, loadSnapshot } from '../modules/characters/snapshot.js'
-import type { EventBus } from './events.js'
+import type { DomainEvent, EventBus } from './events.js'
+
+export type Tx = Parameters<Parameters<Db['transaction']>[0]>[0]
 
 export type CommandRequest = {
   commandId: string
@@ -84,11 +86,100 @@ export function createCommandRunner(deps: {
     return { aggregate, sheet, ownerUserId: row.ownerUserId, status: row.status }
   }
 
+  /**
+   * The transactional core of a command: lock the row, check the revision, apply the engine
+   * patch, log the event, snapshot when required, pin content, write the receipt (unless the
+   * caller owns the receipt, as the encounter coordinator does). The caller emits
+   * `changedEvent(...)` after its transaction commits.
+   */
+  async function applyInTx(
+    tx: Tx,
+    request: CommandRequest,
+    options: { writeReceipt?: boolean; actionId?: string } = {},
+  ): Promise<{ outcome: CommandOutcome; sheet: ComputedSheet; aggregate: CharacterAggregate }> {
+    const row = await deps.characters.getRow(tx, request.characterId, { forUpdate: true })
+    if (!row) throw new CommandError('NOT_FOUND', 'character not found')
+    const aggregate = await deps.characters.loadAggregate(tx, row)
+    if (row.revision !== request.expectedRevision) {
+      throw new CommandError(
+        'CONFLICT',
+        `the character changed (revision ${row.revision}, you expected ${request.expectedRevision})`,
+        { revision: row.revision },
+      )
+    }
+    const pinned = await deps.characters.getPinnedRefs(tx, request.characterId)
+    const loaded = await loadSnapshot(tx, characterRootUids(aggregate, [request.command]), pinned)
+    const ruleset = await rulesetProfile(aggregate.rulesetId)
+    const sheet = computeSheet(aggregate, loaded.snapshot, ruleset)
+    const applied = applyCommand(aggregate, sheet, request.command, {
+      snapshot: loaded.snapshot,
+      ruleset,
+    })
+    if (!applied.ok)
+      throw new CommandError(
+        applied.code === 'NOT_FOUND' ? 'NOT_FOUND' : 'BAD_REQUEST',
+        applied.message,
+        { code: applied.code },
+      )
+
+    const revision = row.revision + 1
+    if (applied.event.snapshotReason) {
+      await deps.characters.insertSnapshot(tx, aggregate, applied.event.snapshotReason)
+      await deps.characters.pruneSnapshots(tx, request.characterId, SNAPSHOT_RETENTION)
+    }
+    // The content the new aggregate references may have grown (a new class, a chosen feature).
+    const after = applied.aggregate
+    const nextLoaded = await loadSnapshot(tx, characterRootUids(after), pinned)
+    const nextSheet = computeSheet({ ...after, revision }, nextLoaded.snapshot, ruleset)
+    await deps.characters.applyPatch(
+      tx,
+      request.characterId,
+      applied.patch,
+      revision,
+      summaryOf(nextSheet, after),
+    )
+    await deps.characters.replaceRefs(tx, request.characterId, nextLoaded.refs)
+    const eventId = await deps.characters.appendEvent(
+      tx,
+      request.characterId,
+      request.actorUserId,
+      applied.event,
+      revision,
+      options.actionId,
+    )
+    const outcome: CommandOutcome = {
+      revision,
+      eventId,
+      replayed: false,
+      summary: applied.event.summary,
+    }
+    if (options.writeReceipt !== false)
+      await deps.characters.insertReceipt(
+        tx,
+        request.commandId,
+        request.actorUserId,
+        request.characterId,
+        outcome,
+      )
+    return { outcome, sheet: nextSheet, aggregate: { ...after, revision } }
+  }
+
+  function changedEvent(
+    request: Pick<CommandRequest, 'characterId' | 'command'>,
+    outcome: CommandOutcome,
+  ): Extract<DomainEvent, { type: 'character.changed' }> {
+    return {
+      type: 'character.changed',
+      characterId: request.characterId,
+      revision: outcome.revision,
+      eventId: outcome.eventId,
+      commandType: request.command.type,
+    }
+  }
+
   async function run(
     request: CommandRequest,
-    hooks: {
-      prepare?: (tx: Parameters<Parameters<Db['transaction']>[0]>[0]) => Promise<void>
-    } = {},
+    hooks: { prepare?: (tx: Tx) => Promise<void> } = {},
   ): Promise<CommandOutcome & { sheet: ComputedSheet; aggregate: CharacterAggregate }> {
     const receipt = await deps.characters.getReceipt(deps.db, request.commandId)
     if (receipt) {
@@ -102,82 +193,13 @@ export function createCommandRunner(deps: {
 
     const result = await deps.db.transaction(async (tx) => {
       if (hooks.prepare) await hooks.prepare(tx)
-      const row = await deps.characters.getRow(tx, request.characterId, { forUpdate: true })
-      if (!row) throw new CommandError('NOT_FOUND', 'character not found')
-      const aggregate = await deps.characters.loadAggregate(tx, row)
-      if (row.revision !== request.expectedRevision) {
-        throw new CommandError(
-          'CONFLICT',
-          `the character changed (revision ${row.revision}, you expected ${request.expectedRevision})`,
-          { revision: row.revision },
-        )
-      }
-      const pinned = await deps.characters.getPinnedRefs(tx, request.characterId)
-      const loaded = await loadSnapshot(tx, characterRootUids(aggregate, [request.command]), pinned)
-      const ruleset = await rulesetProfile(aggregate.rulesetId)
-      const sheet = computeSheet(aggregate, loaded.snapshot, ruleset)
-      const applied = applyCommand(aggregate, sheet, request.command, {
-        snapshot: loaded.snapshot,
-        ruleset,
-      })
-      if (!applied.ok)
-        throw new CommandError(
-          applied.code === 'NOT_FOUND' ? 'NOT_FOUND' : 'BAD_REQUEST',
-          applied.message,
-          { code: applied.code },
-        )
-
-      const revision = row.revision + 1
-      if (applied.event.snapshotReason) {
-        await deps.characters.insertSnapshot(tx, aggregate, applied.event.snapshotReason)
-        await deps.characters.pruneSnapshots(tx, request.characterId, SNAPSHOT_RETENTION)
-      }
-      // The content the new aggregate references may have grown (a new class, a chosen feature).
-      const after = applied.aggregate
-      const nextLoaded = await loadSnapshot(tx, characterRootUids(after), pinned)
-      const nextSheet = computeSheet({ ...after, revision }, nextLoaded.snapshot, ruleset)
-      await deps.characters.applyPatch(
-        tx,
-        request.characterId,
-        applied.patch,
-        revision,
-        summaryOf(nextSheet, after),
-      )
-      await deps.characters.replaceRefs(tx, request.characterId, nextLoaded.refs)
-      const eventId = await deps.characters.appendEvent(
-        tx,
-        request.characterId,
-        request.actorUserId,
-        applied.event,
-        revision,
-      )
-      const outcome: CommandOutcome = {
-        revision,
-        eventId,
-        replayed: false,
-        summary: applied.event.summary,
-      }
-      await deps.characters.insertReceipt(
-        tx,
-        request.commandId,
-        request.actorUserId,
-        request.characterId,
-        outcome,
-      )
-      return { outcome, sheet: nextSheet, aggregate: { ...after, revision } }
+      return applyInTx(tx, request)
     })
-
-    deps.events.emit({
-      type: 'character.changed',
-      characterId: request.characterId,
-      revision: result.outcome.revision,
-      eventId: result.outcome.eventId,
-      commandType: request.command.type,
-    })
+    deps.events.emit(changedEvent(request, result.outcome))
     return { ...result.outcome, sheet: result.sheet, aggregate: result.aggregate }
   }
 
-  return { run, view, rulesetProfile }
+  return { run, view, rulesetProfile, applyInTx, changedEvent }
 }
 
 export type CommandRunner = ReturnType<typeof createCommandRunner>

@@ -7,6 +7,8 @@ import type { InviteService } from '../modules/admin/invites.js'
 import type { CharacterService } from '../modules/characters/service.js'
 import type { RollService } from '../modules/characters/rolls.js'
 import type { HomebrewService } from '../modules/homebrew/service.js'
+import type { CampaignService } from '../modules/campaigns/service.js'
+import type { EncounterService } from '../modules/encounters/service.js'
 import type { ContentRepo } from '../modules/content/repo.js'
 import type { EventBus } from './events.js'
 import type { Audit } from './audit.js'
@@ -28,6 +30,8 @@ export type Services = {
   characters: CharacterService
   rolls: RollService
   homebrew: HomebrewService
+  campaigns: CampaignService
+  encounters: EncounterService
   events: EventBus
   databaseUrl: string
   maintenance: MaintenanceGate

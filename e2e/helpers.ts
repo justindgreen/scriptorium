@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { expect, type APIRequestContext, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
@@ -59,4 +61,44 @@ export async function buildCharacter(page: Page, name: string, cls: AlphaClass):
   await page.getByTestId('builder-create').click()
   await expect(page).toHaveURL(/\/characters\/[0-9a-f-]+$/)
   await expect(page.getByRole('heading', { name })).toBeVisible()
+}
+
+/**
+ * Restarts the E2E server through the supervisor in `e2e/start-server.mjs` (it watches for
+ * `restart.request` in the data directory) and waits until a new process answers.
+ */
+const dataDir = path.resolve(process.cwd(), '.data', 'e2e')
+
+export async function uptime(request: APIRequestContext): Promise<number> {
+  try {
+    const response = await request.get('/healthz', { timeout: 2_000 })
+    if (!response.ok()) return -1
+    return ((await response.json()) as { uptimeSeconds: number }).uptimeSeconds
+  } catch {
+    return -1
+  }
+}
+
+export async function restartServer(request: APIRequestContext): Promise<void> {
+  const before = await uptime(request)
+  expect(before).toBeGreaterThanOrEqual(0)
+  // With an external database (CI) nothing has created the data directory yet.
+  fs.mkdirSync(dataDir, { recursive: true })
+  fs.writeFileSync(path.join(dataDir, 'restart.request'), String(Date.now()))
+  // Wait until a new process answers: its uptime is lower than the old one's (-1 while down).
+  await expect
+    .poll(
+      async () => {
+        const now = await uptime(request)
+        return now >= 0 && now < Math.max(1, before)
+      },
+      { timeout: 120_000, intervals: [1_000] },
+    )
+    .toBe(true)
+  await expect
+    .poll(async () => (await request.get('/readyz').catch(() => null))?.status() ?? 0, {
+      timeout: 60_000,
+      intervals: [500],
+    })
+    .toBe(200)
 }

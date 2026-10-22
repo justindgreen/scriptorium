@@ -81,7 +81,7 @@ Every `full` or `partial` feature declares `tests[]`:
 ## 5. Integration specifics
 
 - **Authorization matrix:** a table of (role, procedure, expected allow/deny); a meta-test enumerates every procedure and fails if one lacks both an allow and a deny case.
-- **Combat coordination:** the same `commandId` twice applies once; a roll cannot be consumed by two commands; target revision mismatch rolls back the attacker; concurrent actions do not deadlock (deterministic lock order).
+- **Combat coordination:** the same `commandId` twice applies once; a roll cannot be consumed by two commands; target revision mismatch rolls back the attacker; concurrent actions do not deadlock (deterministic lock order). Covered since M2.8 by `apps/server/test/encounters.test.ts` (receipt replay, consumed roll refused, monster vulnerability through `applyPackets`, role-filtered views) and by the acceptance E2E (a retried attack after a server restart).
 - **Turn bookkeeping:** once-per-turn resets on another creature's turn; reaction resets only on the owner's turn; bonus action unavailable off-turn.
 - **Content stability:** publishing a new version or deleting shared content never changes an existing sheet without consent.
 - **Round trips:** export → import → export is byte-stable for content packages, characters and campaigns.
@@ -91,6 +91,8 @@ Every `full` or `partial` feature declares `tests[]`:
 ## 6. E2E
 
 The acceptance scenario in `PRODUCT_SPEC.md` §16 is a Playwright test with a server restart in the middle of the encounter and a retried attack command that must apply once. It runs at 1280 px and 375 px. axe-core checks run on every visited page.
+
+The acceptance scenario is `e2e/acceptance.spec.ts` (M2.8): two browser contexts (DM and player), a homebrew weapon created through the API and shared through the UI, an encounter with two alpha monsters, a server restart mid-combat and the same attack command re-sent afterwards, which replays its receipt. It runs in its own Playwright project (`acceptance`) that depends on the `restart` project, because both restart the server and must never run side by side.
 
 Server restarts in E2E (M2.6): `e2e/start-server.mjs` supervises the server process and restarts it when a test creates `restart.request` in the E2E data directory; the application has no test hooks. Specs that restart the server run in the `restart` Playwright project, which depends on the desktop, tablet and phone projects so nothing else is in flight while the server is down. Readiness after the restart is detected through `/healthz` (a lower uptime) and `/readyz`.
 

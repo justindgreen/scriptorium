@@ -1,49 +1,11 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { expect, test, type APIRequestContext } from '@playwright/test'
-import { admin, buildCharacter, ensureSetup, signInAs } from './helpers'
+import { expect, test } from '@playwright/test'
+import { admin, buildCharacter, ensureSetup, restartServer, signInAs } from './helpers'
 
 /**
  * M2.6: sheet state survives a server restart. The supervisor in `e2e/start-server.mjs` restarts
  * the server when `restart.request` appears in the data directory; this project runs alone and
  * after the others, because requests fail while the server is down.
  */
-const dataDir = path.resolve(process.cwd(), '.data', 'e2e')
-
-async function uptime(request: APIRequestContext): Promise<number> {
-  try {
-    const response = await request.get('/healthz', { timeout: 2_000 })
-    if (!response.ok()) return -1
-    return ((await response.json()) as { uptimeSeconds: number }).uptimeSeconds
-  } catch {
-    return -1
-  }
-}
-
-async function restartServer(request: APIRequestContext): Promise<void> {
-  const before = await uptime(request)
-  expect(before).toBeGreaterThanOrEqual(0)
-  // With an external database (CI) nothing has created the data directory yet.
-  fs.mkdirSync(dataDir, { recursive: true })
-  fs.writeFileSync(path.join(dataDir, 'restart.request'), String(Date.now()))
-  // Wait until a new process answers: its uptime is lower than the old one's (-1 while down).
-  await expect
-    .poll(
-      async () => {
-        const now = await uptime(request)
-        return now >= 0 && now < Math.max(1, before)
-      },
-      { timeout: 120_000, intervals: [1_000] },
-    )
-    .toBe(true)
-  await expect
-    .poll(async () => (await request.get('/readyz').catch(() => null))?.status() ?? 0, {
-      timeout: 60_000,
-      intervals: [500],
-    })
-    .toBe(200)
-}
-
 test('sheet changes survive a server restart and the live stream reconnects', async ({
   page,
   request,

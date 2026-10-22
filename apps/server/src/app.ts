@@ -23,6 +23,10 @@ import { createCharacterService } from './modules/characters/service.js'
 import { createRollService } from './modules/characters/rolls.js'
 import { createHomebrewRepo } from './modules/homebrew/repo.js'
 import { createHomebrewService } from './modules/homebrew/service.js'
+import { createCampaignRepo } from './modules/campaigns/repo.js'
+import { createCampaignService } from './modules/campaigns/service.js'
+import { createEncounterRepo } from './modules/encounters/repo.js'
+import { createEncounterService } from './modules/encounters/service.js'
 import { appRouter, type AppRouter } from './router.js'
 
 export type App = FastifyInstance & { services: Services }
@@ -72,7 +76,28 @@ export async function buildApp(deps: AppDeps): Promise<App> {
   const events = createEventBus()
   const characterRepo = createCharacterRepo(db)
   const commands = createCommandRunner({ db, characters: characterRepo, content, events })
-  const characters = createCharacterService({ db, repo: characterRepo, commands, events, content })
+  const campaigns = createCampaignService({
+    db,
+    repo: createCampaignRepo(db),
+    characters: characterRepo,
+  })
+  const characters = createCharacterService({
+    db,
+    repo: characterRepo,
+    commands,
+    events,
+    content,
+    campaigns,
+  })
+  const encounters = createEncounterService({
+    db,
+    repo: createEncounterRepo(db),
+    campaigns,
+    characters: characterRepo,
+    content,
+    commands,
+    events,
+  })
   const homebrew = createHomebrewService({
     db,
     repo: createHomebrewRepo(db),
@@ -95,6 +120,8 @@ export async function buildApp(deps: AppDeps): Promise<App> {
     characters,
     rolls,
     homebrew,
+    campaigns,
+    encounters,
     events,
     databaseUrl: deps.database.url,
     maintenance,

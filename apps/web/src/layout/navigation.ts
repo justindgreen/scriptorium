@@ -2,6 +2,7 @@ import {
   ArchiveIcon,
   HammerIcon,
   HomeIcon,
+  MapIcon,
   KeyRoundIcon,
   ScrollTextIcon,
   UsersRoundIcon,
@@ -15,6 +16,7 @@ export type AppPath =
   | '/characters'
   | '/characters/new'
   | '/homebrew'
+  | '/campaigns'
   | '/admin/users'
   | '/admin/invites'
   | '/admin/audit'
@@ -43,6 +45,13 @@ export const navItems: NavItem[] = [
     icon: UsersRoundIcon,
     group: 'main',
     keywords: ['sheet', 'builder', 'party'],
+  },
+  {
+    to: '/campaigns',
+    label: 'Campaigns',
+    icon: MapIcon,
+    group: 'main',
+    keywords: ['encounter', 'party', 'invite', 'dm'],
   },
   {
     to: '/homebrew',
