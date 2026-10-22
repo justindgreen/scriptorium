@@ -1,0 +1,1020 @@
+[
+  {
+    "uid": "srd-5.1:feature:fighter-fighting-style-archery",
+    "effects": [
+      {
+        "type": "bonus",
+        "target": "attack.ranged",
+        "value": 2,
+        "note": "Archery"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "attack.ranged",
+          "equals": 2
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-fighting-style-defense",
+    "effects": [
+      {
+        "type": "bonus",
+        "target": "ac.bonus",
+        "value": 1,
+        "note": "Defense",
+        "condition": {
+          "leaf": "armor",
+          "category": "any"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-1"
+        },
+        "expect": {
+          "stat": "ac.bonus",
+          "equals": 3
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-fighting-style-dueling",
+    "effects": [
+      {
+        "type": "action.damageAdd",
+        "formula": "2",
+        "damageType": "weapon",
+        "label": "Dueling",
+        "appliesTo": "melee",
+        "condition": {
+          "all": [
+            {
+              "leaf": "ctx.wieldingOneHanded"
+            },
+            {
+              "not": {
+                "leaf": "ctx.weaponProperty",
+                "property": "two-handed"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "manual",
+        "text": "Only while you wield no other weapons."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["the \"no other weapons\" check"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-1",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style": {
+                  "kind": "optionSet",
+                  "options": ["dueling"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "weapon",
+              "itemId": "longsword"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "id": "dueling",
+                "formula": "2"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-fighting-style-great-weapon-fighting",
+    "effects": [
+      {
+        "type": "action.rerollDamageDice",
+        "values": [1, 2],
+        "once": true,
+        "appliesTo": "melee",
+        "condition": {
+          "leaf": "ctx.twoHanded"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-5-warlock-3"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "weapon",
+              "itemId": "greatsword"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "id": "weapon",
+                "formula": "2d6ro1,2 + 4"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-fighting-style-protection",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Reaction: impose disadvantage on an attack against a creature within 5 feet while you wield a shield."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "A reaction the table adjudicates."
+    },
+    "tests": []
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-fighting-style-two-weapon-fighting",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Add your ability modifier to the damage of your second attack when you fight with two weapons."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Off-hand attacks are not modelled yet."
+    },
+    "tests": []
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-fighting-style",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "fighting-style",
+        "name": "Fighting Style",
+        "count": 1,
+        "from": {
+          "kind": "optionSet",
+          "options": [
+            {
+              "id": "archery",
+              "name": "Archery",
+              "feature": "srd-5.1:feature:fighter-fighting-style-archery"
+            },
+            {
+              "id": "defense",
+              "name": "Defense",
+              "feature": "srd-5.1:feature:fighter-fighting-style-defense"
+            },
+            {
+              "id": "dueling",
+              "name": "Dueling",
+              "feature": "srd-5.1:feature:fighter-fighting-style-dueling"
+            },
+            {
+              "id": "great-weapon-fighting",
+              "name": "Great Weapon Fighting",
+              "feature": "srd-5.1:feature:fighter-fighting-style-great-weapon-fighting"
+            },
+            {
+              "id": "protection",
+              "name": "Protection",
+              "feature": "srd-5.1:feature:fighter-fighting-style-protection"
+            },
+            {
+              "id": "two-weapon-fighting",
+              "name": "Two-Weapon Fighting",
+              "feature": "srd-5.1:feature:fighter-fighting-style-two-weapon-fighting"
+            }
+          ]
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-1"
+        },
+        "expect": {
+          "stat": "ac.bonus",
+          "equals": 3
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:second-wind",
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "second-wind",
+          "name": "Second Wind",
+          "max": 1,
+          "recharge": "shortRest"
+        }
+      },
+      {
+        "type": "action.grant",
+        "name": "Second Wind",
+        "actionType": "bonus",
+        "healing": "1d10 + classLevel('srd-5.1:class:fighter')",
+        "cost": {
+          "resource": "second-wind",
+          "amount": 1
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-1"
+        },
+        "expect": {
+          "stat": "resource.second-wind.max",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "fighter-1"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "action",
+              "templateId": "action:class:srd-5.1:class:fighter@1/feature:second-wind/second-wind"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "healing": "1d10 + 1",
+            "actionType": "bonus"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:action-surge-1-use",
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "action-surge",
+          "name": "Action Surge",
+          "max": "table('action-surges', classLevel('srd-5.1:class:fighter'))",
+          "recharge": "shortRest"
+        }
+      },
+      {
+        "type": "manual",
+        "text": "On your turn, take one additional action."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["the additional action itself"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-5-champion"
+        },
+        "expect": {
+          "stat": "resource.action-surge.max",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "resource.action-surge.max",
+          "equals": 2
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:action-surge-2-uses",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Action Surge can now be used twice between rests; the Action Surge resource follows the class table."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Scaling lives on the level-2 feature table."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:martial-archetype",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Choose a martial archetype in the builder."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Subclass selection is structural."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:martial-archetype-improvement-1",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Your martial archetype grants a feature at this level."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Placeholder row; mechanics live on the subclass."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:martial-archetype-improvement-2",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Your martial archetype grants a feature at this level."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Placeholder row; mechanics live on the subclass."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:martial-archetype-improvement-3",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Your martial archetype grants a feature at this level."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Placeholder row; mechanics live on the subclass."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:martial-archetype-improvement-4",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Your martial archetype grants a feature at this level."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Placeholder row; mechanics live on the subclass."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-ability-score-improvement-1",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-5-champion"
+        },
+        "expect": {
+          "stat": "ability.str.score",
+          "equals": 18
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-ability-score-improvement-2",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "ability.str.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-ability-score-improvement-3",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "ability.str.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-ability-score-improvement-4",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "ability.str.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-ability-score-improvement-5",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "ability.str.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-ability-score-improvement-6",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "ability.str.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-ability-score-improvement-7",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "ability.str.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:extra-attack-1",
+    "effects": [
+      {
+        "type": "attack.extra",
+        "count": 1
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-5-champion"
+        },
+        "expect": {
+          "stat": "attacks.perAction",
+          "equals": 2
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:extra-attack-2",
+    "effects": [
+      {
+        "type": "attack.extra",
+        "count": 2
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "attacks.perAction",
+          "equals": 4
+        }
+      },
+      {
+        "given": {
+          "fixture": "fighter-20-champion",
+          "modify": {
+            "definition": {
+              "classes": [
+                {
+                  "classUid": "srd-5.1:class:fighter",
+                  "subclassUid": "srd-5.1:subclass:champion",
+                  "level": 11,
+                  "order": 0
+                }
+              ]
+            }
+          }
+        },
+        "expect": {
+          "stat": "attacks.perAction",
+          "equals": 3
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:extra-attack-3",
+    "effects": [
+      {
+        "type": "attack.extra",
+        "count": 3
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "attacks.perAction",
+          "equals": 4
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:indomitable-1-use",
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "indomitable",
+          "name": "Indomitable",
+          "max": "table('indomitable-uses', classLevel('srd-5.1:class:fighter'))",
+          "recharge": "longRest"
+        }
+      },
+      {
+        "type": "manual",
+        "text": "Reroll a saving throw that you fail; you must use the new roll."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["the reroll itself"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "resource.indomitable.max",
+          "equals": 3
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:indomitable-2-uses",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Indomitable can now be used twice between long rests; the resource follows the class table."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Scaling lives on the level-9 feature table."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:indomitable-3-uses",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Indomitable can now be used three times between long rests; the resource follows the class table."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Scaling lives on the level-9 feature table."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:improved-critical",
+    "effects": [
+      {
+        "type": "crit.range",
+        "min": 19
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-5-champion"
+        },
+        "expect": {
+          "stat": "crit.range",
+          "equals": 19
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:remarkable-athlete",
+    "effects": [
+      {
+        "type": "proficiency.grant",
+        "kind": "skill",
+        "target": "athletics",
+        "level": "half"
+      },
+      {
+        "type": "proficiency.grant",
+        "kind": "skill",
+        "target": "acrobatics",
+        "level": "half"
+      },
+      {
+        "type": "proficiency.grant",
+        "kind": "skill",
+        "target": "sleight-of-hand",
+        "level": "half"
+      },
+      {
+        "type": "proficiency.grant",
+        "kind": "skill",
+        "target": "stealth",
+        "level": "half"
+      },
+      {
+        "type": "bonus",
+        "target": "initiative.bonus",
+        "value": "floor(PB / 2)",
+        "note": "Remarkable Athlete"
+      },
+      {
+        "type": "manual",
+        "text": "Running long jump distance increases by a number of feet equal to your Strength modifier."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "long jump distance",
+        "half proficiency on raw Strength, Dexterity and Constitution checks that are not skills"
+      ]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "skill.acrobatics.proficiency",
+          "equals": 0.5
+        }
+      },
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "initiative.bonus",
+          "equals": 5
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:additional-fighting-style",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "fighting-style",
+        "name": "Additional Fighting Style",
+        "count": 1,
+        "from": {
+          "kind": "optionSet",
+          "options": [
+            {
+              "id": "archery",
+              "name": "Archery",
+              "feature": "srd-5.1:feature:fighter-fighting-style-archery"
+            },
+            {
+              "id": "defense",
+              "name": "Defense",
+              "feature": "srd-5.1:feature:fighter-fighting-style-defense"
+            },
+            {
+              "id": "dueling",
+              "name": "Dueling",
+              "feature": "srd-5.1:feature:fighter-fighting-style-dueling"
+            },
+            {
+              "id": "great-weapon-fighting",
+              "name": "Great Weapon Fighting",
+              "feature": "srd-5.1:feature:fighter-fighting-style-great-weapon-fighting"
+            },
+            {
+              "id": "protection",
+              "name": "Protection",
+              "feature": "srd-5.1:feature:fighter-fighting-style-protection"
+            },
+            {
+              "id": "two-weapon-fighting",
+              "name": "Two-Weapon Fighting",
+              "feature": "srd-5.1:feature:fighter-fighting-style-two-weapon-fighting"
+            }
+          ]
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "attack.ranged",
+          "equals": 2
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:superior-critical",
+    "effects": [
+      {
+        "type": "crit.range",
+        "min": 18
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "crit.range",
+          "equals": 18
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:survivor",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "At the start of each of your turns, regain 5 + your Constitution modifier hit points if you have no more than half your hit points left (and at least 1)."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Turn-start healing is bookkeeping the tracker does not automate yet."
+    }
+  },
+  {
+    "uid": "srd-5.1:class:fighter",
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-1"
+        },
+        "expect": {
+          "stat": "hitDice.d10.max",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "fighter-1"
+        },
+        "expect": {
+          "stat": "save.str.proficiency",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "fighter-1"
+        },
+        "expect": {
+          "proficient": {
+            "set": "armor",
+            "id": "all-armor"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:subclass:champion",
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-5-champion"
+        },
+        "expect": {
+          "stat": "crit.range",
+          "equals": 19
+        }
+      }
+    ]
+  }
+]

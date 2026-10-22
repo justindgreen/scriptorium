@@ -46,6 +46,9 @@ pnpm build                  # server bundle (tsup) + web (vite)
 pnpm test:e2e               # builds, serves apps/web/dist from the server on :3100, runs Playwright
 pnpm exec playwright install chromium   # once per machine, before test:e2e
 pnpm -F @scriptorium/server cli -- <command>   # migrate | seed [dir] | import-content <file...> | sources
+pnpm -F @scriptorium/srd-import download -- --out <abs dir>              # upstream 5e-bits dataset (gitignored under .data/)
+pnpm -F @scriptorium/srd-import convert -- --source <abs dir> --out <abs content/srd-5.1>   # regenerate packages with overlays
+pnpm coverage:automation   # conformance run; regenerates docs/AUTOMATION_COVERAGE.md
 ```
 
 Toolchain notes: TypeScript is pinned to 6.x until typescript-eslint supports 7.x (ADR-0023). pnpm 12 reads its own settings from `pnpm-workspace.yaml` (build-script allow list, overrides, peer and fetch settings); keys in `.npmrc` are ignored or rejected, so never put pnpm settings there. Docker image builds and `pnpm install` depend on registry.npmjs.org; when it is degraded (status.npmjs.org) builds fail at `pnpm install` and should simply be retried.

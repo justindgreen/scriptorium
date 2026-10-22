@@ -1,0 +1,2164 @@
+[
+  {
+    "uid": "srd-5.1:feature:otherworldly-patron",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Choose an otherworldly patron in the builder."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Subclass selection is structural."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:pact-magic",
+    "effects": [
+      {
+        "type": "spellcasting.grant",
+        "ability": "cha",
+        "progression": "pact",
+        "preparation": "known",
+        "list": "srd-5.1:spell_list:warlock",
+        "focus": "arcane focus"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "stat": "spell.pact.slots",
+          "equals": 2
+        }
+      },
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "stat": "spell.pact.level",
+          "equals": 3
+        }
+      },
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "spell.pact.slots",
+          "equals": 4
+        }
+      },
+      {
+        "given": {
+          "fixture": "fighter-5-warlock-3"
+        },
+        "expect": {
+          "stat": "spell.pact.level",
+          "equals": 2
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocations",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "invocations",
+        "name": "Eldritch Invocations",
+        "count": "table('invocations-known', classLevel('srd-5.1:class:warlock'))",
+        "from": {
+          "kind": "content",
+          "contentKind": "feature",
+          "filter": {
+            "tags": ["invocation"]
+          }
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "stat": "sense.darkvision",
+          "equals": 120
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:pact-boon",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "pact-boon",
+        "name": "Pact Boon",
+        "count": 1,
+        "from": {
+          "kind": "optionSet",
+          "options": [
+            {
+              "id": "blade",
+              "name": "Pact of the Blade",
+              "feature": "srd-5.1:feature:pact-of-the-blade"
+            },
+            {
+              "id": "chain",
+              "name": "Pact of the Chain",
+              "feature": "srd-5.1:feature:pact-of-the-chain"
+            },
+            {
+              "id": "tome",
+              "name": "Pact of the Tome",
+              "feature": "srd-5.1:feature:pact-of-the-tome"
+            }
+          ]
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:fire-bolt"
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:pact-of-the-blade",
+    "effects": [
+      {
+        "type": "action.grant",
+        "name": "Create Pact Weapon",
+        "actionType": "action",
+        "description": "Create a pact weapon in your empty hand; you are proficient with it and it counts as magical."
+      },
+      {
+        "type": "manual",
+        "text": "Add the pact weapon to the inventory; it is proficient and magical."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["the weapon itself"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "action",
+              "templateId": "action:class:srd-5.1:class:warlock@3/feature:pact-boon/feature:pact-of-the-blade/create-pact-weapon"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "actionType": "action"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:pact-of-the-chain",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:find-familiar",
+        "atWill": false,
+        "uses": {
+          "max": 1,
+          "recharge": "none"
+        }
+      },
+      {
+        "type": "manual",
+        "text": "Cast find familiar as a ritual; special familiar forms are available."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["the familiar itself"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@3/feature:pact-boon/pact-boon": {
+                  "kind": "optionSet",
+                  "options": ["chain"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:find-familiar"
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:pact-of-the-tome",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "cantrips",
+        "name": "Book of Shadows cantrips",
+        "count": 3,
+        "from": {
+          "kind": "content",
+          "contentKind": "spell",
+          "filter": {
+            "level": 0
+          }
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:guidance"
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:warlock-ability-score-improvement-1",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "ability.cha.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:warlock-ability-score-improvement-2",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "ability.cha.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:warlock-ability-score-improvement-3",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "ability.cha.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:warlock-ability-score-improvement-4",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "ability.cha.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:warlock-ability-score-improvement-5",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "ability.cha.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:otherworldly-patron-improvement-1",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Your patron grants a feature at this level."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Placeholder row; mechanics live on the subclass."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:otherworldly-patron-improvement-2",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Your patron grants a feature at this level."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Placeholder row; mechanics live on the subclass."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:otherworldly-patron-improvement-3",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Your patron grants a feature at this level."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Placeholder row; mechanics live on the subclass."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:mystic-arcanum-6th-level",
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "mystic-arcanum-6",
+          "name": "Mystic Arcanum (6th level)",
+          "max": 1,
+          "recharge": "longRest"
+        }
+      }
+    ],
+    "choices": [
+      {
+        "type": "choice",
+        "key": "arcanum",
+        "name": "Mystic Arcanum (6th level)",
+        "count": 1,
+        "from": {
+          "kind": "content",
+          "contentKind": "spell",
+          "filter": {
+            "list": "srd-5.1:spell_list:warlock",
+            "level": 6
+          }
+        }
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["casting the arcanum without a slot"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "resource.mystic-arcanum-6.max",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:circle-of-death"
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:mystic-arcanum-7th-level",
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "mystic-arcanum-7",
+          "name": "Mystic Arcanum (7th level)",
+          "max": 1,
+          "recharge": "longRest"
+        }
+      }
+    ],
+    "choices": [
+      {
+        "type": "choice",
+        "key": "arcanum",
+        "name": "Mystic Arcanum (7th level)",
+        "count": 1,
+        "from": {
+          "kind": "content",
+          "contentKind": "spell",
+          "filter": {
+            "list": "srd-5.1:spell_list:warlock",
+            "level": 7
+          }
+        }
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["casting the arcanum without a slot"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "resource.mystic-arcanum-7.max",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:finger-of-death"
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:mystic-arcanum-8th-level",
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "mystic-arcanum-8",
+          "name": "Mystic Arcanum (8th level)",
+          "max": 1,
+          "recharge": "longRest"
+        }
+      }
+    ],
+    "choices": [
+      {
+        "type": "choice",
+        "key": "arcanum",
+        "name": "Mystic Arcanum (8th level)",
+        "count": 1,
+        "from": {
+          "kind": "content",
+          "contentKind": "spell",
+          "filter": {
+            "list": "srd-5.1:spell_list:warlock",
+            "level": 8
+          }
+        }
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["casting the arcanum without a slot"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "resource.mystic-arcanum-8.max",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:dominate-monster"
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:mystic-arcanum-9th-level",
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "mystic-arcanum-9",
+          "name": "Mystic Arcanum (9th level)",
+          "max": 1,
+          "recharge": "longRest"
+        }
+      }
+    ],
+    "choices": [
+      {
+        "type": "choice",
+        "key": "arcanum",
+        "name": "Mystic Arcanum (9th level)",
+        "count": 1,
+        "from": {
+          "kind": "content",
+          "contentKind": "spell",
+          "filter": {
+            "list": "srd-5.1:spell_list:warlock",
+            "level": 9
+          }
+        }
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["casting the arcanum without a slot"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "resource.mystic-arcanum-9.max",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:foresight"
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-master",
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "eldritch-master",
+          "name": "Eldritch Master",
+          "max": 1,
+          "recharge": "longRest"
+        }
+      },
+      {
+        "type": "manual",
+        "text": "Spend 1 minute entreating your patron to regain all expended Pact Magic spell slots."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["regaining the pact slots"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "resource.eldritch-master.max",
+          "equals": 1
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:dark-ones-blessing",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "When you reduce a hostile creature to 0 hit points, gain temporary hit points equal to your Charisma modifier + your warlock level."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Kill triggers are not observed by the engine."
+    }
+  },
+  {
+    "uid": "srd-5.1:feature:dark-ones-own-luck",
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "dark-ones-own-luck",
+          "name": "Dark One's Own Luck",
+          "max": 1,
+          "recharge": "shortRest"
+        }
+      },
+      {
+        "type": "manual",
+        "text": "Add a d10 to an ability check or saving throw."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["adding the d10"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "resource.dark-ones-own-luck.max",
+          "equals": 1
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fiendish-resilience",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "resistance",
+        "name": "Fiendish Resilience",
+        "count": 1,
+        "from": {
+          "kind": "optionSet",
+          "options": [
+            {
+              "id": "acid",
+              "name": "Acid",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "acid",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "bludgeoning",
+              "name": "Bludgeoning",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "bludgeoning",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "cold",
+              "name": "Cold",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "cold",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "fire",
+              "name": "Fire",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "fire",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "force",
+              "name": "Force",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "force",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "lightning",
+              "name": "Lightning",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "lightning",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "necrotic",
+              "name": "Necrotic",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "necrotic",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "piercing",
+              "name": "Piercing",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "piercing",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "poison",
+              "name": "Poison",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "poison",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "psychic",
+              "name": "Psychic",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "psychic",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "radiant",
+              "name": "Radiant",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "radiant",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "slashing",
+              "name": "Slashing",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "slashing",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "thunder",
+              "name": "Thunder",
+              "effects": [
+                {
+                  "type": "damage.resistance",
+                  "damageType": "thunder",
+                  "condition": {
+                    "not": {
+                      "any": [
+                        {
+                          "leaf": "packet.magical"
+                        },
+                        {
+                          "leaf": "packet.silvered"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "defense": {
+            "kind": "resistance",
+            "damageType": "fire"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:hurl-through-hell",
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "hurl-through-hell",
+          "name": "Hurl Through Hell",
+          "max": 1,
+          "recharge": "longRest"
+        }
+      },
+      {
+        "type": "manual",
+        "text": "When you hit with an attack, the target vanishes until the end of your next turn and takes 10d10 psychic damage if not a fiend."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["the banishment and its damage"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "resource.hurl-through-hell.max",
+          "equals": 1
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-agonizing-blast",
+    "effects": [
+      {
+        "type": "action.damageAdd",
+        "formula": "CHA",
+        "damageType": "force",
+        "label": "Agonizing Blast",
+        "appliesTo": "spell",
+        "condition": {
+          "leaf": "ctx.spell",
+          "spell": "srd-5.1:spell:eldritch-blast"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:eldritch-blast"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "id": "agonizing-blast",
+                "formula": "4",
+                "damageType": "force"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:burning-hands"
+            },
+            "ctx": {}
+          },
+          "excludes": {
+            "damageIds": ["agonizing-blast"]
+          }
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-armor-of-shadows",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:mage-armor",
+        "atWill": true
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:mage-armor"
+        }
+      },
+      {
+        "name": "armor-of-shadows grants mage-armor",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-armor-of-shadows"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:mage-armor"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-beast-speech",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:speak-with-animals",
+        "atWill": true
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "beast-speech grants speak-with-animals",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-beast-speech"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:speak-with-animals"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-beguiling-influence",
+    "effects": [
+      {
+        "type": "proficiency.grant",
+        "kind": "skill",
+        "target": "deception"
+      },
+      {
+        "type": "proficiency.grant",
+        "kind": "skill",
+        "target": "persuasion"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "skill.persuasion.proficiency",
+          "equals": 1
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-book-of-ancient-secrets",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Inscribe ritual spells in your Book of Shadows and cast them as rituals."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Ritual books are tracked by the player."
+    },
+    "tests": [],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-devils-sight",
+    "effects": [
+      {
+        "type": "sense.grant",
+        "sense": "darkvision",
+        "range": 120
+      },
+      {
+        "type": "manual",
+        "text": "You see normally in magical darkness too."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["magical darkness"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "stat": "sense.darkvision",
+          "equals": 120
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-eldritch-sight",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:detect-magic",
+        "atWill": true
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "eldritch-sight grants detect-magic",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-eldritch-sight"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:detect-magic"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-eldritch-spear",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Eldritch blast has a range of 300 feet."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Spell range changes are not modelled."
+    },
+    "tests": [],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-eyes-of-the-rune-keeper",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "You can read all writing."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Narrative."
+    },
+    "tests": [],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-fiendish-vigor",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:false-life",
+        "atWill": true
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "fiendish-vigor grants false-life",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-fiendish-vigor"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:false-life"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-gaze-of-two-minds",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Perceive through the senses of a willing humanoid you touch."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Narrative."
+    },
+    "tests": [],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-mask-of-many-faces",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:disguise-self",
+        "atWill": true
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "mask-of-many-faces grants disguise-self",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-mask-of-many-faces"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:disguise-self"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-misty-visions",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:silent-image",
+        "atWill": true
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "misty-visions grants silent-image",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-misty-visions"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:silent-image"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-repelling-blast",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Eldritch blast pushes a hit creature up to 10 feet away."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Forced movement is the tracker's job."
+    },
+    "tests": [],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-thief-of-five-fates",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:bane",
+        "uses": {
+          "max": 1,
+          "recharge": "longRest"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "thief-of-five-fates grants bane",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-thief-of-five-fates"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:bane"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-voice-of-the-chain-master",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Communicate telepathically with your familiar and perceive through its senses at any distance on the same plane."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Narrative."
+    },
+    "tests": [],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-mire-the-mind",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:slow",
+        "uses": {
+          "max": 1,
+          "recharge": "longRest"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "mire-the-mind grants slow",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-mire-the-mind"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:slow"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-one-with-shadows",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "In dim light or darkness, become invisible until you move or act."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Lighting is not modelled."
+    },
+    "tests": [],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-sign-of-ill-omen",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:bestow-curse",
+        "uses": {
+          "max": 1,
+          "recharge": "longRest"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "sign-of-ill-omen grants bestow-curse",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-sign-of-ill-omen"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:bestow-curse"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-thirsting-blade",
+    "effects": [
+      {
+        "type": "attack.extra",
+        "count": 1,
+        "condition": {
+          "leaf": "hasFeature",
+          "feature": "srd-5.1:feature:pact-of-the-blade"
+        }
+      },
+      {
+        "type": "manual",
+        "text": "Only with your pact weapon."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["pact-weapon restriction"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "attacks.perAction",
+          "equals": 2
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-bewitching-whispers",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:compulsion",
+        "uses": {
+          "max": 1,
+          "recharge": "longRest"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "bewitching-whispers grants compulsion",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-bewitching-whispers"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:compulsion"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-dreadful-word",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:confusion",
+        "uses": {
+          "max": 1,
+          "recharge": "longRest"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "dreadful-word grants confusion",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-dreadful-word"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:confusion"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-sculptor-of-flesh",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:polymorph",
+        "uses": {
+          "max": 1,
+          "recharge": "longRest"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "sculptor-of-flesh grants polymorph",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-sculptor-of-flesh"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:polymorph"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-ascendant-step",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:levitate",
+        "atWill": true
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "ascendant-step grants levitate",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-ascendant-step"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:levitate"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-minions-of-chaos",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:conjure-elemental",
+        "uses": {
+          "max": 1,
+          "recharge": "longRest"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "minions-of-chaos grants conjure-elemental",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-minions-of-chaos"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:conjure-elemental"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-otherworldly-leap",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:jump",
+        "atWill": true
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "otherworldly-leap grants jump",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-otherworldly-leap"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:jump"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-whispers-of-the-grave",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:speak-with-dead",
+        "atWill": true
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "whispers-of-the-grave grants speak-with-dead",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-whispers-of-the-grave"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:speak-with-dead"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-lifedrinker",
+    "effects": [
+      {
+        "type": "action.damageAdd",
+        "formula": "CHA",
+        "damageType": "necrotic",
+        "label": "Lifedrinker",
+        "appliesTo": "melee",
+        "condition": {
+          "leaf": "hasFeature",
+          "feature": "srd-5.1:feature:pact-of-the-blade"
+        }
+      },
+      {
+        "type": "manual",
+        "text": "Only with your pact weapon."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["pact-weapon restriction"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "weapon",
+              "itemId": "pact-sword"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "id": "lifedrinker",
+                "formula": "5",
+                "damageType": "necrotic"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-chains-of-carceri",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:hold-monster",
+        "atWill": true
+      },
+      {
+        "type": "manual",
+        "text": "Only against celestials, fiends and elementals; once per long rest per creature."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["target restriction"]
+    },
+    "tests": [
+      {
+        "name": "chains-of-carceri grants hold-monster",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-chains-of-carceri"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:hold-monster"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-master-of-myriad-forms",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:alter-self",
+        "atWill": true
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "master-of-myriad-forms grants alter-self",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-master-of-myriad-forms"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:alter-self"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-visions-of-distant-realms",
+    "effects": [
+      {
+        "type": "spell.grant",
+        "spell": "srd-5.1:spell:arcane-eye",
+        "atWill": true
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "name": "visions-of-distant-realms grants arcane-eye",
+        "given": {
+          "fixture": "warlock-5-fiend",
+          "modify": {
+            "definition": {
+              "choices": {
+                "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+                  "kind": "content",
+                  "entries": ["srd-5.1:feature:eldritch-invocation-visions-of-distant-realms"]
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:arcane-eye"
+        }
+      }
+    ],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-witch-sight",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "See the true form of shapechangers and creatures concealed by illusion or transmutation within 30 feet."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Narrative."
+    },
+    "tests": [],
+    "tags": ["invocation"]
+  },
+  {
+    "uid": "srd-5.1:class:warlock",
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "stat": "hitDice.d8.max",
+          "equals": 5
+        }
+      },
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "stat": "spell.pact.slots",
+          "equals": 2
+        }
+      },
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "stat": "save.cha.proficiency",
+          "equals": 1
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:subclass:fiend",
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:burning-hands"
+        }
+      },
+      {
+        "given": {
+          "fixture": "warlock-5-fiend"
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:fireball"
+        }
+      }
+    ]
+  }
+]

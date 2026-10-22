@@ -1,0 +1,495 @@
+[
+  {
+    "uid": "srd-5.1:species:human",
+    "effects": [
+      {
+        "type": "abilityScore.bonus",
+        "ability": "str",
+        "value": 1
+      },
+      {
+        "type": "abilityScore.bonus",
+        "ability": "dex",
+        "value": 1
+      },
+      {
+        "type": "abilityScore.bonus",
+        "ability": "con",
+        "value": 1
+      },
+      {
+        "type": "abilityScore.bonus",
+        "ability": "int",
+        "value": 1
+      },
+      {
+        "type": "abilityScore.bonus",
+        "ability": "wis",
+        "value": 1
+      },
+      {
+        "type": "abilityScore.bonus",
+        "ability": "cha",
+        "value": 1
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-1"
+        },
+        "expect": {
+          "stat": "ability.str.score",
+          "equals": 16
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:species:dwarf",
+    "effects": [
+      {
+        "type": "abilityScore.bonus",
+        "ability": "con",
+        "value": 2
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "stat": "ability.con.score",
+          "equals": 16
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:species:hill-dwarf",
+    "effects": [
+      {
+        "type": "abilityScore.bonus",
+        "ability": "wis",
+        "value": 1
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "stat": "ability.wis.score",
+          "equals": 18
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:species:elf",
+    "effects": [
+      {
+        "type": "abilityScore.bonus",
+        "ability": "dex",
+        "value": 2
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "stat": "ability.dex.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:species:high-elf",
+    "effects": [
+      {
+        "type": "abilityScore.bonus",
+        "ability": "int",
+        "value": 1
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "stat": "ability.int.score",
+          "equals": 13
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:darkvision",
+    "effects": [
+      {
+        "type": "sense.grant",
+        "sense": "darkvision",
+        "range": 60
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "stat": "sense.darkvision",
+          "equals": 60
+        }
+      },
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "stat": "sense.darkvision",
+          "equals": 60
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:dwarven-resilience",
+    "effects": [
+      {
+        "type": "advantage",
+        "on": "save.vs.poison"
+      },
+      {
+        "type": "damage.resistance",
+        "damageType": "poison"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "stat": "roll.advantage.save.vs.poison",
+          "equals": true
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "defense": {
+            "kind": "resistance",
+            "damageType": "poison"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:stonecunning",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Add double your proficiency bonus to History checks about stonework."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Context-specific check bonuses are decided at the table."
+    }
+  },
+  {
+    "uid": "srd-5.1:feature:dwarven-combat-training",
+    "effects": [
+      {
+        "type": "proficiency.grant",
+        "kind": "weapon",
+        "target": "battleaxe"
+      },
+      {
+        "type": "proficiency.grant",
+        "kind": "weapon",
+        "target": "handaxe"
+      },
+      {
+        "type": "proficiency.grant",
+        "kind": "weapon",
+        "target": "light-hammer"
+      },
+      {
+        "type": "proficiency.grant",
+        "kind": "weapon",
+        "target": "warhammer"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "proficient": {
+            "set": "weapons",
+            "id": "warhammer"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:tool-proficiency",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "tool",
+        "name": "Artisan's tools",
+        "count": 1,
+        "from": {
+          "kind": "tool",
+          "from": ["smiths-tools", "brewers-supplies", "masons-tools"]
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "proficient": {
+            "set": "tools",
+            "id": "smiths-tools"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:dwarven-toughness",
+    "effects": [
+      {
+        "type": "hp.bonusPerLevel",
+        "value": 1
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "stat": "hp.max",
+          "equals": 48
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fey-ancestry",
+    "effects": [
+      {
+        "type": "advantage",
+        "on": "save.vs.charmed"
+      },
+      {
+        "type": "manual",
+        "text": "Magic cannot put you to sleep."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["immunity to magical sleep"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "stat": "roll.advantage.save.vs.charmed",
+          "equals": true
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:trance",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "You meditate 4 hours instead of sleeping 8."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Rest duration is narrative."
+    }
+  },
+  {
+    "uid": "srd-5.1:feature:keen-senses",
+    "effects": [
+      {
+        "type": "proficiency.grant",
+        "kind": "skill",
+        "target": "perception"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "stat": "skill.perception.proficiency",
+          "atLeast": 1
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:elf-weapon-training",
+    "effects": [
+      {
+        "type": "proficiency.grant",
+        "kind": "weapon",
+        "target": "longsword"
+      },
+      {
+        "type": "proficiency.grant",
+        "kind": "weapon",
+        "target": "shortsword"
+      },
+      {
+        "type": "proficiency.grant",
+        "kind": "weapon",
+        "target": "shortbow"
+      },
+      {
+        "type": "proficiency.grant",
+        "kind": "weapon",
+        "target": "longbow"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "proficient": {
+            "set": "weapons",
+            "id": "longsword"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:high-elf-cantrip",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "cantrip",
+        "name": "Wizard cantrip",
+        "count": 1,
+        "from": {
+          "kind": "content",
+          "contentKind": "spell",
+          "filter": {
+            "list": "srd-5.1:spell_list:wizard",
+            "level": 0
+          }
+        }
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["Intelligence as the casting ability for this cantrip"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "knownSpell": "srd-5.1:spell:fire-bolt"
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:extra-language",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "language",
+        "name": "Extra language",
+        "count": 1,
+        "from": {
+          "kind": "language"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "proficient": {
+            "set": "languages",
+            "id": "dwarvish"
+          }
+        }
+      }
+    ]
+  }
+]

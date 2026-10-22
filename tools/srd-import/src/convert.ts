@@ -38,7 +38,11 @@ type AnyRecord = Record<string, unknown>
 
 export type Overlay = Partial<
   Pick<ContentEntry, 'effects' | 'choices' | 'automation' | 'tests' | 'tags'>
-> & { uid: string }
+> & {
+  uid: string
+  /** Shallow patch onto the entry's `data` (charges, weapon stats of a specific magic weapon, …). */
+  data?: Record<string, unknown>
+}
 
 const uid = (kind: ContentKind, slug: string) => makeUid(SOURCE_SLUG, kind, slug)
 const slugify = (s: string) =>
@@ -1152,6 +1156,99 @@ export function convertBackgroundsAndFeats(dir: string): ContentEntry[] {
   return entries
 }
 
+const ENHANCEMENT_RARITY = ['uncommon', 'rare', 'very-rare'] as const
+
+/**
+ * The SRD lists "Weapon, +1" and "Armor, +1" generically. Play needs concrete items, so every
+ * mundane weapon and armor gets +1, +2 and +3 variants with the enhancement as ordinary effects
+ * (attack and damage on the item itself, AC for armor and shields) and `magical` on weapons.
+ */
+/** Behavioural case for a generated variant on the `item-bench` fixture (Fighter 1, STR 16, all proficiencies). */
+function variantTest(
+  entry: ContentEntry,
+  slug: string,
+  n: number,
+  isWeapon: boolean,
+): ContentEntry['tests'][number] {
+  const inventory = [
+    { id: 'bench', itemUid: uid('item', slug), quantity: 1, equipped: true, attuned: false },
+  ]
+  if (isWeapon) {
+    const weapon = (entry as { data: { weapon?: { range: string } } }).data.weapon
+    const base = weapon?.range === 'ranged' ? 2 : 5
+    return {
+      name: `${entry.name} +${n} adds ${n} to attack rolls`,
+      given: { fixture: 'item-bench', modify: { inventory } },
+      expect: {
+        actionPlan: { ref: { kind: 'weapon', itemId: 'bench' }, ctx: {} },
+        contains: { attack: { bonus: base + n } },
+      },
+    }
+  }
+  const shield = (entry as { data: { category: string } }).data.category === 'shield'
+  return {
+    name: `${entry.name} +${n} adds ${n} to AC`,
+    given: { fixture: 'item-bench', modify: { inventory } },
+    expect: { stat: 'ac.bonus', equals: (shield ? 2 : 0) + n },
+  }
+}
+
+export function withEnhancedVariants(entries: ContentEntry[]): ContentEntry[] {
+  const variants: ContentEntry[] = []
+  for (const entry of entries) {
+    if (entry.kind !== 'item' || entry.data.magic) continue
+    const isWeapon = Boolean(entry.data.weapon)
+    const isArmor = Boolean(entry.data.armor) || entry.data.category === 'shield'
+    if (!isWeapon && !isArmor) continue
+    for (const n of [1, 2, 3] as const) {
+      const slug = `${entry.slug}-${n}`
+      const generic = uid('item', `${isWeapon ? 'weapon' : 'armor'}-${n}`)
+      const effects: ContentEntry['effects'] = isWeapon
+        ? [
+            { type: 'bonus', target: 'attack.weapon.self', value: n, note: `+${n} weapon` },
+            { type: 'bonus', target: 'damage.weapon.self', value: n, note: `+${n} weapon` },
+          ]
+        : [
+            ...entry.effects,
+            {
+              type: 'bonus',
+              target: 'ac.bonus',
+              value: n,
+              note: `+${n} ${entry.data.category === 'shield' ? 'shield' : 'armor'}`,
+            },
+          ]
+      variants.push({
+        ...entry,
+        uid: uid('item', slug),
+        slug,
+        name: `${entry.name} +${n}`,
+        tags: [...new Set([...entry.tags, 'magic', 'enhancement', ENHANCEMENT_RARITY[n - 1]!])],
+        effects,
+        automation: { level: 'full', notes: `Generated +${n} variant of ${entry.name}.` },
+        tests: [variantTest(entry, slug, n, isWeapon)],
+        relations: [{ to: generic, relation: 'variant_of' }],
+        data: {
+          ...entry.data,
+          description: `${entry.data.description}\n\nYou have a +${n} bonus to ${isWeapon ? 'attack and damage rolls made with this magic weapon' : 'AC while wearing this armor'}.`,
+          magic: true,
+          rarity: ENHANCEMENT_RARITY[n - 1]!,
+          requiresAttunement: false,
+          variantOf: generic,
+          ...(entry.data.weapon
+            ? {
+                weapon: {
+                  ...entry.data.weapon,
+                  properties: [...new Set([...entry.data.weapon.properties, 'magical' as const])],
+                },
+              }
+            : {}),
+        },
+      })
+    }
+  }
+  return [...entries, ...variants]
+}
+
 /** Applies mechanics overlays (by uid) onto converted entries. */
 export function applyOverlays(
   entries: ContentEntry[],
@@ -1170,6 +1267,7 @@ export function applyOverlays(
       ...(o.automation ? { automation: o.automation } : {}),
       ...(o.tests ? { tests: o.tests } : {}),
       ...(o.tags ? { tags: [...new Set([...entry.tags, ...o.tags])] } : {}),
+      ...(o.data ? { data: { ...(entry.data as AnyRecord), ...o.data } } : {}),
     } as ContentEntry
   })
   return { entries: out, unmatched: overlays.map((o) => o.uid).filter((u) => !matched.has(u)) }
@@ -1187,7 +1285,10 @@ export function buildPackages(
 } {
   const groups: PackageGroup[] = [
     { name: 'spells', entries: convertSpells(dir) },
-    { name: 'equipment', entries: [...convertEquipment(dir), ...convertMagicItems(dir)] },
+    {
+      name: 'equipment',
+      entries: withEnhancedVariants([...convertEquipment(dir), ...convertMagicItems(dir)]),
+    },
     { name: 'monsters', entries: convertMonsters(dir) },
     { name: 'rules', entries: convertRules(dir) },
     { name: 'classes', entries: convertClasses(dir) },

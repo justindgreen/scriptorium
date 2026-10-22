@@ -1,0 +1,88 @@
+{
+  "name": "Quiet Prayer (Rogue 3 / Cleric 2)",
+  "definition": {
+    "baseAbilities": {
+      "str": 10,
+      "dex": 16,
+      "con": 12,
+      "int": 10,
+      "wis": 14,
+      "cha": 12
+    },
+    "speciesUid": "srd-5.1:species:hill-dwarf",
+    "classes": [
+      {
+        "classUid": "srd-5.1:class:rogue",
+        "subclassUid": "srd-5.1:subclass:thief",
+        "level": 3,
+        "order": 0
+      },
+      {
+        "classUid": "srd-5.1:class:cleric",
+        "subclassUid": "srd-5.1:subclass:life",
+        "level": 2,
+        "order": 1
+      }
+    ],
+    "choices": {
+      "class:srd-5.1:class:rogue@1/skills": {
+        "kind": "skill",
+        "skills": ["stealth", "perception", "insight", "sleight-of-hand"]
+      },
+      "class:srd-5.1:class:rogue@1/feature:rogue-expertise-1/expertise": {
+        "kind": "expertise",
+        "skills": ["stealth", "perception"]
+      },
+      "species:srd-5.1:species:dwarf/feature:tool-proficiency/tool": {
+        "kind": "tool",
+        "tools": ["masons-tools"]
+      }
+    },
+    "spells": [
+      {
+        "spellUid": "srd-5.1:spell:healing-word",
+        "origin": "class:srd-5.1:class:cleric",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:guiding-bolt",
+        "origin": "class:srd-5.1:class:cleric",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:bless",
+        "origin": "class:srd-5.1:class:cleric",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      }
+    ]
+  },
+  "inventory": [
+    {
+      "id": "leather",
+      "itemUid": "srd-5.1:item:leather-armor",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "rapier",
+      "itemUid": "srd-5.1:item:rapier",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "mace",
+      "itemUid": "srd-5.1:item:mace",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    }
+  ]
+}

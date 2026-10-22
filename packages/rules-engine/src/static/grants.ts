@@ -4,6 +4,7 @@ import {
   parseUid,
   type ContentEntry,
   type ContentEntryOf,
+  type Choice,
   type Effect,
   type ItemData,
 } from '@scriptorium/content-schema'
@@ -20,7 +21,8 @@ import type {
   SourceRef,
   ToggleView,
 } from '../types.js'
-import { applySelection, type ChoiceDefinition } from './choices.js'
+import { applySelection, type ChoiceDefinition, type ResolvedChoice } from './choices.js'
+import { FormulaError, evaluateNumeric } from './formula.js'
 import type { PredicateFacts, SelfItem } from './predicates.js'
 
 export type ItemSelf = SelfItem & { itemId: string; itemName: string }
@@ -88,8 +90,13 @@ export type Grants = {
   shield?: EquippedShield
   weapons: WeaponInstance[]
   proficiencies: ProficiencySets
-  /** Content picked through `content` choices (spells); consumed from M2.3. */
-  contentSelections: Array<{ key: string; uids: string[] }>
+  /** Spells picked through `content` choices (Mystic Arcanum, cantrip picks), validated by spellcasting. */
+  chosenSpells: Array<{
+    key: string
+    uids: string[]
+    filter: Extract<Choice['from'], { kind: 'content' }>['filter']
+    source: SourceRef
+  }>
   facts: PredicateFacts
   diagnostics: Diagnostic[]
   engineSource: SourceRef
@@ -131,7 +138,7 @@ class Walker {
         tools: new Map(),
         languages: new Map(),
       },
-      contentSelections: [],
+      chosenSpells: [],
       facts: {
         level: 0,
         classLevels: new Map(),
@@ -275,7 +282,10 @@ class Walker {
     )
     if (!active) return
     for (const choice of entry.choices) {
-      this.resolveChoice({ key: `${source.path}/${choice.key}`, choice, source }, options.classUid)
+      this.resolveChoice(
+        { key: `${source.path}/${choice.key}`, choice: this.resolveCount(choice, source), source },
+        options.classUid,
+      )
     }
   }
 
@@ -290,10 +300,86 @@ class Walker {
     }
     for (const uid of outcome.featureUids) this.grantFeature(uid, definition.source, classUid)
     for (const uid of outcome.featUids) this.grantFeat(uid, definition)
-    if (outcome.contentUids.length > 0) {
-      this.result.contentSelections.push({ key: definition.key, uids: outcome.contentUids })
+    if (outcome.contentUids.length > 0 && definition.choice.from.kind === 'content') {
+      const from = definition.choice.from
+      if (from.contentKind === 'feature') {
+        for (const uid of outcome.contentUids) {
+          const entry = entryOfKind(this.snapshot, uid, 'feature')
+          if (!entry) {
+            this.missing(uid, 'feature', definition.source)
+            continue
+          }
+          const tags = from.filter.tags ?? []
+          if (!tags.every((t) => entry.tags.includes(t))) {
+            this.diagnostic({
+              code: 'INVALID_SELECTION',
+              severity: 'warning',
+              message: `${definition.choice.name}: "${entry.name}" is not tagged ${tags.join(', ')}`,
+              sources: [definition.source],
+            })
+            continue
+          }
+          this.grantFeature(uid, definition.source, classUid)
+        }
+      } else if (from.contentKind === 'spell') {
+        this.result.chosenSpells.push({
+          key: definition.key,
+          uids: outcome.contentUids,
+          filter: from.filter,
+          source: definition.source,
+        })
+      } else {
+        this.diagnostic({
+          code: 'UNSUPPORTED_EFFECT',
+          severity: 'warning',
+          message: `${definition.choice.name}: content choices of kind "${from.contentKind}" are not supported yet`,
+          sources: [definition.source],
+        })
+      }
     }
     if (outcome.pending) this.result.pendingChoices.push(outcome.pending)
+  }
+
+  /** Evaluates a choice's `count` formula from the facts known during the walk. */
+  private resolveCount(choice: Choice, source: SourceRef): ResolvedChoice {
+    if (typeof choice.count === 'number') return { ...choice, count: choice.count }
+    const unavailable = (name: string) => () => {
+      throw new FormulaError(`${name} is not available in a choice count`, 'UNKNOWN_VARIABLE')
+    }
+    try {
+      const n = evaluateNumeric(choice.count, {
+        abilityMod: unavailable('ability modifiers'),
+        abilityScore: unavailable('ability scores'),
+        proficiencyBonus: unavailable('PB'),
+        castingMod: unavailable('castingMod'),
+        slotLevel: unavailable('slotLevel'),
+        level: () => this.result.facts.level,
+        classLevel: (uid) => this.result.facts.classLevels.get(uid) ?? 0,
+        table: (name, level) => {
+          for (const cls of this.result.classes) {
+            const rows = cls.entry.data.levels
+            if (!rows.some((r) => name in r.columns)) continue
+            const clamped = Math.max(1, Math.min(Math.floor(level), rows.length))
+            const raw = (rows.find((r) => r.level === clamped) ?? rows[clamped - 1])?.columns[name]
+            const value = typeof raw === 'number' ? raw : Number.parseFloat(String(raw ?? 0))
+            return Number.isNaN(value) ? 0 : value
+          }
+          throw new FormulaError(`unknown table "${name}"`, 'FORMULA_ERROR')
+        },
+      })
+      return { ...choice, count: Math.max(1, Math.min(10, Math.floor(n))) }
+    } catch (error) {
+      if (error instanceof FormulaError) {
+        this.diagnostic({
+          code: error.code,
+          severity: 'error',
+          message: `${choice.name}: count formula: ${error.message}`,
+          sources: [source],
+        })
+        return { ...choice, count: 1 }
+      }
+      throw error
+    }
   }
 
   private grantFeature(uid: string, parent: SourceRef, classUid?: string) {

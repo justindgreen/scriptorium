@@ -1,0 +1,388 @@
+[
+  {
+    "uid": "srd-5.1:item:shield",
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "item-bench",
+          "modify": {
+            "inventory": [
+              {
+                "id": "bench",
+                "itemUid": "srd-5.1:item:shield",
+                "quantity": 1,
+                "equipped": true,
+                "attuned": false
+              }
+            ]
+          }
+        },
+        "expect": {
+          "stat": "ac.bonus",
+          "equals": 2
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:item:ring-of-protection",
+    "effects": [
+      {
+        "type": "bonus",
+        "target": "ac.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection",
+        "note": "Ring of Protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.str.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection",
+        "note": "Ring of Protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.dex.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection",
+        "note": "Ring of Protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.con.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection",
+        "note": "Ring of Protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.int.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection",
+        "note": "Ring of Protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.wis.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection",
+        "note": "Ring of Protection"
+      },
+      {
+        "type": "bonus",
+        "target": "save.cha.bonus",
+        "value": 1,
+        "stackKey": "ring-of-protection",
+        "note": "Ring of Protection"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "ac.bonus",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "warlock-20-fiend"
+        },
+        "expect": {
+          "stat": "save.int.bonus",
+          "equals": 1
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:item:headband-of-intellect",
+    "effects": [
+      {
+        "type": "abilityScore.atLeast",
+        "ability": "int",
+        "value": 19
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "stat": "ability.int.score",
+          "equals": 19
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:item:gauntlets-of-ogre-power",
+    "effects": [
+      {
+        "type": "abilityScore.atLeast",
+        "ability": "str",
+        "value": 19
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "ability.str.score",
+          "equals": 19
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:item:mace-of-disruption",
+    "data": {
+      "category": "weapon",
+      "weapon": {
+        "category": "simple",
+        "range": "melee",
+        "damage": {
+          "dice": "1d6",
+          "damageType": "bludgeoning"
+        },
+        "properties": ["magical"]
+      }
+    },
+    "effects": [
+      {
+        "type": "action.damageAdd",
+        "formula": "2d6",
+        "damageType": "radiant",
+        "label": "Disruption",
+        "condition": {
+          "leaf": "ctx.targetType",
+          "types": ["fiend", "undead"]
+        }
+      },
+      {
+        "type": "manual",
+        "text": "A fiend or undead with 25 hit points or fewer after the hit must succeed on a DC 15 Wisdom save or be destroyed; on a success it is frightened until the end of your next turn. The mace sheds bright light in a 20-foot radius."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["the destroy/frighten save", "light"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "weapon",
+              "itemId": "disruption"
+            },
+            "ctx": {
+              "target": {
+                "creatureType": "undead"
+              }
+            }
+          },
+          "contains": {
+            "damage": [
+              {
+                "id": "disruption",
+                "formula": "2d6",
+                "damageType": "radiant"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "weapon",
+              "itemId": "disruption"
+            },
+            "ctx": {
+              "target": {
+                "creatureType": "humanoid"
+              }
+            }
+          },
+          "excludes": {
+            "damageIds": ["disruption"]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:item:wand-of-magic-missiles",
+    "data": {
+      "charges": {
+        "max": 7,
+        "recharge": {
+          "time": "dawn",
+          "formula": "1d6 + 1"
+        },
+        "destroyedOnLastCharge": "If you expend the last charge, roll a d20; on a 1 the wand crumbles into ashes."
+      }
+    },
+    "effects": [
+      {
+        "type": "action.grant",
+        "name": "Magic Missile (wand)",
+        "actionType": "action",
+        "damage": [
+          {
+            "formula": "3d4 + 3",
+            "damageType": "force"
+          }
+        ],
+        "cost": {
+          "charges": 1
+        },
+        "description": "Cast magic missile (three darts) for 1 charge; spend more charges to cast at a higher level."
+      },
+      {
+        "type": "manual",
+        "text": "Spending extra charges adds one dart (1d4 + 1 force) per charge."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["higher-level casting with more charges"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "action",
+              "templateId": "action:item:wand/magic-missile-wand"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "costs": [
+              {
+                "kind": "charges",
+                "amount": 1,
+                "available": 7
+              }
+            ],
+            "damage": [
+              {
+                "id": "damage-0",
+                "formula": "3d4 + 3",
+                "damageType": "force"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:item:weapon-1",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Use the concrete +1 weapon entries (for example Longsword +1)."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Generic template; concrete variants are generated per weapon."
+    }
+  },
+  {
+    "uid": "srd-5.1:item:armor-1",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Use the concrete +1 armor entries (for example Chain Mail +1)."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Generic template; concrete variants are generated per armor."
+    }
+  },
+  {
+    "uid": "srd-5.1:item:weapon-2",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Use the concrete +2 weapon entries (for example Longsword +2)."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Generic template; concrete variants are generated per weapon."
+    }
+  },
+  {
+    "uid": "srd-5.1:item:armor-2",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Use the concrete +2 armor entries (for example Chain Mail +2)."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Generic template; concrete variants are generated per armor."
+    }
+  },
+  {
+    "uid": "srd-5.1:item:weapon-3",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Use the concrete +3 weapon entries (for example Longsword +3)."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Generic template; concrete variants are generated per weapon."
+    }
+  },
+  {
+    "uid": "srd-5.1:item:armor-3",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Use the concrete +3 armor entries (for example Chain Mail +3)."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Generic template; concrete variants are generated per armor."
+    }
+  }
+]

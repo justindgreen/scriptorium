@@ -1,0 +1,117 @@
+{
+  "name": "Thorga (Fighter 20 Champion, hill dwarf)",
+  "definition": {
+    "baseAbilities": {
+      "str": 16,
+      "dex": 12,
+      "con": 14,
+      "int": 10,
+      "wis": 12,
+      "cha": 8
+    },
+    "speciesUid": "srd-5.1:species:hill-dwarf",
+    "classes": [
+      {
+        "classUid": "srd-5.1:class:fighter",
+        "subclassUid": "srd-5.1:subclass:champion",
+        "level": 20,
+        "order": 0
+      }
+    ],
+    "choices": {
+      "class:srd-5.1:class:fighter@1/skills": {
+        "kind": "skill",
+        "skills": ["athletics", "perception"]
+      },
+      "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style": {
+        "kind": "optionSet",
+        "options": ["defense"]
+      },
+      "species:srd-5.1:species:dwarf/feature:tool-proficiency/tool": {
+        "kind": "tool",
+        "tools": ["smiths-tools"]
+      },
+      "class:srd-5.1:class:fighter@4/feature:fighter-ability-score-improvement-1/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "str": 2
+        }
+      },
+      "class:srd-5.1:class:fighter@6/feature:fighter-ability-score-improvement-2/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "str": 2
+        }
+      },
+      "class:srd-5.1:class:fighter@8/feature:fighter-ability-score-improvement-3/asi": {
+        "kind": "asiOrFeat",
+        "choice": "feat",
+        "feat": "srd-5.1:feat:grappler"
+      },
+      "subclass:srd-5.1:subclass:champion@10/feature:additional-fighting-style/fighting-style": {
+        "kind": "optionSet",
+        "options": ["archery"]
+      },
+      "class:srd-5.1:class:fighter@12/feature:fighter-ability-score-improvement-4/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "con": 2
+        }
+      },
+      "class:srd-5.1:class:fighter@14/feature:fighter-ability-score-improvement-5/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "dex": 2
+        }
+      },
+      "class:srd-5.1:class:fighter@16/feature:fighter-ability-score-improvement-6/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "wis": 2
+        }
+      },
+      "class:srd-5.1:class:fighter@19/feature:fighter-ability-score-improvement-7/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "con": 2
+        }
+      }
+    }
+  },
+  "inventory": [
+    {
+      "id": "mail",
+      "itemUid": "srd-5.1:item:plate-armor",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "shield",
+      "itemUid": "srd-5.1:item:shield",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "longsword-1",
+      "itemUid": "srd-5.1:item:longsword-1",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "headband",
+      "itemUid": "srd-5.1:item:headband-of-intellect",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": true
+    }
+  ]
+}

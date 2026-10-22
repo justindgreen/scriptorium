@@ -61,8 +61,13 @@ function entryFor<K extends ContentKind>(kind: K) {
       const data = (
         entry as unknown as { data: { weapon?: unknown; armor?: unknown; charges?: unknown } }
       ).data
+      // Structural kinds (classes, species, backgrounds, spells, monsters, …) carry their
+      // mechanics in `data`; features, feats and items need effects or choices.
       const structural =
-        entry.kind === 'item' && (data.weapon || data.armor || data.charges) ? 1 : 0
+        (entry.kind === 'item' && (data.weapon || data.armor || data.charges)) ||
+        !['feature', 'feat', 'item'].includes(entry.kind)
+          ? 1
+          : 0
       const mechanical =
         entry.effects.filter((e) => e.type !== 'manual').length + entry.choices.length + structural
       if (

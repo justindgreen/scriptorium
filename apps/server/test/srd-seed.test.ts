@@ -24,7 +24,7 @@ describe('bundled SRD 5.1 content', () => {
     expect(created).toEqual({
       'srd-5.1.backgrounds-feats.package.json': 2,
       'srd-5.1.classes.package.json': 431,
-      'srd-5.1.equipment.package.json': 599,
+      'srd-5.1.equipment.package.json': 749,
       'srd-5.1.monsters.package.json': 334,
       'srd-5.1.rules.package.json': 54,
       'srd-5.1.species.package.json': 51,
@@ -38,7 +38,7 @@ describe('bundled SRD 5.1 content', () => {
         (p) => p.result.entries.created === 0 && p.result.entries.updated === 0,
       ),
     ).toBe(true)
-    expect(second.packages.reduce((n, p) => n + p.result.entries.unchanged, 0)).toBe(1798)
+    expect(second.packages.reduce((n, p) => n + p.result.entries.unchanged, 0)).toBe(1948)
   }, 120_000)
 
   it('exposes the SRD through the content repository with working projections', async () => {
@@ -48,7 +48,7 @@ describe('bundled SRD 5.1 content', () => {
     expect(counts).toMatchObject({
       spell: 319,
       spell_list: 8,
-      item: 599,
+      item: 749,
       monster: 334,
       condition: 15,
       rule: 39,
@@ -84,7 +84,7 @@ describe('bundled SRD 5.1 content', () => {
     })
     const fighter = await repo.getEntry('srd-5.1:class:fighter')
     expect((fighter?.version.data as { levels: unknown[] }).levels).toHaveLength(20)
-    expect(fighter?.version.automation).toEqual({ level: 'pending' })
+    expect(fighter?.version.automation).toEqual({ level: 'full' })
     const shield = await repo.getEntry('srd-5.1:item:shield')
     expect(shield?.version.effects).toEqual([
       { type: 'bonus', target: 'ac.bonus', value: 2, note: 'Shield' },

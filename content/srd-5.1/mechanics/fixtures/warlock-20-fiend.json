@@ -1,0 +1,181 @@
+{
+  "name": "Vey (Warlock 20 Fiend, human)",
+  "definition": {
+    "baseAbilities": {
+      "str": 8,
+      "dex": 14,
+      "con": 13,
+      "int": 10,
+      "wis": 11,
+      "cha": 15
+    },
+    "speciesUid": "srd-5.1:species:human",
+    "classes": [
+      {
+        "classUid": "srd-5.1:class:warlock",
+        "subclassUid": "srd-5.1:subclass:fiend",
+        "level": 20,
+        "order": 0
+      }
+    ],
+    "choices": {
+      "class:srd-5.1:class:warlock@1/skills": {
+        "kind": "skill",
+        "skills": ["arcana", "deception"]
+      },
+      "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+        "kind": "content",
+        "entries": [
+          "srd-5.1:feature:eldritch-invocation-agonizing-blast",
+          "srd-5.1:feature:eldritch-invocation-devils-sight",
+          "srd-5.1:feature:eldritch-invocation-armor-of-shadows",
+          "srd-5.1:feature:eldritch-invocation-beguiling-influence",
+          "srd-5.1:feature:eldritch-invocation-thirsting-blade",
+          "srd-5.1:feature:eldritch-invocation-lifedrinker",
+          "srd-5.1:feature:eldritch-invocation-eldritch-sight",
+          "srd-5.1:feature:eldritch-invocation-fiendish-vigor"
+        ]
+      },
+      "class:srd-5.1:class:warlock@3/feature:pact-boon/pact-boon": {
+        "kind": "optionSet",
+        "options": ["blade"]
+      },
+      "class:srd-5.1:class:warlock@4/feature:warlock-ability-score-improvement-1/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "cha": 2
+        }
+      },
+      "class:srd-5.1:class:warlock@8/feature:warlock-ability-score-improvement-2/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "cha": 2
+        }
+      },
+      "subclass:srd-5.1:subclass:fiend@10/feature:fiendish-resilience/resistance": {
+        "kind": "optionSet",
+        "options": ["fire"]
+      },
+      "class:srd-5.1:class:warlock@12/feature:warlock-ability-score-improvement-3/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "con": 2
+        }
+      },
+      "class:srd-5.1:class:warlock@16/feature:warlock-ability-score-improvement-4/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "dex": 2
+        }
+      },
+      "class:srd-5.1:class:warlock@19/feature:warlock-ability-score-improvement-5/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "wis": 2
+        }
+      },
+      "class:srd-5.1:class:warlock@11/feature:mystic-arcanum-6th-level/arcanum": {
+        "kind": "content",
+        "entries": ["srd-5.1:spell:circle-of-death"]
+      },
+      "class:srd-5.1:class:warlock@13/feature:mystic-arcanum-7th-level/arcanum": {
+        "kind": "content",
+        "entries": ["srd-5.1:spell:finger-of-death"]
+      },
+      "class:srd-5.1:class:warlock@15/feature:mystic-arcanum-8th-level/arcanum": {
+        "kind": "content",
+        "entries": ["srd-5.1:spell:dominate-monster"]
+      },
+      "class:srd-5.1:class:warlock@17/feature:mystic-arcanum-9th-level/arcanum": {
+        "kind": "content",
+        "entries": ["srd-5.1:spell:foresight"]
+      }
+    },
+    "spells": [
+      {
+        "spellUid": "srd-5.1:spell:eldritch-blast",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:burning-hands",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:hellish-rebuke",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:scorching-ray",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:command",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:fireball",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:wall-of-fire",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:flame-strike",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      }
+    ]
+  },
+  "inventory": [
+    {
+      "id": "leather",
+      "itemUid": "srd-5.1:item:studded-leather-armor",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "pact-sword",
+      "itemUid": "srd-5.1:item:longsword",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "ring",
+      "itemUid": "srd-5.1:item:ring-of-protection",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": true
+    }
+  ]
+}

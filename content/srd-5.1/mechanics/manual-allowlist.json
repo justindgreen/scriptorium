@@ -1,0 +1,254 @@
+[
+  {
+    "uid": "srd-5.1:feature:fighter-fighting-style-protection",
+    "reason": "A reaction the table adjudicates."
+  },
+  {
+    "uid": "srd-5.1:feature:fighter-fighting-style-two-weapon-fighting",
+    "reason": "Off-hand attacks are not modelled yet."
+  },
+  {
+    "uid": "srd-5.1:feature:action-surge-2-uses",
+    "reason": "Scaling lives on the level-2 feature table."
+  },
+  {
+    "uid": "srd-5.1:feature:martial-archetype",
+    "reason": "Subclass selection is structural."
+  },
+  {
+    "uid": "srd-5.1:feature:martial-archetype-improvement-1",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:martial-archetype-improvement-2",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:martial-archetype-improvement-3",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:martial-archetype-improvement-4",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:indomitable-2-uses",
+    "reason": "Scaling lives on the level-9 feature table."
+  },
+  {
+    "uid": "srd-5.1:feature:indomitable-3-uses",
+    "reason": "Scaling lives on the level-9 feature table."
+  },
+  {
+    "uid": "srd-5.1:feature:survivor",
+    "reason": "Turn-start healing is bookkeeping the tracker does not automate yet."
+  },
+  {
+    "uid": "srd-5.1:feature:roguish-archetype",
+    "reason": "Subclass selection is structural."
+  },
+  {
+    "uid": "srd-5.1:feature:roguish-archetype-improvement-1",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:roguish-archetype-improvement-2",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:roguish-archetype-improvement-3",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:rogue-evasion",
+    "reason": "Depends on the save outcome, which the engine does not see."
+  },
+  {
+    "uid": "srd-5.1:feature:reliable-talent",
+    "reason": "Minimum roll rules need the roll step."
+  },
+  {
+    "uid": "srd-5.1:feature:elusive",
+    "reason": "Advantage against you is the attacker's roll."
+  },
+  {
+    "uid": "srd-5.1:feature:second-story-work",
+    "reason": "Movement costs are not modelled."
+  },
+  {
+    "uid": "srd-5.1:feature:use-magic-device",
+    "reason": "Item requirements are not enforced yet."
+  },
+  {
+    "uid": "srd-5.1:feature:thiefs-reflexes",
+    "reason": "Initiative order is the tracker's job."
+  },
+  {
+    "uid": "srd-5.1:feature:divine-domain",
+    "reason": "Subclass selection is structural."
+  },
+  {
+    "uid": "srd-5.1:feature:domain-spells-1",
+    "reason": "Domain spells come from the subclass data."
+  },
+  {
+    "uid": "srd-5.1:feature:domain-spells-2",
+    "reason": "Domain spells come from the subclass data."
+  },
+  {
+    "uid": "srd-5.1:feature:domain-spells-3",
+    "reason": "Domain spells come from the subclass data."
+  },
+  {
+    "uid": "srd-5.1:feature:domain-spells-4",
+    "reason": "Domain spells come from the subclass data."
+  },
+  {
+    "uid": "srd-5.1:feature:domain-spells-5",
+    "reason": "Domain spells come from the subclass data."
+  },
+  {
+    "uid": "srd-5.1:feature:divine-domain-improvement-1",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:divine-domain-improvement-2",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:divine-domain-improvement-3",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:divine-domain-improvement-4",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:destroy-undead-cr-1-2-or-below",
+    "reason": "Turn Undead outcomes are applied by the table."
+  },
+  {
+    "uid": "srd-5.1:feature:destroy-undead-cr-1-or-below",
+    "reason": "Turn Undead outcomes are applied by the table."
+  },
+  {
+    "uid": "srd-5.1:feature:destroy-undead-cr-2-or-below",
+    "reason": "Turn Undead outcomes are applied by the table."
+  },
+  {
+    "uid": "srd-5.1:feature:destroy-undead-cr-3-or-below",
+    "reason": "Turn Undead outcomes are applied by the table."
+  },
+  {
+    "uid": "srd-5.1:feature:destroy-undead-cr-4-or-below",
+    "reason": "Turn Undead outcomes are applied by the table."
+  },
+  {
+    "uid": "srd-5.1:feature:channel-divinity-2-rest",
+    "reason": "Scaling lives on the level-2 feature table."
+  },
+  {
+    "uid": "srd-5.1:feature:channel-divinity-3-rest",
+    "reason": "Scaling lives on the level-2 feature table."
+  },
+  {
+    "uid": "srd-5.1:feature:divine-intervention-improvement",
+    "reason": "See Divine Intervention."
+  },
+  {
+    "uid": "srd-5.1:feature:disciple-of-life",
+    "reason": "Healing bonuses have no effect type yet."
+  },
+  {
+    "uid": "srd-5.1:feature:blessed-healer",
+    "reason": "Healing side effects have no effect type yet."
+  },
+  {
+    "uid": "srd-5.1:feature:supreme-healing",
+    "reason": "Maximised healing needs the roll step."
+  },
+  {
+    "uid": "srd-5.1:feature:otherworldly-patron",
+    "reason": "Subclass selection is structural."
+  },
+  {
+    "uid": "srd-5.1:feature:otherworldly-patron-improvement-1",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:otherworldly-patron-improvement-2",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:otherworldly-patron-improvement-3",
+    "reason": "Placeholder row; mechanics live on the subclass."
+  },
+  {
+    "uid": "srd-5.1:feature:dark-ones-blessing",
+    "reason": "Kill triggers are not observed by the engine."
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-book-of-ancient-secrets",
+    "reason": "Ritual books are tracked by the player."
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-eldritch-spear",
+    "reason": "Spell range changes are not modelled."
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-eyes-of-the-rune-keeper",
+    "reason": "Narrative."
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-gaze-of-two-minds",
+    "reason": "Narrative."
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-repelling-blast",
+    "reason": "Forced movement is the tracker's job."
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-voice-of-the-chain-master",
+    "reason": "Narrative."
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-one-with-shadows",
+    "reason": "Lighting is not modelled."
+  },
+  {
+    "uid": "srd-5.1:feature:eldritch-invocation-witch-sight",
+    "reason": "Narrative."
+  },
+  {
+    "uid": "srd-5.1:feature:stonecunning",
+    "reason": "Context-specific check bonuses are decided at the table."
+  },
+  {
+    "uid": "srd-5.1:feature:trance",
+    "reason": "Rest duration is narrative."
+  },
+  {
+    "uid": "srd-5.1:item:weapon-1",
+    "reason": "Generic template; concrete variants are generated per weapon."
+  },
+  {
+    "uid": "srd-5.1:item:armor-1",
+    "reason": "Generic template; concrete variants are generated per armor."
+  },
+  {
+    "uid": "srd-5.1:item:weapon-2",
+    "reason": "Generic template; concrete variants are generated per weapon."
+  },
+  {
+    "uid": "srd-5.1:item:armor-2",
+    "reason": "Generic template; concrete variants are generated per armor."
+  },
+  {
+    "uid": "srd-5.1:item:weapon-3",
+    "reason": "Generic template; concrete variants are generated per weapon."
+  },
+  {
+    "uid": "srd-5.1:item:armor-3",
+    "reason": "Generic template; concrete variants are generated per armor."
+  }
+]

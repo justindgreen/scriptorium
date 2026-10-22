@@ -1,0 +1,19 @@
+{
+  "name": "@scriptorium/conformance",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Runs declaration checks and behavioural cases over the content packages and writes docs/AUTOMATION_COVERAGE.md",
+  "type": "module",
+  "scripts": {
+    "coverage": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@scriptorium/content-schema": "workspace:*",
+    "@scriptorium/rules-engine": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  }
+}

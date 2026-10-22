@@ -30,7 +30,7 @@ export const behaviouralCaseSchema = z.strictObject({
   given: z.strictObject({
     /** Name of a fixture aggregate shipped with the content package or engine tests. */
     fixture: z.string().min(1).max(120),
-    /** Dotted-path overrides applied to the fixture before evaluation. */
+    /** A patch deep-merged into the fixture before evaluation (objects merge, arrays replace). */
     modify: z.record(z.string(), z.unknown()).optional(),
   }),
   expect: z.union([
@@ -52,6 +52,22 @@ export const behaviouralCaseSchema = z.strictObject({
       command: z.record(z.string(), z.unknown()),
       expectState: z.record(z.string(), z.unknown()).optional(),
       expectError: z.string().optional(),
+    }),
+    /** A proficiency set contains an id (armor, weapons, tools, languages). */
+    z.strictObject({
+      proficient: z.strictObject({
+        set: z.enum(['armor', 'weapons', 'tools', 'languages']),
+        id: z.string().min(1),
+      }),
+    }),
+    /** The sheet lists the spell as known, prepared or granted. */
+    z.strictObject({ knownSpell: z.string().min(1) }),
+    /** The sheet lists a defense (conditional ones included). */
+    z.strictObject({
+      defense: z.strictObject({
+        kind: z.enum(['resistance', 'immunity', 'vulnerability']),
+        damageType: z.string().min(1),
+      }),
     }),
   ]),
 })

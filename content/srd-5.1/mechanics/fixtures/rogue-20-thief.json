@@ -1,0 +1,116 @@
+{
+  "name": "Sable (Rogue 20 Thief, high elf)",
+  "definition": {
+    "baseAbilities": {
+      "str": 10,
+      "dex": 16,
+      "con": 12,
+      "int": 12,
+      "wis": 10,
+      "cha": 14
+    },
+    "speciesUid": "srd-5.1:species:high-elf",
+    "classes": [
+      {
+        "classUid": "srd-5.1:class:rogue",
+        "subclassUid": "srd-5.1:subclass:thief",
+        "level": 20,
+        "order": 0
+      }
+    ],
+    "choices": {
+      "class:srd-5.1:class:rogue@1/skills": {
+        "kind": "skill",
+        "skills": ["stealth", "acrobatics", "perception", "deception"]
+      },
+      "class:srd-5.1:class:rogue@1/feature:rogue-expertise-1/expertise": {
+        "kind": "expertise",
+        "skills": ["stealth", "perception"]
+      },
+      "species:srd-5.1:species:high-elf/feature:high-elf-cantrip/cantrip": {
+        "kind": "content",
+        "entries": ["srd-5.1:spell:fire-bolt"]
+      },
+      "species:srd-5.1:species:high-elf/feature:extra-language/language": {
+        "kind": "language",
+        "languages": ["dwarvish"]
+      },
+      "class:srd-5.1:class:rogue@4/feature:rogue-ability-score-improvement-1/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "dex": 2
+        }
+      },
+      "class:srd-5.1:class:rogue@6/feature:rogue-expertise-2/expertise": {
+        "kind": "expertise",
+        "skills": ["acrobatics", "deception"]
+      },
+      "class:srd-5.1:class:rogue@8/feature:rogue-ability-score-improvement-2/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "con": 2
+        }
+      },
+      "class:srd-5.1:class:rogue@10/feature:rogue-ability-score-improvement-3/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "cha": 2
+        }
+      },
+      "class:srd-5.1:class:rogue@12/feature:rogue-ability-score-improvement-4/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "wis": 2
+        }
+      },
+      "class:srd-5.1:class:rogue@16/feature:rogue-ability-score-improvement-5/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "int": 2
+        }
+      },
+      "class:srd-5.1:class:rogue@19/feature:rogue-ability-score-improvement-6/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "str": 2
+        }
+      }
+    }
+  },
+  "inventory": [
+    {
+      "id": "leather",
+      "itemUid": "srd-5.1:item:studded-leather-armor",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "rapier",
+      "itemUid": "srd-5.1:item:rapier",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "bow",
+      "itemUid": "srd-5.1:item:shortbow",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "gauntlets",
+      "itemUid": "srd-5.1:item:gauntlets-of-ogre-power",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": true
+    }
+  ]
+}

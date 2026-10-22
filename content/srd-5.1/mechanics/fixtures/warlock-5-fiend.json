@@ -1,0 +1,111 @@
+{
+  "name": "Vey (Warlock 5 Fiend, human)",
+  "definition": {
+    "baseAbilities": {
+      "str": 8,
+      "dex": 14,
+      "con": 13,
+      "int": 10,
+      "wis": 11,
+      "cha": 15
+    },
+    "speciesUid": "srd-5.1:species:human",
+    "classes": [
+      {
+        "classUid": "srd-5.1:class:warlock",
+        "subclassUid": "srd-5.1:subclass:fiend",
+        "level": 5,
+        "order": 0
+      }
+    ],
+    "choices": {
+      "class:srd-5.1:class:warlock@1/skills": {
+        "kind": "skill",
+        "skills": ["arcana", "deception"]
+      },
+      "class:srd-5.1:class:warlock@2/feature:eldritch-invocations/invocations": {
+        "kind": "content",
+        "entries": [
+          "srd-5.1:feature:eldritch-invocation-agonizing-blast",
+          "srd-5.1:feature:eldritch-invocation-devils-sight",
+          "srd-5.1:feature:eldritch-invocation-armor-of-shadows"
+        ]
+      },
+      "class:srd-5.1:class:warlock@3/feature:pact-boon/pact-boon": {
+        "kind": "optionSet",
+        "options": ["tome"]
+      },
+      "class:srd-5.1:class:warlock@3/feature:pact-boon/feature:pact-of-the-tome/cantrips": {
+        "kind": "content",
+        "entries": ["srd-5.1:spell:fire-bolt", "srd-5.1:spell:guidance", "srd-5.1:spell:light"]
+      },
+      "class:srd-5.1:class:warlock@4/feature:warlock-ability-score-improvement-1/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "cha": 2
+        }
+      }
+    },
+    "spells": [
+      {
+        "spellUid": "srd-5.1:spell:eldritch-blast",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:burning-hands",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:hellish-rebuke",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:scorching-ray",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:command",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:fireball",
+        "origin": "class:srd-5.1:class:warlock",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      }
+    ]
+  },
+  "inventory": [
+    {
+      "id": "leather",
+      "itemUid": "srd-5.1:item:leather-armor",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "dagger",
+      "itemUid": "srd-5.1:item:dagger",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    }
+  ]
+}

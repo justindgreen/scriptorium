@@ -9,10 +9,13 @@ import {
 } from '@scriptorium/content-schema'
 import type { ChoiceSelection, Diagnostic, PendingChoice, SourceRef } from '../types.js'
 
+/** A choice whose `count` formula has been evaluated for this character. */
+export type ResolvedChoice = Omit<Choice, 'count'> & { count: number }
+
 export type ChoiceDefinition = {
   /** Stable key the builder stores selections under: `<owner path>/<choice key>`. */
   key: string
-  choice: Choice
+  choice: ResolvedChoice
   source: SourceRef
 }
 

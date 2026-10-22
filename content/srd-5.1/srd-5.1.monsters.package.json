@@ -5514,11 +5514,19 @@
       "name": "Bandit",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "humanoid",
         "medium",
-        "cr-0.125"
+        "cr-0.125",
+        "alpha"
       ],
       "relations": []
     },
@@ -7499,11 +7507,19 @@
       "name": "Bugbear",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "humanoid",
         "medium",
-        "cr-1"
+        "cr-1",
+        "alpha"
       ],
       "relations": []
     },
@@ -9394,11 +9410,19 @@
       "name": "Cultist",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "humanoid",
         "medium",
-        "cr-0.125"
+        "cr-0.125",
+        "alpha"
       ],
       "relations": []
     },
@@ -13306,11 +13330,19 @@
       "name": "Ghoul",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "undead",
         "medium",
-        "cr-1"
+        "cr-1",
+        "alpha"
       ],
       "relations": []
     },
@@ -15474,11 +15506,19 @@
       "name": "Giant Spider",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "beast",
         "large",
-        "cr-1"
+        "cr-1",
+        "alpha"
       ],
       "relations": []
     },
@@ -16567,11 +16607,19 @@
       "name": "Goblin",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "humanoid",
         "small",
-        "cr-0.25"
+        "cr-0.25",
+        "alpha"
       ],
       "relations": []
     },
@@ -18562,11 +18610,19 @@
       "name": "Hobgoblin",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "humanoid",
         "medium",
-        "cr-0.5"
+        "cr-0.5",
+        "alpha"
       ],
       "relations": []
     },
@@ -23445,11 +23501,19 @@
       "name": "Ogre",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "giant",
         "large",
-        "cr-2"
+        "cr-2",
+        "alpha"
       ],
       "relations": []
     },
@@ -23755,11 +23819,19 @@
       "name": "Orc",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "humanoid",
         "medium",
-        "cr-0.5"
+        "cr-0.5",
+        "alpha"
       ],
       "relations": []
     },
@@ -27980,11 +28052,19 @@
       "name": "Skeleton",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "undead",
         "medium",
-        "cr-0.25"
+        "cr-0.25",
+        "alpha"
       ],
       "relations": []
     },
@@ -34969,11 +35049,19 @@
       "name": "Wolf",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "beast",
         "medium",
-        "cr-0.25"
+        "cr-0.25",
+        "alpha"
       ],
       "relations": []
     },
@@ -36736,11 +36824,19 @@
       "name": "Zombie",
       "effects": [],
       "choices": [],
+      "automation": {
+        "level": "partial",
+        "manualParts": [
+          "actions are resolved by the encounter tracker (M2.8)",
+          "traits and special abilities"
+        ]
+      },
       "tests": [],
       "tags": [
         "undead",
         "medium",
-        "cr-0.25"
+        "cr-0.25",
+        "alpha"
       ],
       "relations": []
     }

@@ -17,6 +17,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "coverage:automation": "pnpm -F @scriptorium/conformance coverage",
     "test:e2e": "playwright test"
   },
   "devDependencies": {

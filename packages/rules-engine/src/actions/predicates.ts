@@ -20,6 +20,8 @@ export type ActionPredicateEnv = {
   target?: TargetDescriptor
   situation: ActionSituation
   slotLevel?: number
+  /** The spell being cast, for `ctx.spell`. */
+  spellUid?: string
   /** Known once advantage sources are settled; null while they are being computed. */
   hasAdvantage: boolean | null
   /** The item an effect belongs to, for `equipped(self)`. */
@@ -104,6 +106,8 @@ function leaf(l: Leaf, env: ActionPredicateEnv, source: SourceRef, affects: stri
       return Boolean(env.weapon?.oneHanded)
     case 'ctx.slotLevel':
       return (env.slotLevel ?? 0) >= l.gte
+    case 'ctx.spell':
+      return env.spellUid === l.spell
     case 'ctx.oncePerTurnAvailable':
       return env.combat.oncePerTurn[l.key] !== env.combat.turn.turnId
     case 'ctx.hasAdvantage':

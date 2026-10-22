@@ -1,0 +1,85 @@
+[
+  {
+    "uid": "srd-5.1:background:acolyte",
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-1"
+        },
+        "expect": {
+          "stat": "skill.insight.proficiency",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "fighter-1"
+        },
+        "expect": {
+          "stat": "skill.religion.proficiency",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "fighter-1"
+        },
+        "expect": {
+          "proficient": {
+            "set": "languages",
+            "id": "celestial"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feat:grappler",
+    "effects": [
+      {
+        "type": "action.advantage",
+        "appliesTo": "melee",
+        "condition": {
+          "leaf": "ctx.targetHasCondition",
+          "condition": "grappled"
+        }
+      },
+      {
+        "type": "manual",
+        "text": "Pin: use your action to restrain both you and a creature you are grappling."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["pinning"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "fighter-20-champion"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "weapon",
+              "itemId": "longsword-1"
+            },
+            "ctx": {
+              "target": {
+                "conditions": ["grappled"]
+              }
+            }
+          },
+          "contains": {
+            "attack": {
+              "mode": "advantage"
+            }
+          }
+        }
+      }
+    ]
+  }
+]

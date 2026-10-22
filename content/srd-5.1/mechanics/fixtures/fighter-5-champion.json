@@ -1,0 +1,66 @@
+{
+  "name": "Thorga (Fighter 5 Champion, hill dwarf)",
+  "definition": {
+    "baseAbilities": {
+      "str": 16,
+      "dex": 12,
+      "con": 14,
+      "int": 10,
+      "wis": 12,
+      "cha": 8
+    },
+    "speciesUid": "srd-5.1:species:hill-dwarf",
+    "classes": [
+      {
+        "classUid": "srd-5.1:class:fighter",
+        "subclassUid": "srd-5.1:subclass:champion",
+        "level": 5,
+        "order": 0
+      }
+    ],
+    "choices": {
+      "class:srd-5.1:class:fighter@1/skills": {
+        "kind": "skill",
+        "skills": ["athletics", "perception"]
+      },
+      "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style": {
+        "kind": "optionSet",
+        "options": ["defense"]
+      },
+      "species:srd-5.1:species:dwarf/feature:tool-proficiency/tool": {
+        "kind": "tool",
+        "tools": ["smiths-tools"]
+      },
+      "class:srd-5.1:class:fighter@4/feature:fighter-ability-score-improvement-1/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "str": 2
+        }
+      }
+    }
+  },
+  "inventory": [
+    {
+      "id": "mail",
+      "itemUid": "srd-5.1:item:chain-mail",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "shield",
+      "itemUid": "srd-5.1:item:shield",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "longsword",
+      "itemUid": "srd-5.1:item:longsword",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "classes": [
+    "srd-5.1:class:fighter",
+    "srd-5.1:class:rogue",
+    "srd-5.1:class:cleric",
+    "srd-5.1:class:warlock"
+  ],
+  "subclasses": [
+    "srd-5.1:subclass:champion",
+    "srd-5.1:subclass:thief",
+    "srd-5.1:subclass:life",
+    "srd-5.1:subclass:fiend"
+  ],
+  "species": [
+    "srd-5.1:species:human",
+    "srd-5.1:species:dwarf",
+    "srd-5.1:species:hill-dwarf",
+    "srd-5.1:species:elf",
+    "srd-5.1:species:high-elf"
+  ],
+  "backgrounds": ["srd-5.1:background:acolyte"],
+  "feats": ["srd-5.1:feat:grappler"],
+  "items": [
+    "srd-5.1:item:shield",
+    "srd-5.1:item:ring-of-protection",
+    "srd-5.1:item:headband-of-intellect",
+    "srd-5.1:item:gauntlets-of-ogre-power",
+    "srd-5.1:item:mace-of-disruption",
+    "srd-5.1:item:wand-of-magic-missiles",
+    "srd-5.1:item:longsword-1"
+  ],
+  "monsters": [
+    "srd-5.1:monster:skeleton",
+    "srd-5.1:monster:zombie",
+    "srd-5.1:monster:goblin",
+    "srd-5.1:monster:wolf",
+    "srd-5.1:monster:orc",
+    "srd-5.1:monster:bandit",
+    "srd-5.1:monster:ogre",
+    "srd-5.1:monster:giant-spider",
+    "srd-5.1:monster:ghoul",
+    "srd-5.1:monster:hobgoblin",
+    "srd-5.1:monster:bugbear",
+    "srd-5.1:monster:cultist"
+  ]
+}

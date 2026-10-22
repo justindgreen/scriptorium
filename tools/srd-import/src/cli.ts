@@ -23,7 +23,16 @@ function loadOverlays(dir: string): Overlay[] {
     .sort()) {
     const parsed = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')) as
       Overlay[] | { entries: Overlay[] }
-    overlays.push(...(Array.isArray(parsed) ? parsed : parsed.entries))
+    const list = Array.isArray(parsed)
+      ? parsed
+      : Array.isArray(parsed.entries)
+        ? parsed.entries
+        : undefined
+    const FIELDS = ['effects', 'choices', 'automation', 'tests', 'tags', 'data']
+    const isOverlay = (o: unknown): boolean =>
+      typeof o === 'object' && o !== null && 'uid' in o && FIELDS.some((f) => f in (o as object))
+    if (!list || !list.every(isOverlay)) continue // manifests and allow-lists live beside overlays
+    overlays.push(...list)
   }
   return overlays
 }

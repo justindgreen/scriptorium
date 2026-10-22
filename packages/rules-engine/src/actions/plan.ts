@@ -202,6 +202,7 @@ export function planAction(
     ...(ctx.target ? { target: ctx.target } : {}),
     situation,
     ...(ref.kind === 'spell' && base.slotLevel !== undefined ? { slotLevel: base.slotLevel } : {}),
+    ...(ref.kind === 'spell' ? { spellUid: ref.spellUid } : {}),
     hasAdvantage: null,
     ...(base.self ? { self: base.self } : {}),
     ask,
@@ -787,9 +788,10 @@ function appliesTo(view: ActionEffectView, ref: ActionRef, base: Base): boolean 
       return false
     case 'unarmed':
       return ref.kind === 'unarmed'
+    case 'spell':
+      return ref.kind === 'spell' || base.attackType === 'spell'
     case 'melee':
     case 'ranged':
-    case 'spell':
       return base.attackType === scope
     default:
       return false

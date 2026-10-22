@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { formulaSchema } from './formula.js'
 import { abilitySchema, contentKindSchema, skillSchema, slugSchema, uidSchema } from './ids.js'
 import { staticPredicateSchema } from './predicates.js'
 
@@ -65,7 +66,8 @@ export const choiceSchema = z.strictObject({
   key: slugSchema,
   name: z.string().min(1).max(80),
   description: z.string().max(2000).optional(),
-  count: z.number().int().min(1).max(10).default(1),
+  /** A number, or a static formula such as `table('invocations-known', classLevel('x'))`. */
+  count: z.union([z.number().int().min(1).max(10), formulaSchema('static')]).default(1),
   from: choiceSourceSchema,
   prerequisite: staticPredicateSchema.optional(),
 })

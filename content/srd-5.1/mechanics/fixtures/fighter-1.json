@@ -1,0 +1,59 @@
+{
+  "name": "Bram (Fighter 1, human, acolyte)",
+  "definition": {
+    "baseAbilities": {
+      "str": 15,
+      "dex": 13,
+      "con": 13,
+      "int": 8,
+      "wis": 11,
+      "cha": 9
+    },
+    "speciesUid": "srd-5.1:species:human",
+    "backgroundUid": "srd-5.1:background:acolyte",
+    "classes": [
+      {
+        "classUid": "srd-5.1:class:fighter",
+        "level": 1,
+        "order": 0
+      }
+    ],
+    "choices": {
+      "class:srd-5.1:class:fighter@1/skills": {
+        "kind": "skill",
+        "skills": ["athletics", "perception"]
+      },
+      "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style": {
+        "kind": "optionSet",
+        "options": ["defense"]
+      },
+      "background:srd-5.1:background:acolyte/languages": {
+        "kind": "language",
+        "languages": ["celestial", "infernal"]
+      }
+    }
+  },
+  "inventory": [
+    {
+      "id": "mail",
+      "itemUid": "srd-5.1:item:chain-mail",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "shield",
+      "itemUid": "srd-5.1:item:shield",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "longsword",
+      "itemUid": "srd-5.1:item:longsword",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    }
+  ]
+}

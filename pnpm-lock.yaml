@@ -411,6 +411,19 @@ importers:
         specifier: ^4.10.2
         version: 4.10.2
 
+  tools/conformance:
+    dependencies:
+      '@scriptorium/content-schema':
+        specifier: workspace:*
+        version: link:../../packages/content-schema
+      '@scriptorium/rules-engine':
+        specifier: workspace:*
+        version: link:../../packages/rules-engine
+    devDependencies:
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+
   tools/spikes:
     dependencies:
       '@trpc/server':

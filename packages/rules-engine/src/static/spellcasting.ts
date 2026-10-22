@@ -70,8 +70,24 @@ export function registerSpellcasting(
     resolver.add({ target, op, value, source, index: index++, ...(label ? { label } : {}) })
   }
 
+  const hasExtras =
+    grants.chosenSpells.length > 0 || outputs.deferred.some((i) => i.effect.type === 'spell.grant')
   if (drafts.length === 0) {
-    return () => null
+    if (!hasExtras) return () => null
+    // Innate or chosen spells without a spellcasting class: list them, no slots or DC.
+    return () => {
+      const view: SpellcastingView = {
+        sources: [],
+        primary: '',
+        casterLevel: 0,
+        slots: [],
+        pact: null,
+        known: knownSpells(ctx, []),
+        granted: grantedSpells(ctx),
+        preparedCount: 0,
+      }
+      return view
+    }
   }
 
   const casters = drafts.filter(
@@ -445,6 +461,56 @@ function knownSpells(
     }
     out.push(row)
     seen.add(`${spell.origin}|${spell.spellUid}`)
+  }
+  for (const chosen of ctx.grants.chosenSpells) {
+    const list = chosen.filter.list
+      ? entryOfKind(ctx.snapshot, chosen.filter.list, 'spell_list')
+      : undefined
+    for (const uid of chosen.uids) {
+      const entry = entryOfKind(ctx.snapshot, uid, 'spell')
+      if (!entry) {
+        ctx.diagnostic({
+          code: 'MISSING_CONTENT',
+          severity: 'error',
+          message: `chosen spell "${uid}" is not in the content snapshot`,
+          sources: [chosen.source],
+        })
+        continue
+      }
+      const level = entry.data.level
+      const problems: string[] = []
+      if (chosen.filter.level !== undefined && level !== chosen.filter.level)
+        problems.push(`level ${chosen.filter.level} required`)
+      if (chosen.filter.maxLevel !== undefined && level > chosen.filter.maxLevel)
+        problems.push(`level ${chosen.filter.maxLevel} or lower required`)
+      if (chosen.filter.school && entry.data.school !== chosen.filter.school)
+        problems.push(`${chosen.filter.school} school required`)
+      if (chosen.filter.list) {
+        const onList = list ? list.data.spells.includes(uid) : false
+        const viaClass = list?.data.class ? entry.data.classes.includes(list.data.class) : false
+        if (!onList && !viaClass)
+          problems.push(`not on the ${list?.name ?? chosen.filter.list} list`)
+      }
+      if (problems.length > 0) {
+        ctx.diagnostic({
+          code: 'INVALID_SELECTION',
+          severity: 'warning',
+          message: `${entry.name}: ${problems.join('; ')}`,
+          sources: [chosen.source],
+        })
+      }
+      const origin = `choice:${chosen.key}`
+      if (seen.has(`${origin}|${uid}`)) continue
+      seen.add(`${origin}|${uid}`)
+      out.push({
+        spellUid: uid,
+        origin,
+        prepared: true,
+        alwaysPrepared: true,
+        cantrip: level === 0,
+        level,
+      })
+    }
   }
   for (const source of sources) {
     for (const uid of source.alwaysPrepared) {

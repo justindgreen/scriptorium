@@ -1,0 +1,99 @@
+{
+  "name": "Maren (Cleric 5 Life, hill dwarf)",
+  "definition": {
+    "baseAbilities": {
+      "str": 14,
+      "dex": 10,
+      "con": 14,
+      "int": 10,
+      "wis": 15,
+      "cha": 12
+    },
+    "speciesUid": "srd-5.1:species:hill-dwarf",
+    "classes": [
+      {
+        "classUid": "srd-5.1:class:cleric",
+        "subclassUid": "srd-5.1:subclass:life",
+        "level": 5,
+        "order": 0
+      }
+    ],
+    "choices": {
+      "class:srd-5.1:class:cleric@1/skills": {
+        "kind": "skill",
+        "skills": ["medicine", "religion"]
+      },
+      "species:srd-5.1:species:dwarf/feature:tool-proficiency/tool": {
+        "kind": "tool",
+        "tools": ["smiths-tools"]
+      },
+      "class:srd-5.1:class:cleric@4/feature:cleric-ability-score-improvement-1/asi": {
+        "kind": "asiOrFeat",
+        "choice": "asi",
+        "increases": {
+          "wis": 2
+        }
+      }
+    },
+    "spells": [
+      {
+        "spellUid": "srd-5.1:spell:guiding-bolt",
+        "origin": "class:srd-5.1:class:cleric",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:healing-word",
+        "origin": "class:srd-5.1:class:cleric",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:spiritual-weapon",
+        "origin": "class:srd-5.1:class:cleric",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:spirit-guardians",
+        "origin": "class:srd-5.1:class:cleric",
+        "known": true,
+        "prepared": true,
+        "alwaysPrepared": false
+      },
+      {
+        "spellUid": "srd-5.1:spell:sacred-flame",
+        "origin": "class:srd-5.1:class:cleric",
+        "known": true,
+        "prepared": false,
+        "alwaysPrepared": false
+      }
+    ]
+  },
+  "inventory": [
+    {
+      "id": "mail",
+      "itemUid": "srd-5.1:item:chain-mail",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "shield",
+      "itemUid": "srd-5.1:item:shield",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    },
+    {
+      "id": "mace",
+      "itemUid": "srd-5.1:item:mace",
+      "quantity": 1,
+      "equipped": true,
+      "attuned": false
+    }
+  ]
+}

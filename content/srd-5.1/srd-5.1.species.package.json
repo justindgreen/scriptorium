@@ -23,12 +23,37 @@
       "uid": "srd-5.1:feature:darkvision",
       "slug": "darkvision",
       "name": "Darkvision",
-      "effects": [],
+      "effects": [
+        {
+          "type": "sense.grant",
+          "sense": "darkvision",
+          "range": 60
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "cleric-5-life"
+          },
+          "expect": {
+            "stat": "sense.darkvision",
+            "equals": 60
+          }
+        },
+        {
+          "given": {
+            "fixture": "rogue-5-thief"
+          },
+          "expect": {
+            "stat": "sense.darkvision",
+            "equals": 60
+          }
+        }
+      ],
       "tags": [
         "trait",
         "dwarf",
@@ -49,12 +74,42 @@
       "uid": "srd-5.1:feature:dwarven-resilience",
       "slug": "dwarven-resilience",
       "name": "Dwarven Resilience",
-      "effects": [],
+      "effects": [
+        {
+          "type": "advantage",
+          "on": "save.vs.poison"
+        },
+        {
+          "type": "damage.resistance",
+          "damageType": "poison"
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "cleric-5-life"
+          },
+          "expect": {
+            "stat": "roll.advantage.save.vs.poison",
+            "equals": true
+          }
+        },
+        {
+          "given": {
+            "fixture": "cleric-5-life"
+          },
+          "expect": {
+            "defense": {
+              "kind": "resistance",
+              "damageType": "poison"
+            }
+          }
+        }
+      ],
       "tags": [
         "trait",
         "dwarf"
@@ -70,12 +125,49 @@
       "uid": "srd-5.1:feature:dwarven-combat-training",
       "slug": "dwarven-combat-training",
       "name": "Dwarven Combat Training",
-      "effects": [],
+      "effects": [
+        {
+          "type": "proficiency.grant",
+          "kind": "weapon",
+          "target": "battleaxe",
+          "level": "proficient"
+        },
+        {
+          "type": "proficiency.grant",
+          "kind": "weapon",
+          "target": "handaxe",
+          "level": "proficient"
+        },
+        {
+          "type": "proficiency.grant",
+          "kind": "weapon",
+          "target": "light-hammer",
+          "level": "proficient"
+        },
+        {
+          "type": "proficiency.grant",
+          "kind": "weapon",
+          "target": "warhammer",
+          "level": "proficient"
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "cleric-5-life"
+          },
+          "expect": {
+            "proficient": {
+              "set": "weapons",
+              "id": "warhammer"
+            }
+          }
+        }
+      ],
       "tags": [
         "trait",
         "dwarf"
@@ -92,11 +184,38 @@
       "slug": "tool-proficiency",
       "name": "Tool Proficiency",
       "effects": [],
-      "choices": [],
+      "choices": [
+        {
+          "type": "choice",
+          "key": "tool",
+          "name": "Artisan's tools",
+          "count": 1,
+          "from": {
+            "kind": "tool",
+            "from": [
+              "smiths-tools",
+              "brewers-supplies",
+              "masons-tools"
+            ]
+          }
+        }
+      ],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "cleric-5-life"
+          },
+          "expect": {
+            "proficient": {
+              "set": "tools",
+              "id": "smiths-tools"
+            }
+          }
+        }
+      ],
       "tags": [
         "trait",
         "dwarf"
@@ -112,10 +231,16 @@
       "uid": "srd-5.1:feature:stonecunning",
       "slug": "stonecunning",
       "name": "Stonecunning",
-      "effects": [],
+      "effects": [
+        {
+          "type": "manual",
+          "text": "Add double your proficiency bonus to History checks about stonework."
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "manual",
+        "notes": "Context-specific check bonuses are decided at the table."
       },
       "tests": [],
       "tags": [
@@ -133,12 +258,27 @@
       "uid": "srd-5.1:feature:dwarven-toughness",
       "slug": "dwarven-toughness",
       "name": "Dwarven Toughness",
-      "effects": [],
+      "effects": [
+        {
+          "type": "hp.bonusPerLevel",
+          "value": 1
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "cleric-5-life"
+          },
+          "expect": {
+            "stat": "hp.max",
+            "equals": 48
+          }
+        }
+      ],
       "tags": [
         "trait",
         "hill-dwarf"
@@ -154,12 +294,29 @@
       "uid": "srd-5.1:feature:keen-senses",
       "slug": "keen-senses",
       "name": "Keen Senses",
-      "effects": [],
+      "effects": [
+        {
+          "type": "proficiency.grant",
+          "kind": "skill",
+          "target": "perception",
+          "level": "proficient"
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "rogue-5-thief"
+          },
+          "expect": {
+            "stat": "skill.perception.proficiency",
+            "atLeast": 1
+          }
+        }
+      ],
       "tags": [
         "trait",
         "elf"
@@ -175,12 +332,34 @@
       "uid": "srd-5.1:feature:fey-ancestry",
       "slug": "fey-ancestry",
       "name": "Fey Ancestry",
-      "effects": [],
+      "effects": [
+        {
+          "type": "advantage",
+          "on": "save.vs.charmed"
+        },
+        {
+          "type": "manual",
+          "text": "Magic cannot put you to sleep."
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "partial",
+        "manualParts": [
+          "immunity to magical sleep"
+        ]
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "rogue-5-thief"
+          },
+          "expect": {
+            "stat": "roll.advantage.save.vs.charmed",
+            "equals": true
+          }
+        }
+      ],
       "tags": [
         "trait",
         "elf",
@@ -197,10 +376,16 @@
       "uid": "srd-5.1:feature:trance",
       "slug": "trance",
       "name": "Trance",
-      "effects": [],
+      "effects": [
+        {
+          "type": "manual",
+          "text": "You meditate 4 hours instead of sleeping 8."
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "manual",
+        "notes": "Rest duration is narrative."
       },
       "tests": [],
       "tags": [
@@ -218,12 +403,49 @@
       "uid": "srd-5.1:feature:elf-weapon-training",
       "slug": "elf-weapon-training",
       "name": "Elf Weapon Training",
-      "effects": [],
+      "effects": [
+        {
+          "type": "proficiency.grant",
+          "kind": "weapon",
+          "target": "longsword",
+          "level": "proficient"
+        },
+        {
+          "type": "proficiency.grant",
+          "kind": "weapon",
+          "target": "shortsword",
+          "level": "proficient"
+        },
+        {
+          "type": "proficiency.grant",
+          "kind": "weapon",
+          "target": "shortbow",
+          "level": "proficient"
+        },
+        {
+          "type": "proficiency.grant",
+          "kind": "weapon",
+          "target": "longbow",
+          "level": "proficient"
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "rogue-5-thief"
+          },
+          "expect": {
+            "proficient": {
+              "set": "weapons",
+              "id": "longsword"
+            }
+          }
+        }
+      ],
       "tags": [
         "trait",
         "high-elf"
@@ -240,11 +462,38 @@
       "slug": "high-elf-cantrip",
       "name": "High Elf Cantrip",
       "effects": [],
-      "choices": [],
+      "choices": [
+        {
+          "type": "choice",
+          "key": "cantrip",
+          "name": "Wizard cantrip",
+          "count": 1,
+          "from": {
+            "kind": "content",
+            "contentKind": "spell",
+            "filter": {
+              "list": "srd-5.1:spell_list:wizard",
+              "level": 0
+            }
+          }
+        }
+      ],
       "automation": {
-        "level": "pending"
+        "level": "partial",
+        "manualParts": [
+          "Intelligence as the casting ability for this cantrip"
+        ]
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "rogue-5-thief"
+          },
+          "expect": {
+            "knownSpell": "srd-5.1:spell:fire-bolt"
+          }
+        }
+      ],
       "tags": [
         "trait",
         "high-elf"
@@ -261,11 +510,33 @@
       "slug": "extra-language",
       "name": "Extra Language",
       "effects": [],
-      "choices": [],
+      "choices": [
+        {
+          "type": "choice",
+          "key": "language",
+          "name": "Extra language",
+          "count": 1,
+          "from": {
+            "kind": "language"
+          }
+        }
+      ],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "rogue-5-thief"
+          },
+          "expect": {
+            "proficient": {
+              "set": "languages",
+              "id": "dwarvish"
+            }
+          }
+        }
+      ],
       "tags": [
         "trait",
         "high-elf"
@@ -854,12 +1125,28 @@
       "uid": "srd-5.1:species:dwarf",
       "slug": "dwarf",
       "name": "Dwarf",
-      "effects": [],
+      "effects": [
+        {
+          "type": "abilityScore.bonus",
+          "ability": "con",
+          "value": 2
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "cleric-5-life"
+          },
+          "expect": {
+            "stat": "ability.con.score",
+            "equals": 16
+          }
+        }
+      ],
       "tags": [],
       "relations": []
     },
@@ -895,12 +1182,28 @@
       "uid": "srd-5.1:species:elf",
       "slug": "elf",
       "name": "Elf",
-      "effects": [],
+      "effects": [
+        {
+          "type": "abilityScore.bonus",
+          "ability": "dex",
+          "value": 2
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "rogue-5-thief"
+          },
+          "expect": {
+            "stat": "ability.dex.score",
+            "equals": 20
+          }
+        }
+      ],
       "tags": [],
       "relations": []
     },
@@ -956,12 +1259,53 @@
       "uid": "srd-5.1:species:human",
       "slug": "human",
       "name": "Human",
-      "effects": [],
+      "effects": [
+        {
+          "type": "abilityScore.bonus",
+          "ability": "str",
+          "value": 1
+        },
+        {
+          "type": "abilityScore.bonus",
+          "ability": "dex",
+          "value": 1
+        },
+        {
+          "type": "abilityScore.bonus",
+          "ability": "con",
+          "value": 1
+        },
+        {
+          "type": "abilityScore.bonus",
+          "ability": "int",
+          "value": 1
+        },
+        {
+          "type": "abilityScore.bonus",
+          "ability": "wis",
+          "value": 1
+        },
+        {
+          "type": "abilityScore.bonus",
+          "ability": "cha",
+          "value": 1
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "fighter-1"
+          },
+          "expect": {
+            "stat": "ability.str.score",
+            "equals": 16
+          }
+        }
+      ],
       "tags": [],
       "relations": []
     },
@@ -1165,12 +1509,28 @@
       "uid": "srd-5.1:species:hill-dwarf",
       "slug": "hill-dwarf",
       "name": "Hill Dwarf",
-      "effects": [],
+      "effects": [
+        {
+          "type": "abilityScore.bonus",
+          "ability": "wis",
+          "value": 1
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "cleric-5-life"
+          },
+          "expect": {
+            "stat": "ability.wis.score",
+            "equals": 18
+          }
+        }
+      ],
       "tags": [
         "subrace"
       ],
@@ -1199,12 +1559,28 @@
       "uid": "srd-5.1:species:high-elf",
       "slug": "high-elf",
       "name": "High Elf",
-      "effects": [],
+      "effects": [
+        {
+          "type": "abilityScore.bonus",
+          "ability": "int",
+          "value": 1
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "rogue-5-thief"
+          },
+          "expect": {
+            "stat": "ability.int.score",
+            "equals": 13
+          }
+        }
+      ],
       "tags": [
         "subrace"
       ],

@@ -1,0 +1,31 @@
+{
+  "name": "Item bench (Fighter 1, all weapon and armor proficiencies)",
+  "definition": {
+    "baseAbilities": {
+      "str": 16,
+      "dex": 10,
+      "con": 10,
+      "int": 10,
+      "wis": 10,
+      "cha": 10
+    },
+    "classes": [
+      {
+        "classUid": "srd-5.1:class:fighter",
+        "level": 1,
+        "order": 0
+      }
+    ],
+    "choices": {
+      "class:srd-5.1:class:fighter@1/skills": {
+        "kind": "skill",
+        "skills": ["athletics", "perception"]
+      },
+      "class:srd-5.1:class:fighter@1/feature:fighter-fighting-style/fighting-style": {
+        "kind": "optionSet",
+        "options": ["great-weapon-fighting"]
+      }
+    }
+  },
+  "inventory": []
+}

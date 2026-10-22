@@ -73,6 +73,8 @@ const actionLeaves = [
   z.strictObject({ leaf: z.literal('ctx.oncePerTurnAvailable'), key: slugSchema }),
   z.strictObject({ leaf: z.literal('ctx.slotLevel'), gte: z.number().int().min(1).max(9) }),
   z.strictObject({ leaf: z.literal('ctx.isMonkWeapon') }),
+  /** The spell being cast (for invocations such as Agonizing Blast). */
+  z.strictObject({ leaf: z.literal('ctx.spell'), spell: uidSchema }),
   z.strictObject({ leaf: z.literal('ctx.twoHanded') }),
   z.strictObject({ leaf: z.literal('ctx.wieldingOneHanded') }),
 ] as const

@@ -1,0 +1,782 @@
+[
+  {
+    "uid": "srd-5.1:feature:rogue-expertise-1",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "expertise",
+        "name": "Expertise",
+        "count": 2,
+        "from": {
+          "kind": "expertise"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "stat": "skill.stealth.proficiency",
+          "equals": 2
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:rogue-expertise-2",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "expertise",
+        "name": "Expertise",
+        "count": 2,
+        "from": {
+          "kind": "expertise"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "skill.acrobatics.proficiency",
+          "equals": 2
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:sneak-attack",
+    "effects": [
+      {
+        "type": "action.damageAdd",
+        "formula": "dice(ceil(classLevel('srd-5.1:class:rogue') / 2), 6)",
+        "damageType": "weapon",
+        "oncePerTurn": "sneak-attack",
+        "label": "Sneak Attack",
+        "condition": {
+          "all": [
+            {
+              "any": [
+                {
+                  "leaf": "ctx.hasAdvantage"
+                },
+                {
+                  "leaf": "ctx.allyAdjacent"
+                }
+              ]
+            },
+            {
+              "any": [
+                {
+                  "leaf": "ctx.weaponProperty",
+                  "property": "finesse"
+                },
+                {
+                  "leaf": "ctx.attackType",
+                  "type": "ranged"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "weapon",
+              "itemId": "rapier"
+            },
+            "ctx": {
+              "situation": {
+                "hidden": true
+              }
+            }
+          },
+          "contains": {
+            "damage": [
+              {
+                "id": "sneak-attack",
+                "formula": "3d6"
+              }
+            ],
+            "oncePerTurnKeys": ["sneak-attack"]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "weapon",
+              "itemId": "rapier"
+            },
+            "ctx": {
+              "situation": {
+                "allyAdjacentToTarget": false
+              }
+            }
+          },
+          "excludes": {
+            "damageIds": ["sneak-attack"]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "weapon",
+              "itemId": "rapier"
+            },
+            "ctx": {
+              "situation": {
+                "hidden": true
+              }
+            }
+          },
+          "contains": {
+            "damage": [
+              {
+                "id": "sneak-attack",
+                "formula": "10d6"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:thieves-cant",
+    "effects": [
+      {
+        "type": "language.grant",
+        "language": "thieves-cant"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "proficient": {
+            "set": "languages",
+            "id": "thieves-cant"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:cunning-action",
+    "effects": [
+      {
+        "type": "action.grant",
+        "name": "Cunning Action: Dash",
+        "actionType": "bonus",
+        "description": "Dash as a bonus action."
+      },
+      {
+        "type": "action.grant",
+        "name": "Cunning Action: Disengage",
+        "actionType": "bonus",
+        "description": "Disengage as a bonus action."
+      },
+      {
+        "type": "action.grant",
+        "name": "Cunning Action: Hide",
+        "actionType": "bonus",
+        "description": "Hide as a bonus action."
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "action",
+              "templateId": "action:class:srd-5.1:class:rogue@2/feature:cunning-action/cunning-action-dash"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "actionType": "bonus"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:roguish-archetype",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Choose a roguish archetype in the builder."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Subclass selection is structural."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:roguish-archetype-improvement-1",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Your roguish archetype grants a feature at this level."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Placeholder row; mechanics live on the subclass."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:roguish-archetype-improvement-2",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Your roguish archetype grants a feature at this level."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Placeholder row; mechanics live on the subclass."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:roguish-archetype-improvement-3",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Your roguish archetype grants a feature at this level."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Placeholder row; mechanics live on the subclass."
+    },
+    "tags": ["placeholder"]
+  },
+  {
+    "uid": "srd-5.1:feature:rogue-ability-score-improvement-1",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "ability.dex.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:rogue-ability-score-improvement-2",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "ability.dex.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:rogue-ability-score-improvement-3",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "ability.dex.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:rogue-ability-score-improvement-4",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "ability.dex.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:rogue-ability-score-improvement-5",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "ability.dex.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:rogue-ability-score-improvement-6",
+    "choices": [
+      {
+        "type": "choice",
+        "key": "asi",
+        "name": "Ability Score Improvement",
+        "count": 1,
+        "from": {
+          "kind": "asiOrFeat"
+        }
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "ability.dex.score",
+          "equals": 20
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:uncanny-dodge",
+    "effects": [
+      {
+        "type": "action.grant",
+        "name": "Uncanny Dodge",
+        "actionType": "reaction",
+        "description": "Halve the damage of an attack from an attacker you can see."
+      },
+      {
+        "type": "manual",
+        "text": "Halve the damage taken from the triggering attack."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["halving the damage"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "action",
+              "templateId": "action:class:srd-5.1:class:rogue@5/feature:uncanny-dodge/uncanny-dodge"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "actionType": "reaction"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:rogue-evasion",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "On a Dexterity save against an effect that deals half damage on a success, take no damage on a success and half on a failure."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Depends on the save outcome, which the engine does not see."
+    }
+  },
+  {
+    "uid": "srd-5.1:feature:reliable-talent",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Treat a d20 roll of 9 or lower as a 10 on ability checks that add your proficiency bonus."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Minimum roll rules need the roll step."
+    }
+  },
+  {
+    "uid": "srd-5.1:feature:blindsense",
+    "effects": [
+      {
+        "type": "sense.grant",
+        "sense": "blindsight",
+        "range": 10
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "sense.blindsight",
+          "equals": 10
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:slippery-mind",
+    "effects": [
+      {
+        "type": "proficiency.grant",
+        "kind": "save",
+        "target": "wis"
+      }
+    ],
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "save.wis.proficiency",
+          "equals": 1
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:elusive",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "No attack roll has advantage against you while you are not incapacitated."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Advantage against you is the attacker's roll."
+    }
+  },
+  {
+    "uid": "srd-5.1:feature:stroke-of-luck",
+    "effects": [
+      {
+        "type": "resource.define",
+        "resource": {
+          "id": "stroke-of-luck",
+          "name": "Stroke of Luck",
+          "max": 1,
+          "recharge": "shortRest"
+        }
+      },
+      {
+        "type": "manual",
+        "text": "Turn a missed attack into a hit, or a failed ability check into a 20."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["changing the roll result"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "resource.stroke-of-luck.max",
+          "equals": 1
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:fast-hands",
+    "effects": [
+      {
+        "type": "action.grant",
+        "name": "Fast Hands",
+        "actionType": "bonus",
+        "description": "Sleight of Hand check, thieves' tools, or Use an Object as a bonus action."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["the object interaction itself"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "action",
+              "templateId": "action:subclass:srd-5.1:subclass:thief@3/feature:fast-hands/fast-hands"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "actionType": "bonus"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:second-story-work",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Climbing costs no extra movement; running jumps gain your Dexterity modifier in feet."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Movement costs are not modelled."
+    }
+  },
+  {
+    "uid": "srd-5.1:feature:supreme-sneak",
+    "effects": [
+      {
+        "type": "advantage",
+        "on": "check.stealth"
+      },
+      {
+        "type": "manual",
+        "text": "Only if you move no more than half your speed on the same turn."
+      }
+    ],
+    "automation": {
+      "level": "partial",
+      "manualParts": ["the half-speed condition"]
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "roll.advantage.check.stealth",
+          "equals": true
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:feature:use-magic-device",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Ignore class, race and level requirements on the use of magic items."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Item requirements are not enforced yet."
+    }
+  },
+  {
+    "uid": "srd-5.1:feature:thiefs-reflexes",
+    "effects": [
+      {
+        "type": "manual",
+        "text": "Take two turns during the first round of combat."
+      }
+    ],
+    "automation": {
+      "level": "manual",
+      "notes": "Initiative order is the tracker's job."
+    }
+  },
+  {
+    "uid": "srd-5.1:class:rogue",
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "stat": "hitDice.d8.max",
+          "equals": 5
+        }
+      },
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "stat": "save.dex.proficiency",
+          "equals": 1
+        }
+      },
+      {
+        "given": {
+          "fixture": "rogue-5-thief"
+        },
+        "expect": {
+          "proficient": {
+            "set": "tools",
+            "id": "thieves-tools"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:subclass:thief",
+    "automation": {
+      "level": "full"
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "rogue-20-thief"
+        },
+        "expect": {
+          "stat": "roll.advantage.check.stealth",
+          "equals": true
+        }
+      }
+    ]
+  }
+]

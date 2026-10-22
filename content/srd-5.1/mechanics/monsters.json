@@ -1,0 +1,134 @@
+[
+  {
+    "uid": "srd-5.1:monster:skeleton",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  },
+  {
+    "uid": "srd-5.1:monster:zombie",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  },
+  {
+    "uid": "srd-5.1:monster:goblin",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  },
+  {
+    "uid": "srd-5.1:monster:wolf",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  },
+  {
+    "uid": "srd-5.1:monster:orc",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  },
+  {
+    "uid": "srd-5.1:monster:bandit",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  },
+  {
+    "uid": "srd-5.1:monster:ogre",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  },
+  {
+    "uid": "srd-5.1:monster:giant-spider",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  },
+  {
+    "uid": "srd-5.1:monster:ghoul",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  },
+  {
+    "uid": "srd-5.1:monster:hobgoblin",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  },
+  {
+    "uid": "srd-5.1:monster:bugbear",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  },
+  {
+    "uid": "srd-5.1:monster:cultist",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "actions are resolved by the encounter tracker (M2.8)",
+        "traits and special abilities"
+      ]
+    },
+    "tags": ["alpha"]
+  }
+]

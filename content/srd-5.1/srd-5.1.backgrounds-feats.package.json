@@ -81,9 +81,39 @@
       "effects": [],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "full"
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "fighter-1"
+          },
+          "expect": {
+            "stat": "skill.insight.proficiency",
+            "equals": 1
+          }
+        },
+        {
+          "given": {
+            "fixture": "fighter-1"
+          },
+          "expect": {
+            "stat": "skill.religion.proficiency",
+            "equals": 1
+          }
+        },
+        {
+          "given": {
+            "fixture": "fighter-1"
+          },
+          "expect": {
+            "proficient": {
+              "set": "languages",
+              "id": "celestial"
+            }
+          }
+        }
+      ],
       "tags": [],
       "relations": []
     },
@@ -100,12 +130,54 @@
       "uid": "srd-5.1:feat:grappler",
       "slug": "grappler",
       "name": "Grappler",
-      "effects": [],
+      "effects": [
+        {
+          "type": "action.advantage",
+          "condition": {
+            "leaf": "ctx.targetHasCondition",
+            "condition": "grappled"
+          },
+          "appliesTo": "melee"
+        },
+        {
+          "type": "manual",
+          "text": "Pin: use your action to restrain both you and a creature you are grappling."
+        }
+      ],
       "choices": [],
       "automation": {
-        "level": "pending"
+        "level": "partial",
+        "manualParts": [
+          "pinning"
+        ]
       },
-      "tests": [],
+      "tests": [
+        {
+          "given": {
+            "fixture": "fighter-20-champion"
+          },
+          "expect": {
+            "actionPlan": {
+              "ref": {
+                "kind": "weapon",
+                "itemId": "longsword-1"
+              },
+              "ctx": {
+                "target": {
+                  "conditions": [
+                    "grappled"
+                  ]
+                }
+              }
+            },
+            "contains": {
+              "attack": {
+                "mode": "advantage"
+              }
+            }
+          }
+        }
+      ],
       "tags": [],
       "relations": []
     }
