@@ -67,7 +67,7 @@ export function CharacterPage() {
   const needsClass = sheet.level === 0
   const attention = !background || needsClass || sheet.pendingChoices.length > 0
   return (
-    <div className="grid gap-8">
+    <div className="grid grid-cols-1 gap-8">
       <PageHeader
         title={aggregate.name}
         description={`${sheet.level > 0 ? `Level ${sheet.level} · ${classes}` : 'No class yet'}${aggregate.definition.speciesUid ? ` · ${uidLabel(aggregate.definition.speciesUid)}` : ''} · ${background ? uidLabel(background) : 'Background: Not selected'} · revision ${data.revision}`}

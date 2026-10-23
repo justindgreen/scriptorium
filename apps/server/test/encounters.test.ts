@@ -958,4 +958,74 @@ describe('encounters', () => {
     expect(pip.error?.message).toMatch(/campaign "Thursday Table"/)
     expect(pip.error?.message).not.toMatch(/encounter/)
   })
+
+  it('treats a completed encounter as a read-only record: every mutation is refused and nothing changes (issue #27)', async () => {
+    const state = await encounter()
+    expect(state.status).toBe('completed')
+    const fighter = state.participants.find((p) => p.kind === 'character')!
+    const skeleton = state.participants.find((p) => p.kind === 'monster')!
+    const before = await trpcQuery<View>(t.app, 'characters.get', { characterId }, player.cookie)
+    const attempts: Array<[string, unknown]> = [
+      [
+        'encounters.setCondition',
+        { encounterId, participantId: fighter.id, uid: 'srd-5.1:condition:prone', active: true },
+      ],
+      [
+        'encounters.setCondition',
+        { encounterId, participantId: skeleton.id, uid: 'srd-5.1:condition:prone', active: true },
+      ],
+      ['encounters.adjustHp', { encounterId, participantId: skeleton.id, delta: -1 }],
+      ['encounters.setInitiative', { encounterId, participantId: skeleton.id, initiative: 1 }],
+      ['encounters.rollInitiative', { encounterId }],
+      ['encounters.start', { encounterId, expectedVersion: state.version }],
+      ['encounters.nextTurn', { encounterId, expectedVersion: state.version }],
+      ['encounters.end', { encounterId, expectedVersion: state.version }],
+      ['encounters.addMonster', { encounterId, uid: 'srd-5.1:monster:skeleton', count: 1 }],
+      ['encounters.addCharacter', { encounterId, characterId }],
+    ]
+    for (const [path, input] of attempts) {
+      const res = await trpcMutation(t.app, path, input, dm.cookie)
+      expect(res.status, path).toBe(412)
+      expect(res.error?.message, path).toMatch(/has ended/)
+    }
+    const after = await trpcQuery<View>(t.app, 'characters.get', { characterId }, player.cookie)
+    expect(after.data!.revision).toBe(before.data!.revision)
+    expect(after.data!.aggregate.state.conditions).toEqual(before.data!.aggregate.state.conditions)
+    const same = await encounter()
+    expect(same.version).toBe(state.version)
+    expect(same.participants.find((p) => p.id === skeleton.id)!.hpCurrent).toBe(skeleton.hpCurrent)
+    expect(same.participants.find((p) => p.id === skeleton.id)!.conditions).toEqual(
+      skeleton.conditions,
+    )
+    // The plan stays readable; a deleted character's historical row is refused as read-only, not "not found".
+    const plan = await trpcQuery(
+      t.app,
+      'encounters.attackPlan',
+      { encounterId, attackerId: fighter.id, targetId: skeleton.id, action: { kind: 'unarmed' } },
+      dm.cookie,
+    )
+    expect([200, 400]).toContain(plan.status)
+    const second = (
+      await trpcQuery<Encounter>(
+        t.app,
+        'encounters.get',
+        { encounterId: secondEncounterId },
+        dm.cookie,
+      )
+    ).data!
+    const grimRow = second.participants.find((p) => p.characterId === grimId)!
+    const onDeleted = await trpcMutation(
+      t.app,
+      'encounters.setCondition',
+      {
+        encounterId: secondEncounterId,
+        participantId: grimRow.id,
+        uid: 'srd-5.1:condition:prone',
+        active: true,
+      },
+      dm.cookie,
+    )
+    expect(onDeleted.status).toBe(412)
+    expect(onDeleted.error?.message).toMatch(/has ended/)
+  })
 })

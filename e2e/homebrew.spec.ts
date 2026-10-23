@@ -1,5 +1,12 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
-import { admin, buildCharacter, ensureSetup, expectAccessible, signInAs } from './helpers'
+import {
+  admin,
+  buildCharacter,
+  ensureSetup,
+  expectAccessible,
+  expectNoSidewaysOverflow,
+  signInAs,
+} from './helpers'
 
 /**
  * M2.7: the specification's sword (+3 to hit and damage, 1d8 radiant against fiends and undead,
@@ -135,6 +142,8 @@ test('the sword example is authored, previewed, published and lands on a sheet',
     'Longsword',
   )
   await expect(details).toContainText('A +3 longsword that burns fiends and undead.')
+  // An attuned, charged item with every control and its details open still fits the viewport.
+  await expectNoSidewaysOverflow(page)
 
   const toggle = page
     .getByTestId(/^action-.*-toggle$/)

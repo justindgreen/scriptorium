@@ -66,7 +66,20 @@ Scope: the UX-1 milestone approved on 2026-10-23 (`docs/A1_RECONCILIATION.md` §
 
 - [ ] Each inventory row has a **Details** disclosure: description, type and rarity, weapon or armor numbers, charges, effects as sentences (for example "+3 to attack rolls with this weapon", "1d8 extra radiant damage against fiend or undead", "grants Bless (1 charge); casting it from the sheet is not automated yet"), current inactive state if any, provenance, source and version.
 
-## 4. Afterwards
+## 4. Correction pass (owner findings on `ad3f82c`)
+
+### #27 Completed encounters are read-only
+
+- [ ] End an encounter that holds a living character, a monster and (if you have one) a character you later delete. The header shows **Completed encounter · read-only**; the initiative card says the encounter is a read-only record. No "+ condition", "remove …", ±1 HP, initiative, attack or run controls remain for the DM; the player view shows the badge too.
+- [ ] Names, initiative, conditions and the log stay exactly as they ended, including a deleted character's row (no sheet link, no controls, no "Character not found").
+- [ ] A forged request still fails: in the browser's developer tools re-send `encounters.setCondition` or `encounters.adjustHp` for the completed encounter → 412 "This encounter has ended and cannot be edited"; the character sheet and the encounter are unchanged. A second `encounters.end` is refused the same way.
+- [ ] A planned or active encounter still accepts conditions, hit points, initiative and turns as before.
+
+### Phone layout without sideways scrolling
+
+- [ ] On the phone, open a sheet that has an equipped, attuned, charged item (the Fiendbane sword) and open its **Details**; open a level-5 cleric or warlock sheet with spells and resources; open a sheet with several history entries and diagnostics. None of them scrolls sideways; cards, action rows, inventory rows and their buttons, proficiency lists, history and diagnostics all stay inside the screen. (The automated check now scans every element on the phone project for anything past the right edge, on the builder flow, the sheet flow and the homebrew flow.)
+
+## 5. Afterwards
 
 - Record which boxes passed on desktop and on the phone, with the commit id and image build date.
 - Issues #22, #23, #6, #7, #9, #10, #11, #14 and #15 are closed by your confirmation, not by the push; #4's first pass is accepted the same way (UX-2 carries the rest of #4 and #14).

@@ -66,13 +66,20 @@ export function EncounterPage() {
     )
   const e = encounter.data
   const dm = e.role === 'dm'
+  // A completed encounter is a read-only record (issue #27): no mutation controls at all.
+  const editable = dm && e.status !== 'completed'
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-1 gap-6">
       <PageHeader
         title={e.name}
         description={`${e.status}${e.status === 'active' ? ` · round ${e.round}, turn ${e.turnIndex + 1}` : ''} · version ${e.version}`}
         actions={
           <>
+            {e.status === 'completed' ? (
+              <Badge variant="outline" data-testid="read-only">
+                Completed encounter · read-only
+              </Badge>
+            ) : null}
             <Badge variant={live ? 'secondary' : 'outline'} data-testid="live-status">
               {live ? 'Live' : 'Polling'}
             </Badge>
@@ -88,10 +95,12 @@ export function EncounterPage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="grid min-w-0 gap-6">
           <Participants encounter={e} onError={setError} onChanged={invalidate} />
-          {dm ? <AttackPanel encounter={e} onError={setError} onChanged={invalidate} /> : null}
+          {editable ? (
+            <AttackPanel encounter={e} onError={setError} onChanged={invalidate} />
+          ) : null}
         </div>
         <div className="grid min-w-0 gap-6 self-start">
-          {dm ? <DmControls encounter={e} onError={setError} onChanged={invalidate} /> : null}
+          {editable ? <DmControls encounter={e} onError={setError} onChanged={invalidate} /> : null}
           <Card data-testid="encounter-log">
             <CardHeader>
               <CardTitle>Log</CardTitle>
@@ -147,7 +156,8 @@ function Participants({
   onError: (m: string | null) => void
   onChanged: () => Promise<unknown>
 }) {
-  const dm = e.role === 'dm'
+  // Mutation controls exist only for the DM while the encounter is not completed (issue #27).
+  const dm = e.role === 'dm' && e.status !== 'completed'
   const conditions = useQuery({
     ...trpc.content.entries.list.queryOptions({ kind: 'condition', limit: 50 }),
     enabled: dm,
@@ -179,7 +189,7 @@ function Participants({
             ? 'Add everyone, roll or set initiative, then start.'
             : e.status === 'active'
               ? 'The marked participant acts now.'
-              : 'Combat is over.'}
+              : 'Combat is over. This encounter is a read-only record; names, initiative, conditions and the log stay as they ended.'}
         </CardDescription>
       </CardHeader>
       <CardContent>

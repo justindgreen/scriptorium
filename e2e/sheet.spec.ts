@@ -1,5 +1,12 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
-import { admin, buildCharacter, ensureSetup, expectAccessible, signInAs } from './helpers'
+import {
+  admin,
+  buildCharacter,
+  ensureSetup,
+  expectAccessible,
+  expectNoSidewaysOverflow,
+  signInAs,
+} from './helpers'
 
 /**
  * M2.6: every interactive sheet control issues a command and the result survives a reload. The
@@ -145,6 +152,7 @@ test('a short rest spends hit dice rolled on the server', async ({ page }, testI
   await expect(page.getByTestId('event-log').locator('li').first()).toContainText(/Short rest/)
   // Rests are not undoable: the limit is enforced and explained.
   await expect(page.getByTestId('undo')).toBeDisabled()
+  await expectNoSidewaysOverflow(page)
   await expect(page.getByTestId('undo-reason')).toContainText(/snapshot/i)
 })
 

@@ -34,7 +34,7 @@ export function Inventory({ view, send }: { view: CharacterView; send: SendFn })
               key={i.id}
               className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 text-sm"
             >
-              <span>
+              <span className="min-w-0 break-words">
                 {views.get(i.id)?.name ?? i.customItem?.name ?? uidLabel(i.itemUid)}
                 {i.quantity > 1 ? ` ×${i.quantity}` : ''}{' '}
                 {i.equipped ? <Badge variant="secondary">equipped</Badge> : null}{' '}
@@ -55,7 +55,7 @@ export function Inventory({ view, send }: { view: CharacterView; send: SendFn })
                   </Badge>
                 ) : null}
               </span>
-              <span className="flex gap-1 print:hidden">
+              <span className="flex flex-wrap gap-1 print:hidden">
                 <Button
                   size="sm"
                   variant="outline"

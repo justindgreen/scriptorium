@@ -19,9 +19,9 @@ export function Diagnostics({ sheet }: { sheet: ComputedSheet }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ul className="grid gap-1 text-sm">
+        <ul className="grid gap-1 text-sm break-words">
           {shown.map((d, i) => (
-            <li key={`${d.code}-${i}`}>
+            <li key={`${d.code}-${i}`} className="min-w-0">
               <Badge variant={d.severity === 'error' ? 'destructive' : 'secondary'}>{d.code}</Badge>{' '}
               {d.message}
             </li>

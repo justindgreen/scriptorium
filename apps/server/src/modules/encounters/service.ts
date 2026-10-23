@@ -120,6 +120,22 @@ export function createEncounterService(deps: {
     return loaded
   }
 
+  /** A completed encounter is a read-only record (issue #27): every mutation stops here. */
+  function assertEditable(encounter: { status: string }): void {
+    if (encounter.status === 'completed')
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: 'This encounter has ended and cannot be edited.',
+      })
+  }
+
+  /** The DM's load for a mutation: role check plus the read-only guard. */
+  async function loadForEdit(scope: Scope, encounterId: string) {
+    const loaded = await loadForDm(scope, encounterId)
+    assertEditable(loaded.encounter)
+    return loaded
+  }
+
   async function monsterEntry(uid: string, versionId: string | null): Promise<MonsterEntry> {
     const { snapshot } = await loadSnapshot(
       deps.db,
@@ -417,7 +433,7 @@ export function createEncounterService(deps: {
     },
 
     async addCharacter(scope: Scope, input: { encounterId: string; characterId: string }) {
-      const { encounter } = await loadForDm(scope, input.encounterId)
+      const { encounter } = await loadForEdit(scope, input.encounterId)
       const party = await deps.campaigns.get(scope, encounter.campaignId)
       const member = party.characters.find(
         (c) => c.characterId === input.characterId && c.status === 'approved',
@@ -446,7 +462,7 @@ export function createEncounterService(deps: {
     },
 
     async addMonster(scope: Scope, input: { encounterId: string; uid: string; count: number }) {
-      await loadForDm(scope, input.encounterId)
+      await loadForEdit(scope, input.encounterId)
       const stored = await deps.content.getEntry(input.uid, { viewer: scope })
       if (!stored || stored.kind !== 'monster')
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Monster not found.' })
@@ -479,7 +495,7 @@ export function createEncounterService(deps: {
       scope: Scope,
       input: { encounterId: string; participantId: string; initiative: number },
     ) {
-      await loadForDm(scope, input.encounterId)
+      await loadForEdit(scope, input.encounterId)
       await repo.updateParticipant(deps.db, input.participantId, { initiative: input.initiative })
       await bump(scope, input.encounterId, 'initiativeSet', {
         participantId: input.participantId,
@@ -490,7 +506,7 @@ export function createEncounterService(deps: {
 
     /** Rolls initiative for everyone without one: d20 + the Dexterity modifier (characters: the sheet's bonus). */
     async rollInitiative(scope: Scope, input: { encounterId: string }) {
-      await loadForDm(scope, input.encounterId)
+      await loadForEdit(scope, input.encounterId)
       const participants = await repo.participants(deps.db, input.encounterId)
       const rolled: Array<{ participantId: string; natural: number; total: number }> = []
       for (const p of participants) {
@@ -528,7 +544,7 @@ export function createEncounterService(deps: {
     },
 
     async end(scope: Scope, input: { encounterId: string; expectedVersion: number }) {
-      const { encounter } = await loadForDm(scope, input.encounterId)
+      const { encounter } = await loadForEdit(scope, input.encounterId)
       if (encounter.version !== input.expectedVersion) throw conflict(encounter.version)
       await repo.update(deps.db, input.encounterId, {
         status: 'completed',
@@ -578,7 +594,7 @@ export function createEncounterService(deps: {
         advantage: RollMode
       },
     ) {
-      await loadForDm(scope, input.encounterId)
+      await loadForEdit(scope, input.encounterId)
       const built = await buildPlan(
         input.encounterId,
         input.attackerId,
@@ -642,7 +658,7 @@ export function createEncounterService(deps: {
       scope: Scope,
       input: { encounterId: string; commandId: string; rollId: string; expectedVersion: number },
     ) {
-      const { encounter } = await loadForDm(scope, input.encounterId)
+      const { encounter } = await loadForEdit(scope, input.encounterId)
       const receipt = await deps.characters.getReceipt(deps.db, input.commandId)
       if (receipt) {
         if (receipt.aggregateId !== input.encounterId)
@@ -658,6 +674,11 @@ export function createEncounterService(deps: {
         outcome = await deps.db.transaction(async (tx) => {
           const locked = await repo.get(tx, input.encounterId, { forUpdate: true })
           if (!locked) throw new CommandError('NOT_FOUND', 'encounter not found')
+          if (locked.status === 'completed')
+            throw new CommandError(
+              'PRECONDITION_FAILED',
+              'this encounter has ended and cannot be edited',
+            )
           if (locked.version !== input.expectedVersion)
             throw new CommandError(
               'CONFLICT',
@@ -865,7 +886,7 @@ export function createEncounterService(deps: {
       scope: Scope,
       input: { encounterId: string; participantId: string; uid: string; active: boolean },
     ) {
-      await loadForDm(scope, input.encounterId)
+      await loadForEdit(scope, input.encounterId)
       const p = await repo.participant(deps.db, input.encounterId, input.participantId)
       if (!p) throw new TRPCError({ code: 'NOT_FOUND', message: 'Participant not found.' })
       if (p.kind === 'character' && p.characterId) {
@@ -906,7 +927,7 @@ export function createEncounterService(deps: {
       scope: Scope,
       input: { encounterId: string; participantId: string; delta: number },
     ) {
-      await loadForDm(scope, input.encounterId)
+      await loadForEdit(scope, input.encounterId)
       const p = await repo.participant(deps.db, input.encounterId, input.participantId)
       if (!p || p.kind !== 'monster')
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only monsters are adjusted here.' })
@@ -987,6 +1008,7 @@ export function createEncounterService(deps: {
   ): Promise<number> {
     const encounter = await repo.get(deps.db, encounterId)
     if (!encounter) throw new TRPCError({ code: 'NOT_FOUND', message: 'Encounter not found.' })
+    assertEditable(encounter)
     const version = encounter.version + 1
     await repo.update(deps.db, encounterId, { version })
     await repo.appendEvent(deps.db, {
@@ -1005,13 +1027,18 @@ export function createEncounterService(deps: {
     input: { encounterId: string; expectedVersion: number },
     how: 'start' | 'next',
   ) {
-    const { encounter } = await loadForDm(scope, input.encounterId)
+    const { encounter } = await loadForEdit(scope, input.encounterId)
     const emits: DomainEvent[] = []
     let result: { version: number; round: number; turnIndex: number; turnId: string }
     try {
       result = await deps.db.transaction(async (tx) => {
         const locked = await repo.get(tx, input.encounterId, { forUpdate: true })
         if (!locked) throw new CommandError('NOT_FOUND', 'encounter not found')
+        if (locked.status === 'completed')
+          throw new CommandError(
+            'PRECONDITION_FAILED',
+            'this encounter has ended and cannot be edited',
+          )
         if (locked.version !== input.expectedVersion)
           throw new CommandError(
             'CONFLICT',

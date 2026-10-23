@@ -1,5 +1,12 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
-import { admin, buildCharacter, ensureSetup, expectAccessible, signInAs } from './helpers'
+import {
+  admin,
+  buildCharacter,
+  ensureSetup,
+  expectAccessible,
+  expectNoSidewaysOverflow,
+  signInAs,
+} from './helpers'
 
 async function press(locator: Locator) {
   await expect(locator).toBeEnabled()
@@ -44,10 +51,7 @@ test('builds every alpha class at level 1 and levels it to 5', async ({ page }, 
       // Issue #4: named sections in a fixed order, and no sideways scrolling at any width.
       for (const id of ['attention', 'play', 'character', 'equipment', 'management'])
         await expect(page.getByTestId(`section-${id}`)).toBeVisible()
-      const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-      )
-      expect(overflow).toBeLessThanOrEqual(0)
+      await expectNoSidewaysOverflow(page)
     }
 
     let revision = 0
@@ -75,6 +79,8 @@ test('builds every alpha class at level 1 and levels it to 5', async ({ page }, 
     }
     if (cls.label === 'Cleric' || cls.label === 'Warlock') await setSubclass(page, cls.subclass)
     await expect(page.getByTestId('event-log').locator('li').first()).toBeVisible()
+    // A level-5 sheet with spells, resources and history still fits the viewport.
+    await expectNoSidewaysOverflow(page)
   }
   await page.goto('/characters')
   await expect(page.getByTestId('character-list').locator('li').first()).toBeVisible()

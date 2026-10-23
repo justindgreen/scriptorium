@@ -22,7 +22,7 @@ export function SheetSection({
     <section
       aria-labelledby={`section-${id}-title`}
       data-testid={`section-${id}`}
-      className={`grid min-w-0 gap-3 ${className ?? ''}`}
+      className={`grid min-w-0 grid-cols-1 gap-3 ${className ?? ''}`}
     >
       <div className="flex flex-wrap items-baseline gap-2 border-b pb-1">
         <h2

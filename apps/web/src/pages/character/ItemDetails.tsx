@@ -53,7 +53,7 @@ export function ItemDetails({ item, view }: { item: InventoryItem; view: ItemVie
       data-testid={`item-details-${item.id}`}
     >
       <summary className="cursor-pointer text-xs text-muted-foreground">Details</summary>
-      <div className="mt-2 grid gap-2 rounded-md border p-3">
+      <div className="mt-2 grid min-w-0 gap-2 rounded-md border p-3 break-words">
         {entry.isPending && open && item.itemUid ? (
           <p className="text-muted-foreground">Loading…</p>
         ) : null}

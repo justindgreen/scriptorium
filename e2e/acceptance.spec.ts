@@ -265,5 +265,31 @@ test('the acceptance scenario runs end to end, across a restart, with a retried 
   await expect(player.getByTestId('attack-panel')).toHaveCount(0)
   await expect(player.getByTestId('dm-controls')).toHaveCount(0)
   await expect(player.getByTestId('encounter-log')).toContainText(/hit|miss/)
+
+  // Issue #27: once the DM ends the encounter it is a read-only record for everyone.
+  await press(page.getByTestId('end-encounter'))
+  await expect(page.getByTestId('read-only')).toContainText('read-only')
+  await expect(page.getByText(/^completed/)).toBeVisible()
+  await expect(page.locator('[data-testid^="condition-add-"]')).toHaveCount(0)
+  await expect(page.getByTestId('dm-controls')).toHaveCount(0)
+  await expect(page.getByTestId('attack-panel')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /loses 1 hit point/ })).toHaveCount(0)
+  await expect(page.locator('[data-testid^="participant-"]')).toHaveCount(4)
+  await expect(page.getByTestId('encounter-log')).toContainText('Combat ended')
+  const anyRow = page.locator('[data-testid^="participant-"]').first()
+  const participantId = await testIdOf(anyRow, 'participant-')
+  const forged = await page.request.post('/api/trpc/encounters.setCondition', {
+    data: {
+      encounterId,
+      participantId,
+      uid: 'srd-5.1:condition:prone',
+      active: true,
+    },
+  })
+  expect(forged.status()).toBe(412)
+  expect(await forged.text()).toContain('has ended')
+  await player.reload()
+  await expect(player.getByTestId('read-only')).toBeVisible()
+  await expect(player.getByTestId('participants')).toContainText('Skeleton 1')
   await playerContext.close()
 })

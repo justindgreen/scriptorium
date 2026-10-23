@@ -49,6 +49,37 @@ export async function expectAccessible(page: Page): Promise<void> {
   ).toEqual([])
 }
 
+/**
+ * Fails when the page can scroll sideways or anything sticks out past the viewport's right edge
+ * (issue #4, phone layout). Fixed-position elements (toasts) are ignored.
+ */
+export async function expectNoSidewaysOverflow(page: Page): Promise<void> {
+  const result = await page.evaluate(() => {
+    const vw = document.documentElement.clientWidth
+    const offenders: string[] = []
+    for (const el of Array.from(document.querySelectorAll('body *'))) {
+      const r = el.getBoundingClientRect()
+      if (r.width === 0 || getComputedStyle(el).position === 'fixed') continue
+      if (r.right > vw + 1) {
+        const id = el.getAttribute('data-testid')
+        offenders.push(
+          `${el.tagName.toLowerCase()}${id ? `[${id}]` : ''} ${Math.round(r.left)}..${Math.round(r.right)}`,
+        )
+      }
+    }
+    return {
+      vw,
+      scrollWidth: document.documentElement.scrollWidth,
+      offenders: offenders.slice(0, 12),
+    }
+  })
+  expect(
+    result.scrollWidth,
+    `the page scrolls sideways (${result.scrollWidth} > ${result.vw})`,
+  ).toBeLessThanOrEqual(result.vw)
+  expect(result.offenders, 'elements past the right edge').toEqual([])
+}
+
 export type AlphaClass = { label: string; species: string; background: string; subclass?: string }
 
 /** Creates a level-1 character through the builder and lands on its sheet. */
