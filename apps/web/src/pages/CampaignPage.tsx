@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { FormError, FormField } from '@/components/FormField'
 import { ErrorState, LoadingState, PageHeader } from '@/components/states'
 import { Badge } from '@/components/ui/badge'
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { errorMessage, trpc, trpcClient } from '@/lib/trpc'
+import { copyText } from '@/lib/uuid'
 import { selectClass } from './character/shared'
 
 type Summary = { level?: number; classes?: Array<{ name: string; level: number }> }
@@ -22,6 +23,19 @@ export function CampaignPage() {
   const sources = useQuery(trpc.homebrew.sources.list.queryOptions())
   const [error, setError] = useState<string | null>(null)
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
+  const [copyNote, setCopyNote] = useState<string | null>(null)
+  const inviteInputRef = useRef<HTMLInputElement>(null)
+  const copyInvite = async () => {
+    if (!inviteUrl) return
+    const outcome = await copyText(inviteUrl, inviteInputRef.current)
+    setCopyNote(
+      outcome === 'copied'
+        ? 'Link copied.'
+        : outcome === 'selected'
+          ? 'Clipboard unavailable on this address: the link is selected, press Ctrl+C.'
+          : 'Could not copy. Select the link and copy it by hand.',
+    )
+  }
   const [characterId, setCharacterId] = useState('')
   const [sourceId, setSourceId] = useState('')
   const [encounterName, setEncounterName] = useState('')
@@ -268,12 +282,38 @@ export function CampaignPage() {
                     Create invite link
                   </Button>
                   {inviteUrl ? (
-                    <p
-                      className="break-all rounded bg-muted/40 p-2 font-mono text-xs"
-                      data-testid="invite-url"
-                    >
-                      {inviteUrl}
-                    </p>
+                    <div className="grid gap-1">
+                      <p
+                        className="break-all rounded bg-muted/40 p-2 font-mono text-xs"
+                        data-testid="invite-url"
+                      >
+                        {inviteUrl}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          ref={inviteInputRef}
+                          readOnly
+                          value={inviteUrl}
+                          aria-label="Invite link"
+                          className="min-w-0 flex-1 rounded-md border bg-transparent px-2 py-1 font-mono text-xs"
+                          onFocus={(e) => e.currentTarget.select()}
+                          data-testid="invite-url-input"
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void copyInvite()}
+                          data-testid="invite-copy"
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                      {copyNote ? (
+                        <p className="text-xs text-muted-foreground" data-testid="invite-copy-note">
+                          {copyNote}
+                        </p>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
               ) : null}

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CopyIcon, KeyRoundIcon } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { FormField } from '@/components/FormField'
 import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/states'
@@ -25,6 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { errorMessage, trpc } from '@/lib/trpc'
+import { copyText } from '@/lib/uuid'
 
 type Created = { id: string; code: string; url: string }
 const statusVariant = {
@@ -42,6 +43,7 @@ export function AdminInvitesPage() {
   const [maxUses, setMaxUses] = useState(1)
   const [note, setNote] = useState('')
   const [created, setCreated] = useState<Created | null>(null)
+  const inviteInputRef = useRef<HTMLInputElement>(null)
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: trpc.admin.invites.list.queryKey() })
@@ -75,12 +77,11 @@ export function AdminInvitesPage() {
   }
 
   async function copy(text: string) {
-    try {
-      await navigator.clipboard.writeText(text)
-      toast.success('Link copied')
-    } catch {
-      toast.error('Could not copy. Select the link and copy it manually.')
-    }
+    const outcome = await copyText(text, inviteInputRef.current)
+    if (outcome === 'copied') toast.success('Link copied')
+    else if (outcome === 'selected')
+      toast.message('Clipboard unavailable on this address: the link is selected, press Ctrl+C.')
+    else toast.error('Could not copy. Select the link and copy it manually.')
   }
 
   return (
@@ -104,6 +105,15 @@ export function AdminInvitesPage() {
                 </p>
                 <p className="break-all">
                   Link:{' '}
+                  <input
+                    ref={inviteInputRef}
+                    readOnly
+                    value={created.url}
+                    aria-label="Invite link"
+                    className="w-full rounded-md border bg-transparent px-2 py-1 font-mono text-xs"
+                    onFocus={(e) => e.currentTarget.select()}
+                    data-testid="invite-url-input"
+                  />
                   <code className="font-mono" data-testid="invite-url">
                     {created.url}
                   </code>

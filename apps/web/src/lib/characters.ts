@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSubscription } from '@trpc/tanstack-react-query'
 import { useCallback, useState } from 'react'
 import { trpc, trpcClient } from '@/lib/trpc'
+import { newUuid } from '@/lib/uuid'
 
 /** The character view the API returns: aggregate plus computed sheet. */
 export type CharacterView = Awaited<ReturnType<typeof trpcClient.characters.get.query>>
@@ -80,7 +81,7 @@ export function useCommand(characterId: string) {
     mutationFn: (input: { command: CommandInput; expectedRevision: number }) =>
       trpcClient.characters.command.mutate({
         characterId,
-        commandId: crypto.randomUUID(),
+        commandId: newUuid(),
         expectedRevision: input.expectedRevision,
         command: input.command,
       }),

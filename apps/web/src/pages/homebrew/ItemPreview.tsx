@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { modifier, uidLabel } from '@/lib/characters'
 import { errorMessage, trpc, trpcClient } from '@/lib/trpc'
+import { newUuid } from '@/lib/uuid'
 import { CREATURE_TYPES, selectClass } from '../character/shared'
 
 /**
@@ -42,7 +43,7 @@ export function ItemPreview({
       const current = await trpcClient.characters.get.query({ characterId: selected })
       return trpcClient.characters.command.mutate({
         characterId: selected,
-        commandId: crypto.randomUUID(),
+        commandId: newUuid(),
         expectedRevision: current.revision,
         command: {
           type: 'addItem',

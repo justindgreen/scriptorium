@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { uidLabel } from '@/lib/characters'
 import { errorMessage, trpc, trpcClient } from '@/lib/trpc'
+import { newUuid } from '@/lib/uuid'
 import { selectClass } from './character/shared'
 
 type Encounter = Awaited<ReturnType<typeof trpcClient.encounters.get.query>>
@@ -508,7 +509,7 @@ function AttackPanel({
       onError(null)
       setCommitted(null)
       // One command id per roll: a retry after a failure re-sends the same id and applies once.
-      setRolled({ ...result, commandId: crypto.randomUUID() })
+      setRolled({ ...result, commandId: newUuid() })
     },
     onError: (err) => onError(errorMessage(err)),
   })

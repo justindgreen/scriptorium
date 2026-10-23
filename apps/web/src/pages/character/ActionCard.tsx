@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { modifier, useInvalidateCharacter } from '@/lib/characters'
 import { errorMessage, trpc, trpcClient } from '@/lib/trpc'
+import { newUuid } from '@/lib/uuid'
 import { CREATURE_TYPES, SIZES, selectBase, selectClass, type SendFn } from './shared'
 
 /** The plan as the API serializes it (optional fields may be absent after JSON). */
@@ -105,7 +106,7 @@ export function ActionCard({
     mutationFn: (rollId: string) =>
       trpcClient.characters.commitAction.mutate({
         characterId,
-        commandId: crypto.randomUUID(),
+        commandId: newUuid(),
         expectedRevision: revision,
         rollId,
         ...(situation.targetAc ? { targetAc: Number(situation.targetAc) } : {}),
