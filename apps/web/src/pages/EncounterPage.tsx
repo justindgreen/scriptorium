@@ -199,6 +199,9 @@ function Participants({
                     <Link
                       to="/characters/$characterId"
                       params={{ characterId: p.characterId }}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Opens the sheet in a new tab; the tracker stays here"
                       className="ml-2 text-xs underline underline-offset-4"
                       data-testid={`sheet-link-${p.id}`}
                     >

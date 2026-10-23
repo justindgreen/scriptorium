@@ -1,5 +1,5 @@
 /** Character aggregate rows (docs/DATA_MODEL.md §3). Every write goes through core/commands. */
-import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm'
 import type {
   CharacterAggregate,
   CharacterDefinition,
@@ -393,11 +393,54 @@ export function createCharacterRepo(db: Db) {
         .values({ commandId, actorUserId, aggregateType: 'character', aggregateId, outcome })
     },
 
-    async softDelete(id: string): Promise<void> {
-      await db
+    /**
+     * Where the character is still in use (issue #22): campaign rosters it is pending or approved
+     * on, and encounters that are not completed. Completed encounters keep their participant rows
+     * as history and never block anything.
+     */
+    async dependencies(executor: Executor, id: string) {
+      const rosters = await executor
+        .select({
+          campaignId: schema.campaigns.id,
+          campaignName: schema.campaigns.name,
+          status: schema.campaignCharacters.status,
+        })
+        .from(schema.campaignCharacters)
+        .innerJoin(schema.campaigns, eq(schema.campaigns.id, schema.campaignCharacters.campaignId))
+        .where(
+          and(
+            eq(schema.campaignCharacters.characterId, id),
+            inArray(schema.campaignCharacters.status, ['pending', 'approved']),
+          ),
+        )
+      const encounters = await executor
+        .select({
+          encounterId: schema.encounters.id,
+          encounterName: schema.encounters.name,
+          status: schema.encounters.status,
+        })
+        .from(schema.encounterParticipants)
+        .innerJoin(
+          schema.encounters,
+          eq(schema.encounters.id, schema.encounterParticipants.encounterId),
+        )
+        .where(
+          and(
+            eq(schema.encounterParticipants.characterId, id),
+            ne(schema.encounters.status, 'completed'),
+          ),
+        )
+      return { rosters, encounters }
+    },
+
+    /** Soft delete; false when the row was already deleted (or never existed). */
+    async softDelete(id: string): Promise<boolean> {
+      const rows = await db
         .update(schema.characters)
         .set({ deletedAt: new Date(), updatedAt: new Date() })
-        .where(eq(schema.characters.id, id))
+        .where(and(eq(schema.characters.id, id), isNull(schema.characters.deletedAt)))
+        .returning({ id: schema.characters.id })
+      return rows.length > 0
     },
   }
 }

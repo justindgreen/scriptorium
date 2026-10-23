@@ -46,6 +46,9 @@ export const campaignsRouter = router({
     approve: procedureFor('campaign.write')
       .input(campaignCharacterSchema)
       .mutation(({ ctx, input }) => ctx.campaigns.approveCharacter(ctx.scope, input)),
+    withdraw: procedureFor('campaign.write')
+      .input(campaignCharacterSchema)
+      .mutation(({ ctx, input }) => ctx.campaigns.withdrawCharacter(ctx.scope, input)),
   }),
 
   sources: router({

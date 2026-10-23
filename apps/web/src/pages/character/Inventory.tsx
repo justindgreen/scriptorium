@@ -49,7 +49,9 @@ export function Inventory({ view, send }: { view: CharacterView; send: SendFn })
                   </span>
                 ) : null}
                 {views.get(i.id)?.inactiveReason && i.equipped ? (
-                  <Badge variant="outline">{views.get(i.id)!.inactiveReason}</Badge>
+                  <Badge variant="outline" data-testid={`inactive-${i.id}`}>
+                    effects inactive · {views.get(i.id)!.inactiveReason}
+                  </Badge>
                 ) : null}
               </span>
               <span className="flex gap-1 print:hidden">
@@ -63,15 +65,18 @@ export function Inventory({ view, send }: { view: CharacterView; send: SendFn })
                 >
                   {i.equipped ? 'Unequip' : 'Equip'}
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    void send({ type: i.attuned ? 'unattune' : 'attune', itemId: i.id })
-                  }
-                >
-                  {i.attuned ? 'Unattune' : 'Attune'}
-                </Button>
+                {views.get(i.id)?.requiresAttunement || i.attuned ? (
+                  <Button
+                    size="sm"
+                    variant={i.attuned || !i.equipped ? 'outline' : 'default'}
+                    onClick={() =>
+                      void send({ type: i.attuned ? 'unattune' : 'attune', itemId: i.id })
+                    }
+                    data-testid={`attune-${i.id}`}
+                  >
+                    {i.attuned ? 'Unattune' : 'Attune'}
+                  </Button>
+                ) : null}
                 {i.chargesCurrent !== undefined ? (
                   <Button
                     size="sm"

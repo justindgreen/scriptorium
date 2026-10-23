@@ -60,6 +60,8 @@ let stranger: string
 let campaignId: string
 let characterId: string
 let encounterId: string
+let grimId: string
+let secondEncounterId: string
 let version = 0
 
 async function invite(adminCookie: string) {
@@ -818,7 +820,7 @@ describe('encounters', () => {
       dm.cookie,
     )
     expect(grim.status).toBe(200)
-    const grimId = grim.data!.id
+    grimId = grim.data!.id
     for (const step of ['submit', 'approve'] as const) {
       const res = await trpcMutation(
         t.app,
@@ -835,6 +837,7 @@ describe('encounters', () => {
       dm.cookie,
     )
     const second = created.data!.id
+    secondEncounterId = second
     for (const id of [characterId, grimId]) {
       const added = await trpcMutation(
         t.app,
@@ -863,5 +866,96 @@ describe('encounters', () => {
     // Monster rows never advertise a sheet.
     const monsters = (await encounter()).participants.filter((p) => p.kind === 'monster')
     expect(monsters.every((p) => p.canOpenSheet === false)).toBe(true)
+  })
+
+  it('blocks deleting a character a roster or an unfinished encounter still needs, and keeps finished encounters readable (issue #22)', async () => {
+    // Not the owner: a player (or a DM with table rights) cannot delete someone else's character.
+    const byPlayer = await trpcMutation(
+      t.app,
+      'characters.delete',
+      { characterId: grimId },
+      player.cookie,
+    )
+    expect(byPlayer.status).toBe(403)
+    // The owner (the DM for Grim) is refused while the character is in use, and told why.
+    const blocked = await trpcMutation(
+      t.app,
+      'characters.delete',
+      { characterId: grimId },
+      dm.cookie,
+    )
+    expect(blocked.status).toBe(412)
+    expect(blocked.error?.message).toMatch(/planned encounter "Second"/)
+    expect(blocked.error?.message).toMatch(/approved in the campaign "Thursday Table"/)
+    // Leaving the roster is refused for the same reason until the encounter is finished.
+    const early = await trpcMutation(
+      t.app,
+      'campaigns.characters.withdraw',
+      { campaignId, characterId: grimId },
+      dm.cookie,
+    )
+    expect(early.status).toBe(412)
+    expect(early.error?.message).toMatch(/encounter "Second"/)
+    const secondState = await trpcQuery<Encounter>(
+      t.app,
+      'encounters.get',
+      { encounterId: secondEncounterId },
+      dm.cookie,
+    )
+    const ended = await trpcMutation(
+      t.app,
+      'encounters.end',
+      { encounterId: secondEncounterId, expectedVersion: secondState.data!.version },
+      dm.cookie,
+    )
+    expect(ended.status).toBe(200)
+    // Only the owner or the DM withdraws; the row stays as retired.
+    const notYours = await trpcMutation(
+      t.app,
+      'campaigns.characters.withdraw',
+      { campaignId, characterId: grimId },
+      player.cookie,
+    )
+    expect(notYours.status).toBe(403)
+    const withdrawn = await trpcMutation(
+      t.app,
+      'campaigns.characters.withdraw',
+      { campaignId, characterId: grimId },
+      dm.cookie,
+    )
+    expect(withdrawn.status).toBe(200)
+    const roster = await trpcQuery<{ characters: Array<{ characterId: string; status: string }> }>(
+      t.app,
+      'campaigns.get',
+      { campaignId },
+      dm.cookie,
+    )
+    expect(roster.data!.characters.find((c) => c.characterId === grimId)?.status).toBe('retired')
+    // Now the deletion goes through once; the finished encounter still reads, with the row kept.
+    const deleted = await trpcMutation(
+      t.app,
+      'characters.delete',
+      { characterId: grimId },
+      dm.cookie,
+    )
+    expect(deleted.status).toBe(200)
+    const again = await trpcMutation(t.app, 'characters.delete', { characterId: grimId }, dm.cookie)
+    expect(again.status).toBe(404)
+    const finished = await trpcQuery<Encounter>(
+      t.app,
+      'encounters.get',
+      { encounterId: secondEncounterId },
+      dm.cookie,
+    )
+    expect(finished.status).toBe(200)
+    const row = finished.data!.participants.find((p) => p.characterId === grimId)
+    expect(row).toBeDefined()
+    expect(row!.canOpenSheet).toBe(false)
+    expect(row!.conditions).toEqual([])
+    // Pip's character is protected the same way by the roster alone (its encounters are over).
+    const pip = await trpcMutation(t.app, 'characters.delete', { characterId }, player.cookie)
+    expect(pip.status).toBe(412)
+    expect(pip.error?.message).toMatch(/campaign "Thursday Table"/)
+    expect(pip.error?.message).not.toMatch(/encounter/)
   })
 })

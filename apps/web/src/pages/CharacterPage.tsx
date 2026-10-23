@@ -11,6 +11,7 @@ import { BackgroundPanel } from './character/BackgroundPanel'
 import { PendingChoices } from './character/Choices'
 import { ConditionsPanel } from './character/ConditionsPanel'
 import { CurrencyPanel } from './character/CurrencyPanel'
+import { DangerZone } from './character/DangerZone'
 import { Diagnostics } from './character/Diagnostics'
 import { History } from './character/History'
 import { Inventory } from './character/Inventory'
@@ -98,6 +99,7 @@ export function CharacterPage() {
           <LevelUp view={data} send={send} onError={setError} />
           <History characterId={characterId} revision={data.revision} onError={setError} />
           <Diagnostics sheet={sheet} />
+          <DangerZone characterId={characterId} name={aggregate.name} />
         </div>
       </div>
     </div>

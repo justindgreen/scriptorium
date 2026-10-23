@@ -1,5 +1,5 @@
 /** Campaign rows: membership, invites, party characters and shared sources (docs/DATA_MODEL.md §4). */
-import { and, asc, desc, eq, gt, lt, or, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gt, inArray, lt, ne, or, sql } from 'drizzle-orm'
 import { schema, type Db } from '../../db/client.js'
 import { newId } from '../../core/ids.js'
 
@@ -187,6 +187,44 @@ export function createCampaignRepo(db: Db) {
         .innerJoin(schema.user, eq(schema.user.id, schema.characters.ownerUserId))
         .where(eq(schema.campaignCharacters.campaignId, campaignId))
         .orderBy(asc(schema.campaignCharacters.submittedAt))
+    },
+
+    /** Takes a pending or approved character off the roster, keeping the row as history (issue #22). */
+    async retireCharacter(campaignId: string, characterId: string): Promise<boolean> {
+      const rows = await db
+        .update(schema.campaignCharacters)
+        .set({ status: 'retired' })
+        .where(
+          and(
+            eq(schema.campaignCharacters.campaignId, campaignId),
+            eq(schema.campaignCharacters.characterId, characterId),
+            inArray(schema.campaignCharacters.status, ['pending', 'approved']),
+          ),
+        )
+        .returning({ characterId: schema.campaignCharacters.characterId })
+      return rows.length > 0
+    },
+
+    /** Encounters of the campaign that still hold the character and are not completed. */
+    async unfinishedEncountersWith(campaignId: string, characterId: string) {
+      return db
+        .select({
+          id: schema.encounters.id,
+          name: schema.encounters.name,
+          status: schema.encounters.status,
+        })
+        .from(schema.encounterParticipants)
+        .innerJoin(
+          schema.encounters,
+          eq(schema.encounters.id, schema.encounterParticipants.encounterId),
+        )
+        .where(
+          and(
+            eq(schema.encounters.campaignId, campaignId),
+            eq(schema.encounterParticipants.characterId, characterId),
+            ne(schema.encounters.status, 'completed'),
+          ),
+        )
     },
 
     /** The campaign a character is approved in, with its DM, for DM permissions on the sheet. */

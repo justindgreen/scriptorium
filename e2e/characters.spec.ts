@@ -52,6 +52,11 @@ test('builds every alpha class at level 1 and levels it to 5', async ({ page }, 
       await expect(add).toBeEnabled()
       await add.focus()
       await add.press('Enter')
+      // Level-ups ask for confirmation first (issue #6).
+      const confirm = page.getByTestId('levelup-add-confirm')
+      await expect(confirm).toBeVisible()
+      await confirm.focus()
+      await confirm.press('Enter')
       await expect(page.getByText(new RegExp(`Level ${level} ·`))).toBeVisible()
       revision += 1
       if (level === 3 && cls.label !== 'Cleric' && cls.label !== 'Warlock') {
@@ -235,4 +240,50 @@ test('a background can be chosen, completed and changed on the sheet (issue #21)
   await press(page.getByTestId('background-set'))
   await expect(page.getByTestId(`choice-${key}`)).toContainText('choose 2 more')
   await expect(page.getByTestId(`chosen-${key}`)).toHaveCount(0)
+})
+
+test('a level-up can be reverted right away, and deleting a character asks for its name (issues #15, #22)', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(180_000)
+  await signInAs(page, admin.username, admin.password)
+  const name = `Revert ${testInfo.project.name} ${Date.now().toString(36)}`
+  await buildCharacter(page, name, { label: 'Fighter', species: 'Human', background: 'Acolyte' })
+  await expect(page.getByTestId('revert-levelup')).toHaveCount(0)
+  await page.getByTestId('levelup-class').selectOption({ label: 'Fighter' })
+  await press(page.getByTestId('levelup-add'))
+  await expect(page.getByTestId('levelup-add-prompt')).toContainText('Add level 2 as Fighter?')
+  await press(page.getByTestId('levelup-add-confirm'))
+  await expect(page.getByText(/Level 2 ·/)).toBeVisible()
+  await expect(page.getByText(/revision 1$/)).toBeVisible()
+
+  // The revert restores the snapshot as a new revision; afterwards it is no longer offered.
+  await press(page.getByTestId('revert-levelup'))
+  await expect(page.getByTestId('revert-levelup-prompt')).toContainText('complete previous state')
+  await press(page.getByTestId('revert-levelup-confirm'))
+  await expect(page.getByText(/Level 1 ·/)).toBeVisible()
+  await expect(page.getByText(/revision 2$/)).toBeVisible()
+  await expect(page.getByTestId('event-log').locator('li').first()).toContainText(
+    'Restored a snapshot',
+  )
+  await expect(page.getByTestId('revert-levelup')).toHaveCount(0)
+  await expect(page.getByTestId('undo')).toBeDisabled()
+
+  // Deleting needs the name typed; cancelling keeps everything.
+  await press(page.getByTestId('delete-character'))
+  await expect(page.getByTestId('delete-confirm')).toBeDisabled()
+  await page.getByTestId('delete-confirm-name').fill('someone else')
+  await expect(page.getByTestId('delete-confirm')).toBeDisabled()
+  await press(page.getByTestId('delete-cancel'))
+  await expect(page.getByTestId('delete-prompt')).toHaveCount(0)
+  await press(page.getByTestId('delete-character'))
+  await page.getByTestId('delete-confirm-name').fill(name)
+  await press(page.getByTestId('delete-confirm'))
+  await expect(page).toHaveURL(/\/characters$/)
+  await expect(
+    page.getByTestId('character-list').or(page.getByText('No characters yet')),
+  ).toBeVisible()
+  await expect(page.getByText(name)).toHaveCount(0)
+  await page.reload()
+  await expect(page.getByText(name)).toHaveCount(0)
 })

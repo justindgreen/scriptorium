@@ -199,6 +199,8 @@ test('the acceptance scenario runs end to end, across a restart, with a retried 
   const playerGrim = player.locator('[data-testid^="participant-"]').filter({ hasText: grimName })
   await expect(playerGrim).toBeVisible()
   await expect(playerHero.getByRole('link', { name: 'sheet' })).toBeVisible()
+  // Issue #14 (short form): the sheet opens in a new tab so the tracker stays put.
+  await expect(playerHero.getByRole('link', { name: 'sheet' })).toHaveAttribute('target', '_blank')
   await expect(playerGrim.getByRole('link', { name: 'sheet' })).toHaveCount(0)
   await expect(
     page

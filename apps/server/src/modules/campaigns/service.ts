@@ -144,6 +144,34 @@ export function createCampaignService(deps: {
       return { ok: true as const }
     },
 
+    /**
+     * Issue #22: takes a character off the roster (status `retired`; the row stays as history) so
+     * its owner can delete it. The character's owner or the DM may do it, never while the character
+     * is in an unfinished encounter of this campaign: the DM ends that encounter first.
+     */
+    async withdrawCharacter(scope: Scope, input: { campaignId: string; characterId: string }) {
+      const role = await roleOf(scope, input.campaignId)
+      const row = await deps.characters.getRow(deps.db, input.characterId)
+      if (!row) throw new TRPCError({ code: 'NOT_FOUND', message: 'Character not found.' })
+      if (role !== 'dm' && row.ownerUserId !== scope.userId && scope.role !== 'admin')
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: "Only the character's owner or the DM can withdraw it.",
+        })
+      const blocking = await repo.unfinishedEncountersWith(input.campaignId, input.characterId)
+      if (blocking.length > 0)
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: `${row.name} is still in ${blocking
+            .map((e) => `the ${e.status} encounter "${e.name}"`)
+            .join(' and ')}; the DM ends it first.`,
+        })
+      const ok = await repo.retireCharacter(input.campaignId, input.characterId)
+      if (!ok)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'That character is not on the roster.' })
+      return { ok: true as const }
+    },
+
     async shareSource(
       scope: Scope,
       input: { campaignId: string; sourceId: string; enabled: boolean },

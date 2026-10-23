@@ -73,6 +73,12 @@ export const charactersRouter = router({
     .input(byId)
     .query(({ ctx, input }) => ctx.characters.undoAvailability(ctx.scope, input.characterId)),
 
+  revertLevelUp: procedureFor('character.write')
+    .input(byId.extend({ expectedRevision: z.number().int().min(0) }))
+    .mutation(({ ctx, input }) =>
+      ctx.characters.revertLevelUp(ctx.scope, input.characterId, input.expectedRevision),
+    ),
+
   events: procedureFor('character.read')
     .input(byId.extend({ limit: z.number().int().min(1).max(200).default(50) }))
     .query(({ ctx, input }) => ctx.characters.events(ctx.scope, input.characterId, input.limit)),

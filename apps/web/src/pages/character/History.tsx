@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ConfirmButton } from '@/components/ConfirmButton'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { errorMessage, trpc, trpcClient } from '@/lib/trpc'
@@ -33,6 +34,12 @@ export function History({
     onSuccess: refresh,
     onError: (e) => onError(errorMessage(e)),
   })
+  const revertLevelUp = useMutation({
+    mutationFn: () =>
+      trpcClient.characters.revertLevelUp.mutate({ characterId, expectedRevision: revision }),
+    onSuccess: refresh,
+    onError: (e) => onError(errorMessage(e)),
+  })
   const take = useMutation({
     mutationFn: () => trpcClient.characters.snapshots.take.mutate({ characterId }),
     onSuccess: refresh,
@@ -61,6 +68,18 @@ export function History({
           <p className="text-xs text-muted-foreground" data-testid="undo-reason">
             Undo unavailable: {undoable.data.reason}
           </p>
+        ) : null}
+        {undoable.data?.levelUp.ok ? (
+          <ConfirmButton
+            testId="revert-levelup"
+            variant="outline"
+            label={`Revert the level-up (back to level ${undoable.data.levelUp.levelBefore})`}
+            title="Restore the character as it was before the level-up?"
+            description="Brings back the complete previous state from the automatic snapshot (choices, hit points, everything), as a new logged change. Offered only because nothing else changed since the level-up."
+            confirmLabel="Restore the previous state"
+            disabled={revertLevelUp.isPending}
+            onConfirm={() => revertLevelUp.mutate()}
+          />
         ) : null}
         <Button
           variant="ghost"

@@ -147,3 +147,28 @@ test('a short rest spends hit dice rolled on the server', async ({ page }, testI
   await expect(page.getByTestId('undo')).toBeDisabled()
   await expect(page.getByTestId('undo-reason')).toContainText(/snapshot/i)
 })
+
+test('a long rest asks for confirmation before it restores anything (issue #6)', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(120_000)
+  await signInAs(page, admin.username, admin.password)
+  await buildCharacter(page, `Rest ${testInfo.project.name} ${Date.now().toString(36)}`, {
+    label: 'Fighter',
+    species: 'Human',
+    background: 'Acolyte',
+  })
+  await page.getByLabel('Amount').first().fill('4')
+  await press(page.getByTestId('damage'))
+  await expect(page.getByTestId('stat-hp')).toContainText('8 / 12')
+  await press(page.getByTestId('long-rest'))
+  await expect(page.getByTestId('long-rest-prompt')).toContainText('Take a long rest?')
+  await expect(page.getByTestId('stat-hp')).toContainText('8 / 12')
+  await press(page.getByTestId('long-rest-cancel'))
+  await expect(page.getByTestId('long-rest-prompt')).toHaveCount(0)
+  await expect(page.getByTestId('stat-hp')).toContainText('8 / 12')
+  await press(page.getByTestId('long-rest'))
+  await press(page.getByTestId('long-rest-confirm'))
+  await expect(page.getByTestId('stat-hp')).toContainText('12 / 12')
+  await expect(page.getByText(/revision 2$/)).toBeVisible()
+})

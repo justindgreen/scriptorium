@@ -104,6 +104,36 @@ export function createCharacterService(deps: {
     throw error
   }
 
+  /**
+   * Issue #15: the convenience revert of the latest level-up. Available only when the newest
+   * event is that level-up and the automatic `level_up` snapshot at the previous revision is
+   * there, so nothing happened in between; otherwise the ordinary snapshot list is the way back.
+   * Called once for the UI and again inside the command transaction under the row lock.
+   */
+  async function levelUpRevert(
+    executor: Db | Tx,
+    row: { id: string; revision: number },
+  ): Promise<
+    { ok: true; snapshotId: string; levelBefore: number } | { ok: false; reason: string }
+  > {
+    const [latest] = await repo.listEvents(executor, row.id, 1)
+    if (!latest || latest.type !== 'addClassLevel')
+      return { ok: false, reason: 'the latest change is not a level-up' }
+    if (latest.revisionAfter !== row.revision)
+      return { ok: false, reason: 'the character changed after the level-up' }
+    const snapshots = await repo.listSnapshots(executor, row.id)
+    const candidates = snapshots.filter(
+      (s) => s.reason === 'level_up' && s.revision === row.revision - 1,
+    )
+    if (candidates.length !== 1)
+      return { ok: false, reason: 'no single automatic snapshot from just before the level-up' }
+    const snapshot = await repo.getSnapshot(executor, row.id, candidates[0]!.id)
+    if (!snapshot) return { ok: false, reason: 'the snapshot is gone' }
+    const stored = snapshot.aggregate as CharacterAggregate
+    const levelBefore = stored.definition.classes.reduce((n, c) => n + c.level, 0)
+    return { ok: true, snapshotId: snapshot.id, levelBefore }
+  }
+
   return {
     async list(scope: Scope) {
       if (!scope.userId) throw new TRPCError({ code: 'UNAUTHORIZED' })
@@ -326,9 +356,79 @@ export function createCharacterService(deps: {
           revisionAfter: e.revisionAfter,
         })),
       )
+      const levelUp = await levelUpRevert(deps.db, row)
       return check.ok
-        ? { ok: true as const, eventType: check.event.type }
-        : { ok: false as const, reason: check.reason }
+        ? { ok: true as const, eventType: check.event.type, levelUp }
+        : { ok: false as const, reason: check.reason, levelUp }
+    },
+
+    /**
+     * Restores the automatic snapshot taken just before the latest level-up as a new forward
+     * revision (issue #15): the whole previous character state, not a subtracted level. The
+     * checks run again inside the command's transaction under the row lock; history, receipts
+     * and attribution are the ordinary command path's.
+     */
+    async revertLevelUp(scope: Scope, characterId: string, expectedRevision: number) {
+      const row = await repo.getRow(deps.db, characterId)
+      if (!row) throw new TRPCError({ code: 'NOT_FOUND', message: 'Character not found.' })
+      assertOwner(scope, row.ownerUserId)
+      const check = await levelUpRevert(deps.db, row)
+      if (!check.ok)
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: `Cannot revert the level-up: ${check.reason}.`,
+        })
+      const snapshot = await repo.getSnapshot(deps.db, characterId, check.snapshotId)
+      if (!snapshot) throw new TRPCError({ code: 'NOT_FOUND', message: 'Snapshot not found.' })
+      const stored = snapshot.aggregate as CharacterAggregate
+      try {
+        const result = await commands.run(
+          {
+            commandId: randomUUID(),
+            characterId,
+            expectedRevision,
+            command: {
+              type: 'restoreSnapshot',
+              snapshotId: snapshot.id,
+              aggregate: {
+                name: stored.name,
+                definition: stored.definition,
+                inventory: stored.inventory,
+                state: stored.state,
+              },
+            },
+            actorUserId: scope.userId ?? null,
+          },
+          {
+            prepare: async (tx) => {
+              const locked = await repo.getRow(tx, characterId, { forUpdate: true })
+              if (!locked) throw new CommandError('NOT_FOUND', 'character not found')
+              if (locked.revision !== expectedRevision)
+                throw new CommandError(
+                  'CONFLICT',
+                  `the character changed (revision ${locked.revision}, you expected ${expectedRevision})`,
+                  { revision: locked.revision },
+                )
+              const again = await levelUpRevert(tx, locked)
+              if (!again.ok || again.snapshotId !== snapshot.id)
+                throw new CommandError(
+                  'PRECONDITION_FAILED',
+                  `cannot revert the level-up: ${again.ok ? 'the snapshot changed' : again.reason}`,
+                )
+            },
+          },
+        )
+        return {
+          revision: result.revision,
+          eventId: result.eventId,
+          summary: result.summary,
+          sheet: result.sheet,
+          aggregate: result.aggregate,
+          levelBefore: check.levelBefore,
+        }
+      } catch (error) {
+        translate(error)
+      }
     },
 
     async events(scope: Scope, characterId: string, limit: number) {
@@ -392,10 +492,34 @@ export function createCharacterService(deps: {
       }
     },
 
+    /**
+     * Soft delete (issue #22): the owner or an administrator only; a campaign DM's table rights do
+     * not include deleting a player's character. Refused, with the names to act on, while the
+     * character is pending or approved on a roster or in an encounter that is not completed.
+     * Events, snapshots, receipts and finished encounters are kept; a repeated request is 404.
+     */
     async remove(scope: Scope, characterId: string) {
       const row = await repo.getRow(deps.db, characterId)
       if (!row) throw new TRPCError({ code: 'NOT_FOUND', message: 'Character not found.' })
       assertOwner(scope, row.ownerUserId)
+      const inUse = await repo.dependencies(deps.db, characterId)
+      if (inUse.encounters.length > 0 || inUse.rosters.length > 0) {
+        const reasons = [
+          ...inUse.encounters.map(
+            (e) =>
+              `it is in the ${e.status} encounter "${e.encounterName}" (the DM ends the encounter first)`,
+          ),
+          ...inUse.rosters.map(
+            (r) =>
+              `it is ${r.status} in the campaign "${r.campaignName}" (withdraw it on the campaign page first)`,
+          ),
+        ]
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: `Cannot delete ${row.name}: ${reasons.join('; ')}.`,
+          cause: inUse,
+        })
+      }
       await repo.softDelete(characterId)
       deps.events.emit({ type: 'character.deleted', characterId })
       return { ok: true as const }

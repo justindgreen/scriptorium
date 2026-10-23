@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import { FormError, FormField } from '@/components/FormField'
 import { ErrorState, LoadingState, PageHeader } from '@/components/states'
+import { ConfirmButton } from '@/components/ConfirmButton'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -70,6 +71,15 @@ export function CampaignPage() {
     },
     onError,
   })
+  const withdraw = useMutation({
+    mutationFn: (id: string) =>
+      trpcClient.campaigns.characters.withdraw.mutate({ campaignId, characterId: id }),
+    onSuccess: () => {
+      setError(null)
+      void refresh()
+    },
+    onError,
+  })
   const share = useMutation({
     mutationFn: (id: string) =>
       trpcClient.campaigns.sources.share.mutate({ campaignId, sourceId: id }),
@@ -100,7 +110,9 @@ export function CampaignPage() {
     )
   const c = campaign.data
   const dm = c.role === 'dm'
-  const submitted = new Set(c.characters.map((ch) => ch.characterId))
+  const submitted = new Set(
+    c.characters.filter((ch) => ch.status !== 'retired').map((ch) => ch.characterId),
+  )
   const submittable = (mine.data ?? []).filter((ch) => !submitted.has(ch.id))
   const sharedIds = new Set(c.sources.map((s) => s.sourceId))
 
@@ -170,6 +182,19 @@ export function CampaignPage() {
                               Sheet
                             </Link>
                           </Button>
+                        ) : null}
+                        {(dm || mine.data?.some((m) => m.id === ch.characterId)) &&
+                        ch.status !== 'retired' ? (
+                          <ConfirmButton
+                            testId={`withdraw-${ch.characterId}`}
+                            size="sm"
+                            variant="ghost"
+                            label={dm ? 'Remove from party' : 'Withdraw'}
+                            title={`Take ${ch.name} off the roster?`}
+                            description="The character leaves the party (the DM loses table access to it) and stays on the record as retired; it can be submitted again later. Not possible while it is in an unfinished encounter."
+                            confirmLabel={dm ? 'Remove' : 'Withdraw'}
+                            onConfirm={() => withdraw.mutate(ch.characterId)}
+                          />
                         ) : null}
                       </span>
                     </li>

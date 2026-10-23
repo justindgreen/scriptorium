@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
+import { ConfirmButton } from '@/components/ConfirmButton'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -177,13 +178,15 @@ function Rests({
         <Button variant="outline" onClick={() => setOpen((o) => !o)} data-testid="short-rest">
           Short rest
         </Button>
-        <Button
+        <ConfirmButton
+          testId="long-rest"
           variant="outline"
-          onClick={() => void send({ type: 'longRest' })}
-          data-testid="long-rest"
-        >
-          Long rest
-        </Button>
+          label="Long rest"
+          title="Take a long rest?"
+          description="Restores hit points, spent hit dice, spell slots and the resources that recover on a long rest. A snapshot is taken first; the rest itself cannot be undone."
+          confirmLabel="Finish the long rest"
+          onConfirm={() => void send({ type: 'longRest' })}
+        />
       </div>
       {open ? (
         <div className="grid gap-2 rounded-md border p-2 text-sm" data-testid="short-rest-form">

@@ -340,7 +340,10 @@ export function createEncounterService(deps: {
     const facts = new Map<string, CharacterFacts>()
     for (const p of participants) {
       if (p.kind !== 'character' || !p.characterId) continue
-      const view = await characterView(p.characterId)
+      // A deleted character (possible only once every encounter holding it is completed) keeps
+      // its participant row as history; the row is shown without sheet facts.
+      const view = await deps.commands.view(p.characterId)
+      if (!view) continue
       facts.set(p.id, {
         view,
         conditions: view.aggregate.state.conditions.map((c) => ({ uid: c.uid })),
@@ -369,7 +372,9 @@ export function createEncounterService(deps: {
       if (role === 'dm') {
         for (const p of participants) {
           if (p.kind === 'character' && p.characterId) {
-            const view = characters.get(p.id)!.view
+            const facts = characters.get(p.id)
+            if (!facts) continue
+            const view = facts.view
             actions[p.id] = view.sheet.actionTemplates
               .filter((t) => t.attack)
               .map((t) => ({

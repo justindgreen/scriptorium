@@ -27,6 +27,7 @@ const ROGUE = 'srd-5.1:class:rogue'
 let t: TestApp
 let admin: { userId: string; cookie: string }
 let player: string
+let bystander: string
 
 beforeAll(async () => {
   t = await createTestApp()
@@ -172,7 +173,7 @@ describe('characters: creation and the command path', () => {
       { characterId: id },
       player,
     )
-    expect(availability.data).toEqual({ ok: true, eventType: 'equip' })
+    expect(availability.data).toMatchObject({ ok: true, eventType: 'equip' })
     const undone = await trpcMutation<CommandResult>(
       t.app,
       'characters.undo',
@@ -259,6 +260,102 @@ describe('characters: creation and the command path', () => {
       player,
     )
     expect(availability.data?.ok).toBe(false)
+  })
+
+  it('reverts the latest level-up to its automatic snapshot as a new revision, and only then (issue #15)', async () => {
+    const up = await command(id, revision, { type: 'addClassLevel', classUid: FIGHTER })
+    expect(up.status).toBe(200)
+    revision = up.data!.revision
+    expect(up.data!.sheet.level).toBe(2)
+    type Availability = {
+      ok: boolean
+      levelUp: { ok: boolean; levelBefore?: number; reason?: string }
+    }
+    const offered = await trpcQuery<Availability>(
+      t.app,
+      'characters.undoAvailability',
+      { characterId: id },
+      player,
+    )
+    expect(offered.data!.levelUp).toMatchObject({ ok: true, levelBefore: 1 })
+    const invite = await trpcMutation<{ code: string }>(
+      t.app,
+      'admin.invites.create',
+      { role: 'user', note: 'bystander' },
+      admin.cookie,
+    )
+    bystander = (
+      await signUp(t.app, {
+        username: 'bystander',
+        name: 'Bystander',
+        password: 'yet-another-horse-battery',
+        inviteCode: invite.data!.code,
+      })
+    ).cookie
+    const denied = await trpcMutation(
+      t.app,
+      'characters.revertLevelUp',
+      { characterId: id, expectedRevision: revision },
+      bystander,
+    )
+    expect(denied.status).toBe(403)
+    const stale = await trpcMutation(
+      t.app,
+      'characters.revertLevelUp',
+      { characterId: id, expectedRevision: revision - 1 },
+      player,
+    )
+    expect(stale.status).toBe(409)
+    const reverted = await trpcMutation<CommandResult & { levelBefore: number }>(
+      t.app,
+      'characters.revertLevelUp',
+      { characterId: id, expectedRevision: revision },
+      player,
+    )
+    expect(reverted.status).toBe(200)
+    expect(reverted.data!.sheet.level).toBe(1)
+    expect(reverted.data!.levelBefore).toBe(1)
+    // A new forward revision; the level-up stays in the history.
+    expect(reverted.data!.revision).toBe(revision + 1)
+    revision = reverted.data!.revision
+    const events = await trpcQuery<Array<{ type: string; revisionAfter: number }>>(
+      t.app,
+      'characters.events',
+      { characterId: id },
+      player,
+    )
+    expect(events.data![0]).toMatchObject({ type: 'restoreSnapshot', revisionAfter: revision })
+    expect(events.data![1]).toMatchObject({ type: 'addClassLevel', revisionAfter: revision - 1 })
+    // Not offered after the restore, nor once anything else happened after a level-up.
+    const afterRestore = await trpcQuery<Availability>(
+      t.app,
+      'characters.undoAvailability',
+      { characterId: id },
+      player,
+    )
+    expect(afterRestore.data!.levelUp).toMatchObject({
+      ok: false,
+      reason: expect.stringMatching(/not a level-up/),
+    })
+    const up2 = await command(id, revision, { type: 'addClassLevel', classUid: FIGHTER })
+    revision = up2.data!.revision
+    const tweak = await command(id, revision, { type: 'setInspiration', value: true })
+    revision = tweak.data!.revision
+    const blocked = await trpcQuery<Availability>(
+      t.app,
+      'characters.undoAvailability',
+      { characterId: id },
+      player,
+    )
+    expect(blocked.data!.levelUp.ok).toBe(false)
+    const refused = await trpcMutation(
+      t.app,
+      'characters.revertLevelUp',
+      { characterId: id, expectedRevision: revision },
+      player,
+    )
+    expect(refused.status).toBe(412)
+    expect(refused.error?.message).toMatch(/not a level-up/)
   })
 
   it('keeps other players out and lets administrators in', async () => {
@@ -578,7 +675,9 @@ describe('characters: creation and the command path', () => {
     expect(bram.data!.aggregate.definition.backgroundUid).toBe('srd-5.1:background:acolyte')
   })
 
-  it('soft-deletes', async () => {
+  it('soft-deletes for the owner only, once (issue #22)', async () => {
+    const denied = await trpcMutation(t.app, 'characters.delete', { characterId: id }, bystander)
+    expect(denied.status).toBe(403)
     const deleted = await trpcMutation<{ ok: true }>(
       t.app,
       'characters.delete',
@@ -588,5 +687,10 @@ describe('characters: creation and the command path', () => {
     expect(deleted.status).toBe(200)
     const gone = await trpcQuery<View>(t.app, 'characters.get', { characterId: id }, player)
     expect(gone.status).toBe(404)
+    // A repeated request finds nothing to delete; the list no longer shows the character.
+    const again = await trpcMutation(t.app, 'characters.delete', { characterId: id }, player)
+    expect(again.status).toBe(404)
+    const list = await trpcQuery<Array<{ id: string }>>(t.app, 'characters.list', undefined, player)
+    expect(list.data!.some((c) => c.id === id)).toBe(false)
   })
 })

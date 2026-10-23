@@ -1,10 +1,11 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { ConfirmButton } from '@/components/ConfirmButton'
 import { FormField } from '@/components/FormField'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import type { CharacterView } from '@/lib/characters'
+import { uidLabel, type CharacterView } from '@/lib/characters'
 import { errorMessage, trpc, trpcClient } from '@/lib/trpc'
 import { selectClass, type SendFn } from './shared'
 
@@ -89,19 +90,21 @@ export function LevelUp({
             </Button>
           </FormField>
         ) : null}
-        <Button
+        <ConfirmButton
+          testId="levelup-add"
+          label="Add a level"
+          title={`Add level ${view.sheet.level + 1} as ${classes.data?.items.find((c) => c.uid === classUid)?.name ?? uidLabel(classUid)}?`}
+          description="A snapshot of the character as it is now is taken first. The level-up itself cannot be undone, but right afterwards History offers to restore that snapshot, which brings back the whole previous state."
+          confirmLabel="Add the level"
           disabled={!classUid}
-          onClick={() =>
+          onConfirm={() =>
             void send({
               type: 'addClassLevel',
               classUid,
               ...(rolled && roll ? { hitDieRoll: Number(roll) } : {}),
             })
           }
-          data-testid="levelup-add"
-        >
-          Add a level
-        </Button>
+        />
         {view.sheet.classes.some((c) => !c.subclassUid) ? (
           <div className="grid gap-2 border-t pt-3">
             <FormField id="subclass-class" label="Subclass for">
