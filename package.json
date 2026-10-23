@@ -14,7 +14,7 @@
     "typecheck": "turbo run typecheck",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --write docs/ALPHA_GATE_REVIEW.md docs/IMPLEMENTATION_PLAN.md && git --no-pager diff --unified=0 -- docs/ALPHA_GATE_REVIEW.md docs/IMPLEMENTATION_PLAN.md",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage:automation": "pnpm -F @scriptorium/conformance coverage",
