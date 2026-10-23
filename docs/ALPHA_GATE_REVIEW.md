@@ -215,4 +215,4 @@ Verification evidence: CI run [39905866800](https://github.com/justindgreen/scri
 
 Remaining UI and product requirements are **not closed by gate verification**: character deletion [#22](https://github.com/justindgreen/scriptorium/issues/22) and friendly homebrew diagnostics [#23](https://github.com/justindgreen/scriptorium/issues/23) belong to UX-1, and the other previously recorded UX-1, UX-2 and roadmap issues keep their approved dispositions in `docs/A1_RECONCILIATION.md`. **A1 verification does not authorize UX-1, UX-2 or Phase 3**; work on those milestones requires a separate owner instruction.
 
-This §11 supersedes the earlier *pending/not verified* statements in the dated audit and follow-up sections; their original findings and evidence are retained for traceability.
+This §11 supersedes the earlier _pending/not verified_ statements in the dated audit and follow-up sections; their original findings and evidence are retained for traceability.
