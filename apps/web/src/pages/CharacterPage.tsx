@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { uidLabel, useCharacter, useCharacterLive, useCommand } from '@/lib/characters'
 import { errorMessage } from '@/lib/trpc'
 import { ActionsPanel } from './character/ActionsPanel'
+import { BackgroundPanel } from './character/BackgroundPanel'
 import { PendingChoices } from './character/Choices'
 import { ConditionsPanel } from './character/ConditionsPanel'
 import { CurrencyPanel } from './character/CurrencyPanel'
@@ -60,7 +61,7 @@ export function CharacterPage() {
     <div className="grid gap-6">
       <PageHeader
         title={aggregate.name}
-        description={`${sheet.level > 0 ? `Level ${sheet.level} · ${classes}` : 'No class yet'}${aggregate.definition.speciesUid ? ` · ${uidLabel(aggregate.definition.speciesUid)}` : ''} · revision ${data.revision}`}
+        description={`${sheet.level > 0 ? `Level ${sheet.level} · ${classes}` : 'No class yet'}${aggregate.definition.speciesUid ? ` · ${uidLabel(aggregate.definition.speciesUid)}` : ''} · ${aggregate.definition.backgroundUid ? uidLabel(aggregate.definition.backgroundUid) : 'Background: Not selected'} · revision ${data.revision}`}
         actions={
           <>
             <Badge variant={live ? 'secondary' : 'outline'} data-testid="live-status">
@@ -81,6 +82,7 @@ export function CharacterPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] print:block">
         <div className="grid min-w-0 grid-cols-1 gap-6">
           <Vitals view={data} send={send} />
+          {!aggregate.definition.backgroundUid ? <BackgroundPanel view={data} send={send} /> : null}
           <ActionsPanel view={data} send={send} onError={setError} />
           <PendingChoices view={data} send={send} />
           <ResourcesPanel view={data} send={send} onError={setError} />
@@ -88,6 +90,7 @@ export function CharacterPage() {
           {sheet.spellcasting ? <Spells view={data} send={send} onError={setError} /> : null}
         </div>
         <div className="grid min-w-0 grid-cols-1 gap-6 self-start">
+          {aggregate.definition.backgroundUid ? <BackgroundPanel view={data} send={send} /> : null}
           <Proficiencies sheet={sheet} />
           <ConditionsPanel view={data} send={send} />
           <CurrencyPanel view={data} send={send} />

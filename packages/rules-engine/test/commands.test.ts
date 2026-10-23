@@ -534,3 +534,88 @@ describe('undo', () => {
     expect(canUndo([])).toMatchObject({ ok: false })
   })
 })
+
+describe('definition commands: background (issue #21)', () => {
+  const base = cases.find((x) => x.name === 'hill-dwarf-champion-5')!
+  const ACOLYTE = 'srd-5.1:background:acolyte'
+  const HERMIT = 'test:background:hermit'
+  const hermit = {
+    kind: 'background',
+    uid: HERMIT,
+    slug: 'hermit',
+    name: 'Hermit',
+    data: {
+      description: 'Hermit.',
+      skillProficiencies: ['medicine', 'religion'],
+      toolProficiencies: [],
+      languages: 1,
+      equipment: [],
+      feature: { name: 'Discovery', description: 'A discovery.' },
+    },
+    effects: [],
+    choices: [],
+    automation: { level: 'manual' },
+    tests: [],
+    tags: [],
+    relations: [],
+  }
+  const snapshot = buildSnapshot([...(base.snapshotRefs ?? []), ACOLYTE], base.contentFiles ?? [], [
+    ...(base.content ?? []),
+    hermit,
+  ])
+  const acolyteKey = `background:${ACOLYTE}/languages`
+  const withAcolyte = () => {
+    const aggregate = buildAggregate(base.aggregate)
+    aggregate.definition.backgroundUid = ACOLYTE
+    aggregate.definition.choices[acolyteKey] = {
+      kind: 'language',
+      languages: ['elvish', 'celestial'],
+    }
+    return aggregate
+  }
+  const languagesOf = (sheet: ComputedSheet) => sheet.proficiencies.languages.map((l) => l.id)
+
+  it('changing the background drops the selections stored under the old one and nothing else', () => {
+    const aggregate = withAcolyte()
+    expect(languagesOf(computeSheet(aggregate, snapshot, ruleset))).toEqual(
+      expect.arrayContaining(['elvish', 'celestial']),
+    )
+    const { result } = run(aggregate, snapshot, { type: 'setBackground', uid: HERMIT })
+    const next = ok(result).aggregate
+    expect(next.definition.backgroundUid).toBe(HERMIT)
+    expect(Object.keys(next.definition.choices)).not.toContain(acolyteKey)
+    expect(next.definition.choices['class:srd-5.1:class:fighter@1/skills']).toBeDefined()
+    expect(ok(result).event.summary).toMatch(/reset 1 choice/)
+    const after = computeSheet(next, snapshot, ruleset)
+    expect(languagesOf(after)).not.toContain('elvish')
+    expect(after.stats['skill.medicine.proficiency']?.value).toBe(1)
+    expect(after.stats['skill.insight.proficiency']?.value).toBe(0)
+    expect(after.features.some((f) => f.uid === `${ACOLYTE}#feature`)).toBe(false)
+    expect(after.features.some((f) => f.uid === `${HERMIT}#feature`)).toBe(true)
+    expect(
+      after.pendingChoices.find((p) => p.key === `background:${HERMIT}/languages`),
+    ).toMatchObject({ remaining: 1, selected: [] })
+  })
+
+  it('keeps the selections when the same background is set again, and drops them when cleared', () => {
+    const same = run(withAcolyte(), snapshot, { type: 'setBackground', uid: ACOLYTE })
+    expect(ok(same.result).aggregate.definition.choices[acolyteKey]).toEqual({
+      kind: 'language',
+      languages: ['elvish', 'celestial'],
+    })
+    expect(ok(same.result).event.summary).not.toMatch(/reset/)
+    const cleared = run(withAcolyte(), snapshot, { type: 'setBackground', uid: null })
+    const next = ok(cleared.result).aggregate
+    expect(next.definition.backgroundUid).toBeUndefined()
+    expect(Object.keys(next.definition.choices)).not.toContain(acolyteKey)
+    expect(languagesOf(computeSheet(next, snapshot, ruleset))).not.toContain('celestial')
+  })
+
+  it('refuses a background that is not in the snapshot', () => {
+    const { result } = run(withAcolyte(), snapshot, {
+      type: 'setBackground',
+      uid: 'test:background:missing',
+    })
+    expect(result).toMatchObject({ ok: false, code: 'NOT_FOUND' })
+  })
+})

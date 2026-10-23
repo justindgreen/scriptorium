@@ -57,7 +57,9 @@ export async function buildCharacter(page: Page, name: string, cls: AlphaClass):
   await page.getByTestId('builder-name').fill(name)
   await page.getByTestId('builder-class').selectOption({ label: cls.label })
   await page.getByTestId('builder-species').selectOption({ label: cls.species })
-  await page.getByTestId('builder-background').selectOption({ label: cls.background })
+  // An empty background leaves "Choose later" selected: the sheet completes it (issue #21).
+  if (cls.background)
+    await page.getByTestId('builder-background').selectOption({ label: cls.background })
   await page.getByTestId('builder-create').click()
   await expect(page).toHaveURL(/\/characters\/[0-9a-f-]+$/)
   await expect(page.getByRole('heading', { name })).toBeVisible()

@@ -188,3 +188,51 @@ test('language choices keep earlier picks and show on the sheet', async ({ page 
   await expect(page.getByTestId('proficiencies-languages')).toContainText('Elvish')
   await expect(page.getByTestId('proficiencies-languages')).toContainText('Celestial')
 })
+
+test('a background can be chosen, completed and changed on the sheet (issue #21)', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(180_000)
+  await signInAs(page, admin.username, admin.password)
+  const name = `Latecomer ${testInfo.project.name} ${Date.now().toString(36)}`
+  await buildCharacter(page, name, { label: 'Fighter', species: 'Human', background: '' })
+  await expect(page.getByTestId('background-status')).toHaveText('Not selected')
+  await expect(page.getByText(/Background: Not selected/)).toBeVisible()
+  const key = 'background:srd-5.1:background:acolyte/languages'
+  await expect(page.getByTestId(`choice-${key}`)).toHaveCount(0)
+
+  // Choosing Acolyte brings its feature, skills and the language choice at once.
+  await page.getByTestId('background-select').selectOption({ label: 'Acolyte' })
+  await press(page.getByTestId('background-set'))
+  await expect(page.getByTestId('background-status')).toHaveText('Acolyte')
+  await expect(page.getByTestId('background')).toContainText('Shelter of the Faithful')
+  await expect(page.getByTestId('skills')).toContainText('Religion ●')
+  const choice = page.getByTestId(`choice-${key}`)
+  await expect(choice).toContainText('choose 2 more')
+  await choice.getByTestId(`slot-${key}-0`).selectOption('elvish')
+  await choice.getByTestId(`slot-${key}-1`).selectOption('celestial')
+  await press(choice.getByTestId(`save-${key}`))
+  await expect(choice).toBeHidden()
+  await expect(page.getByTestId('proficiencies-languages')).toContainText('Elvish')
+  await page.reload()
+  await expect(page.getByTestId('background-status')).toHaveText('Acolyte')
+  await expect(page.getByTestId('proficiencies-languages')).toContainText('Celestial')
+  await expect(page.getByText(/revision 2$/)).toBeVisible()
+
+  // Changing it (removing: the SRD ships one background) warns about the picks it resets and needs a second press.
+  await page.getByTestId('background-select').selectOption('')
+  await press(page.getByTestId('background-set'))
+  await expect(page.getByTestId('background-warning')).toContainText('Languages: Elvish, Celestial')
+  await expect(page.getByTestId('background-status')).toHaveText('Acolyte')
+  await press(page.getByTestId('background-set'))
+  await expect(page.getByTestId('background-status')).toHaveText('Not selected')
+  await expect(page.getByTestId('proficiencies-languages')).not.toContainText('Elvish')
+  await expect(page.getByTestId('skills')).not.toContainText('Religion ●')
+  await expect(page.getByText(/revision 3$/)).toBeVisible()
+
+  // Choosing it again starts the choice afresh: nothing stale is remembered.
+  await page.getByTestId('background-select').selectOption({ label: 'Acolyte' })
+  await press(page.getByTestId('background-set'))
+  await expect(page.getByTestId(`choice-${key}`)).toContainText('choose 2 more')
+  await expect(page.getByTestId(`chosen-${key}`)).toHaveCount(0)
+})

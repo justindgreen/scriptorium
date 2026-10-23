@@ -59,3 +59,15 @@ Use two browsers or one normal and one private window: the DM account and a play
 - Record in the retest report which boxes passed, with the commit id and the image build date.
 - If everything passes, A1 may be marked `verified` under the conditions of `docs/A1_RECONCILIATION.md` §7: the coverage exception stays recorded (ADR-0038) and the M3.2 remediation workstream stays first in Phase 3.
 - If anything fails, open an issue per failure; A1-R is not closed by assigning a later milestone.
+
+## 4. Addendum: issue #21, background chosen on the sheet
+
+Rebuild exactly as in §1 at the commit named in the completion report (no migration is added; expect the usual idempotent content re-import on start).
+
+- [ ] New character with Background left at "Choose later" (any class and species). The sheet header reads "Background: Not selected" and a **Background** card at the top says Not selected with a Choose background control.
+- [ ] Choose **Acolyte**: the card shows Acolyte and "Feature: Shelter of the Faithful"; Skills shows Insight ● and Religion ●; "Choices to make" gains the Acolyte Languages choice with two slots; the Diagnostics card lists Shelter of the Faithful as a manual feature.
+- [ ] Pick two languages and Save; the Proficiencies card lists them. Reload: background, skills and languages persist. Restart the Scriptorium container; reload: still there.
+- [ ] Change the background (the SRD ships only Acolyte, so pick "None (remove the background)"): a red warning names the choices that will be reset ("Languages: …"), and nothing changes until you press **Confirm change**. After confirming: Not selected, the Acolyte skills, languages and feature are gone, the class skill choices remain, and the event log shows "Cleared background (reset 1 choice)".
+- [ ] Choose Acolyte again: the Languages choice is open again with nothing pre-chosen.
+- [ ] A character created with Acolyte in the builder is unchanged: its card shows Acolyte, its earlier language picks remain; pressing Change background with Acolyte still selected is disabled.
+- [ ] As another player, the character's sheet is still not reachable; the API refuses `setBackground` for it (403).

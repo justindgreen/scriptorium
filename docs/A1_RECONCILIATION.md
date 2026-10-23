@@ -121,3 +121,16 @@ The order puts the small correctness fixes first, then the clarity work that eve
 | M3.2 remediation | M    | effect types for eleven features; already committed                         |
 
 Usage: reported from the account tool at close of the session that implements each item; no per-milestone billing is claimed.
+
+## 10. Post-retest dispositions (owner, 2026-10-22)
+
+The owner's Unraid retest of A1-R (767e681) passed all five items; issues #3, #5, #13, #19 and #8 are closed as completed, with #2. Four further findings:
+
+| Issue | Finding                                                           | Category                          | Disposition                                                                                                              | Milestone     | Priority |
+| ----- | ----------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------- | -------- |
+| #21   | A character created without a background cannot choose one later  | bug (missing completion workflow) | final A1 correction, delivered (ADR-0040)                                                                                | A1-R addendum | A        |
+| #22   | No character deletion UI although `characters.delete` exists      | incomplete                        | UX-1, with relationship checks (campaign, encounters, history) and owner-or-administrator only                           | UX-1          | B        |
+| #23   | Homebrew automation wording shows raw uids and codes              | incomplete (presentation)         | UX-1, grouped with item details and validation UX; `partial` stays accurate until D-4                                    | UX-1          | B        |
+| #24   | Species innate languages (Common, Dwarvish) are prose, not grants | incomplete alpha content          | M3.2 content remediation, added to the mandatory workstream next to the eleven features, six conflicts, D-1, D-2 and D-4 | M3.2          | B        |
+
+None of these is closed by its milestone assignment. The A1 verification conditions of §7 now read: A1-R (five items) passed on Unraid; #21 passes the owner's retest; the exception of ADR-0038 stays recorded; UX-1, UX-2 and Phase 3 stay unauthorised until the owner says otherwise.

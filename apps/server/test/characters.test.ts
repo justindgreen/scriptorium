@@ -483,6 +483,101 @@ describe('characters: creation and the command path', () => {
     expect(repeated.data!.sheet.pendingChoices.find((p) => p.key === key)!.remaining).toBe(1)
   })
 
+  it('completes a draft without a background on the sheet, then drops its selections when it changes (issue #21)', async () => {
+    const ACOLYTE = 'srd-5.1:background:acolyte'
+    const key = `background:${ACOLYTE}/languages`
+    const created = await trpcMutation<View>(
+      t.app,
+      'characters.create',
+      {
+        name: 'Latecomer',
+        speciesUid: 'srd-5.1:species:human',
+        classUid: FIGHTER,
+        abilityMethod: 'manual',
+        baseAbilities: { str: 15, dex: 13, con: 13, int: 8, wis: 11, cha: 9 },
+      },
+      player,
+    )
+    expect(created.status).toBe(200)
+    const late = created.data!.id
+    expect(created.data!.aggregate.definition.backgroundUid).toBeUndefined()
+    expect(created.data!.sheet.pendingChoices.map((p) => p.key)).not.toContain(key)
+    // An unknown background is refused; a stranger cannot set one at all.
+    const unknown = await command(late, 0, {
+      type: 'setBackground',
+      uid: 'srd-5.1:background:nope',
+    })
+    expect([400, 404]).toContain(unknown.status)
+    expect(unknown.error?.message).toMatch(/unknown background/)
+    const invite = await trpcMutation<{ code: string }>(
+      t.app,
+      'admin.invites.create',
+      { role: 'user', note: 'onlooker' },
+      admin.cookie,
+    )
+    const onlooker = await signUp(t.app, {
+      username: 'onlooker',
+      name: 'Onlooker',
+      password: 'yet-another-horse-battery',
+      inviteCode: invite.data!.code,
+    })
+    const denied = await command(late, 0, { type: 'setBackground', uid: ACOLYTE }, onlooker.cookie)
+    expect(denied.status).toBe(403)
+    // The owner chooses Acolyte: feature, skills and the language choice arrive together.
+    const chosen = await command(late, 0, { type: 'setBackground', uid: ACOLYTE })
+    expect(chosen.status).toBe(200)
+    expect(chosen.data!.aggregate.definition.backgroundUid).toBe(ACOLYTE)
+    expect(chosen.data!.sheet.features.some((f) => f.uid === `${ACOLYTE}#feature`)).toBe(true)
+    expect(chosen.data!.sheet.stats['skill.religion.proficiency']?.value).toBe(1)
+    expect(chosen.data!.sheet.pendingChoices.find((p) => p.key === key)?.remaining).toBe(2)
+    const languages = await command(late, 1, {
+      type: 'setChoice',
+      key,
+      selection: { kind: 'language', languages: ['elvish', 'celestial'] },
+    })
+    expect(languages.status).toBe(200)
+    const skills = await command(late, 2, {
+      type: 'setChoice',
+      key: `class:${FIGHTER}@1/skills`,
+      selection: { kind: 'skill', skills: ['athletics', 'perception'] },
+    })
+    expect(skills.status).toBe(200)
+    const persisted = await trpcQuery<View>(t.app, 'characters.get', { characterId: late }, player)
+    expect(persisted.data!.revision).toBe(3)
+    expect(persisted.data!.aggregate.definition.backgroundUid).toBe(ACOLYTE)
+    expect(persisted.data!.sheet.proficiencies.languages.map((l) => l.id)).toEqual(
+      expect.arrayContaining(['elvish', 'celestial']),
+    )
+    // Setting the same background again changes nothing and keeps the selections.
+    const same = await command(late, 3, { type: 'setBackground', uid: ACOLYTE })
+    expect(same.status).toBe(200)
+    expect(same.data!.aggregate.definition.choices[key]).toEqual({
+      kind: 'language',
+      languages: ['elvish', 'celestial'],
+    })
+    // Clearing it drops the Acolyte selections, benefits and feature; class choices stay.
+    const cleared = await command(late, 4, { type: 'setBackground', uid: null })
+    expect(cleared.status).toBe(200)
+    expect(cleared.data!.summary).toMatch(/reset 1 choice/)
+    expect(cleared.data!.aggregate.definition.backgroundUid).toBeUndefined()
+    expect(Object.keys(cleared.data!.aggregate.definition.choices)).toEqual([
+      `class:${FIGHTER}@1/skills`,
+    ])
+    expect(cleared.data!.sheet.proficiencies.languages.map((l) => l.id)).not.toContain('elvish')
+    expect(cleared.data!.sheet.stats['skill.religion.proficiency']?.value).toBe(0)
+    expect(cleared.data!.sheet.stats['skill.athletics.proficiency']?.value).toBe(1)
+    expect(cleared.data!.sheet.features.some((f) => f.uid === `${ACOLYTE}#feature`)).toBe(false)
+    // Choosing it again starts the choice afresh.
+    const again = await command(late, 5, { type: 'setBackground', uid: ACOLYTE })
+    expect(again.status).toBe(200)
+    const pending = again.data!.sheet.pendingChoices.find((p) => p.key === key)!
+    expect(pending.selected).toEqual([])
+    expect(pending.remaining).toBe(2)
+    // The character that had Acolyte from creation is untouched by all of this.
+    const bram = await trpcQuery<View>(t.app, 'characters.get', { characterId: id }, player)
+    expect(bram.data!.aggregate.definition.backgroundUid).toBe('srd-5.1:background:acolyte')
+  })
+
   it('soft-deletes', async () => {
     const deleted = await trpcMutation<{ ok: true }>(
       t.app,

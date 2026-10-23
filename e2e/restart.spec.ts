@@ -16,14 +16,20 @@ test('sheet changes survive a server restart and the live stream reconnects', as
   await buildCharacter(page, `Restart ${Date.now().toString(36)}`, {
     label: 'Fighter',
     species: 'Human',
-    background: 'Acolyte',
+    background: '',
   })
+  // The background is completed on the sheet (issue #21) and must survive the restart too.
+  await expect(page.getByTestId('background-status')).toHaveText('Not selected')
+  await page.getByTestId('background-select').selectOption({ label: 'Acolyte' })
+  await page.getByTestId('background-set').click()
+  await expect(page.getByTestId('background-status')).toHaveText('Acolyte')
+  await expect(page.getByText(/revision 1$/)).toBeVisible()
   await page.getByLabel('Amount').first().fill('4')
   await page.getByTestId('damage').click()
   await expect(page.getByTestId('stat-hp')).toContainText('8 / 12')
   await page.getByTestId('coin-add-gp').click()
   await expect(page.getByTestId('coin-gp')).toHaveText('1')
-  await expect(page.getByText(/revision 2$/)).toBeVisible()
+  await expect(page.getByText(/revision 3$/)).toBeVisible()
   await expect(page.getByTestId('live-status')).toHaveText('Live')
 
   await restartServer(request)
@@ -31,13 +37,15 @@ test('sheet changes survive a server restart and the live stream reconnects', as
   // The open page falls back to polling while the server is down and reconnects afterwards.
   await expect(page.getByTestId('live-status')).toHaveText('Live', { timeout: 90_000 })
   await page.reload()
-  await expect(page.getByText(/revision 2$/)).toBeVisible()
+  await expect(page.getByText(/revision 3$/)).toBeVisible()
   await expect(page.getByTestId('stat-hp')).toContainText('8 / 12')
   await expect(page.getByTestId('coin-gp')).toHaveText('1')
-  await expect(page.getByTestId('event-log').locator('li')).toHaveCount(2)
+  await expect(page.getByTestId('background-status')).toHaveText('Acolyte')
+  await expect(page.getByTestId('skills')).toContainText('Religion ●')
+  await expect(page.getByTestId('event-log').locator('li')).toHaveCount(3)
 
   // The session survived too: another command works against the restarted server.
   await page.getByTestId('heal').click()
   await expect(page.getByTestId('stat-hp')).toContainText('12 / 12')
-  await expect(page.getByText(/revision 3$/)).toBeVisible()
+  await expect(page.getByText(/revision 4$/)).toBeVisible()
 })

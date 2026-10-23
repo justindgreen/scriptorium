@@ -26,6 +26,13 @@ function fail(code: CommandErrorCode, message: string): CommandResult {
   return { ok: false, code, message }
 }
 
+/** Removes the stored selections whose keys start with `prefix`; returns the keys dropped. */
+function dropChoicesUnder(definition: { choices: Record<string, unknown> }, prefix: string) {
+  const dropped = Object.keys(definition.choices).filter((key) => key.startsWith(prefix))
+  for (const key of dropped) delete definition.choices[key]
+  return dropped
+}
+
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
 }
@@ -473,9 +480,18 @@ export function applyCommand(
       )
         return fail('NOT_FOUND', `unknown background ${command.uid}`)
       const d = definition()
+      const previous = d.backgroundUid
+      // Selections stored under the previous background are obsolete once it changes; dropping
+      // them keeps a returning background from silently reusing stale picks (issue #21).
+      const dropped =
+        previous && previous !== command.uid ? dropChoicesUnder(d, `background:${previous}/`) : []
       if (command.uid) d.backgroundUid = command.uid
       else delete d.backgroundUid
-      summary = command.uid ? `Background: ${command.uid.split(':').pop()}` : 'Cleared background'
+      summary =
+        (command.uid ? `Background: ${command.uid.split(':').pop()}` : 'Cleared background') +
+        (dropped.length > 0
+          ? ` (reset ${dropped.length} choice${dropped.length === 1 ? '' : 's'})`
+          : '')
       break
     }
     case 'addClassLevel': {
