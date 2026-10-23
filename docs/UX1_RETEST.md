@@ -84,3 +84,7 @@ Scope: the UX-1 milestone approved on 2026-10-23 (`docs/A1_RECONCILIATION.md` §
 - Record which boxes passed on desktop and on the phone, with the commit id and image build date.
 - Issues #22, #23, #6, #7, #9, #10, #11, #14 and #15 are closed by your confirmation, not by the push; #4's first pass is accepted the same way (UX-2 carries the rest of #4 and #14).
 - Nothing here changes the A1 decision, ADR-0038 or the M3.2 commitments.
+
+## 6. Owner sign-off (2026-10-23)
+
+**PASS.** The owner accepted UX-1 on the Unraid deployment, desktop and phone, at commit `4cb9f47`: every checkpoint A and B item, the #27 read-only retest (no mutation controls on completed encounters; historical participants including deleted characters readable; active encounters unaffected) and the phone containment retest (no sideways scrolling). Two non-blocking findings were recorded and deferred: #26 (the planner's Situation and target disclosure collapses when the target type changes) and #28 (item Details metadata wraps into narrow fragments on a phone). Issues #6, #7, #9, #10, #11, #15, #22, #23 and #27 were closed as completed; the UX-2 parts of #4 and #14 stay open.
