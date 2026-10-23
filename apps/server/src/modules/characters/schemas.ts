@@ -304,6 +304,8 @@ export const commandRequestSchema = z.object({
   commandId: z.string().uuid(),
   expectedRevision: z.number().int().min(0),
   command: commandSchema,
+  /** `setAbilities` with the Rolled method names the recorded server roll it applies. */
+  abilityRollId: z.string().uuid().optional(),
 })
 
 export const createCharacterSchema = z.object({
@@ -311,6 +313,8 @@ export const createCharacterSchema = z.object({
   rulesetId: z.string().min(1).max(60).default('srd5.1-2014'),
   abilityMethod: z.enum(['standard', 'point_buy', 'manual', 'rolled']).default('standard'),
   baseAbilities: abilityScores.optional(),
+  /** Required with `abilityMethod: 'rolled'`: the recorded server roll the scores come from. */
+  abilityRollId: z.string().uuid().optional(),
   speciesUid: uid.optional(),
   backgroundUid: uid.optional(),
   classUid: uid.optional(),

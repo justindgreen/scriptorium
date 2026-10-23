@@ -1,17 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { useMemo, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { FormError, FormField } from '@/components/FormField'
 import { PageHeader } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { ABILITY_NAMES, POINT_BUY_COST, STANDARD_ARRAY, type AbilityKey } from '@/lib/characters'
 import { errorMessage, trpc, trpcClient } from '@/lib/trpc'
+import {
+  AbilityScores,
+  assign,
+  defaultScores,
+  POINT_BUY_BUDGET,
+  pointsSpent,
+  type AbilityMethod,
+  type AbilityRoll,
+  type Scores,
+} from './builder/AbilityScores'
+import { selectClass } from './character/shared'
 
-type Method = 'standard' | 'point_buy' | 'manual' | 'rolled'
-const ABILITIES = Object.keys(ABILITY_NAMES) as AbilityKey[]
-const DEFAULTS: Record<AbilityKey, number> = { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 }
+const METHOD_HELP: Record<AbilityMethod, string> = {
+  standard: 'Assign 15, 14, 13, 12, 10 and 8 once each; picking a used value swaps the two.',
+  point_buy: `Start at 8 everywhere and spend ${POINT_BUY_BUDGET} points; higher scores cost more per step.`,
+  manual: 'Enter the scores before species bonuses (1 to 30).',
+  rolled: 'Roll on the server, then assign the six results; picking a used value swaps the two.',
+}
 
 /**
  * Character builder: name, species, background, class and ability scores. The character is
@@ -31,8 +44,9 @@ export function CharacterBuilderPage() {
   const [speciesUid, setSpeciesUid] = useState('')
   const [backgroundUid, setBackgroundUid] = useState('')
   const [classUid, setClassUid] = useState('')
-  const [method, setMethod] = useState<Method>('standard')
-  const [abilities, setAbilities] = useState<Record<AbilityKey, number>>(DEFAULTS)
+  const [method, setMethod] = useState<AbilityMethod>('standard')
+  const [abilities, setAbilities] = useState<Scores>(() => defaultScores('standard'))
+  const [roll, setRoll] = useState<AbilityRoll | null>(null)
   const [hpMode, setHpMode] = useState<'fixed' | 'rolled' | 'manual'>('fixed')
   const [error, setError] = useState<string | null>(null)
 
@@ -43,6 +57,7 @@ export function CharacterBuilderPage() {
         abilityMethod: method,
         baseAbilities: abilities,
         hpMode,
+        ...(method === 'rolled' && roll ? { abilityRollId: roll.rollId } : {}),
         ...(speciesUid ? { speciesUid } : {}),
         ...(backgroundUid ? { backgroundUid } : {}),
         ...(classUid ? { classUid } : {}),
@@ -54,30 +69,22 @@ export function CharacterBuilderPage() {
     onError: (e) => setError(errorMessage(e)),
   })
 
-  const pointsSpent = useMemo(
-    () => ABILITIES.reduce((n, a) => n + (POINT_BUY_COST[abilities[a]] ?? 99), 0),
-    [abilities],
-  )
-  const standardOk = useMemo(
-    () =>
-      JSON.stringify([...ABILITIES.map((a) => abilities[a])].sort((x, y) => y - x)) ===
-      JSON.stringify([...STANDARD_ARRAY].sort((x, y) => y - x)),
-    [abilities],
-  )
+  function changeMethod(next: AbilityMethod) {
+    setMethod(next)
+    setAbilities(defaultScores(next))
+    setRoll(null)
+    setError(null)
+  }
 
   function onSubmit(event: FormEvent) {
     event.preventDefault()
     setError(null)
     if (name.trim().length === 0) return setError('Give the character a name.')
-    if (method === 'standard' && !standardOk)
-      return setError('Use each value of the standard array (15, 14, 13, 12, 10, 8) exactly once.')
-    if (method === 'point_buy' && pointsSpent > 27)
-      return setError(`Point buy spends ${pointsSpent} of 27 points.`)
+    if (method === 'rolled' && !roll) return setError('Roll the ability scores first.')
+    if (method === 'point_buy' && pointsSpent(abilities) > POINT_BUY_BUDGET)
+      return setError(`Point buy spends ${pointsSpent(abilities)} of ${POINT_BUY_BUDGET} points.`)
     create.mutate()
   }
-
-  const selectClass =
-    'h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50'
 
   return (
     <div>
@@ -173,13 +180,7 @@ export function CharacterBuilderPage() {
           <Card>
             <CardHeader>
               <CardTitle>Ability scores</CardTitle>
-              <CardDescription>
-                {method === 'standard'
-                  ? 'Assign 15, 14, 13, 12, 10 and 8 once each.'
-                  : method === 'point_buy'
-                    ? `Point buy: ${pointsSpent} of 27 points, scores 8 to 15.`
-                    : 'Enter the scores before species bonuses.'}
-              </CardDescription>
+              <CardDescription data-testid="method-help">{METHOD_HELP[method]}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
               <FormField id="method" label="Method">
@@ -187,31 +188,26 @@ export function CharacterBuilderPage() {
                   id="method"
                   className={selectClass}
                   value={method}
-                  onChange={(e) => setMethod(e.target.value as Method)}
+                  onChange={(e) => changeMethod(e.target.value as AbilityMethod)}
                   data-testid="builder-method"
                 >
                   <option value="standard">Standard array</option>
                   <option value="point_buy">Point buy</option>
+                  <option value="rolled">Rolled (4d6, drop the lowest)</option>
                   <option value="manual">Manual</option>
-                  <option value="rolled">Rolled</option>
                 </select>
               </FormField>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {ABILITIES.map((a) => (
-                  <FormField key={a} id={`ability-${a}`} label={ABILITY_NAMES[a]}>
-                    <Input
-                      id={`ability-${a}`}
-                      type="number"
-                      inputMode="numeric"
-                      min={1}
-                      max={30}
-                      value={abilities[a]}
-                      onChange={(e) => setAbilities({ ...abilities, [a]: Number(e.target.value) })}
-                      data-testid={`ability-${a}`}
-                    />
-                  </FormField>
-                ))}
-              </div>
+              <AbilityScores
+                method={method}
+                scores={abilities}
+                roll={roll}
+                onChange={setAbilities}
+                onRoll={(rolled) => {
+                  setRoll(rolled)
+                  setAbilities(assign([...rolled.scores].sort((a, b) => b - a)))
+                }}
+                onError={setError}
+              />
             </CardContent>
           </Card>
         </div>
@@ -224,7 +220,11 @@ export function CharacterBuilderPage() {
           </CardHeader>
           <CardContent className="grid gap-3">
             <FormError message={error} />
-            <Button type="submit" disabled={create.isPending} data-testid="builder-create">
+            <Button
+              type="submit"
+              disabled={create.isPending || (method === 'rolled' && !roll)}
+              data-testid="builder-create"
+            >
               {create.isPending ? 'Creating…' : 'Create character'}
             </Button>
           </CardContent>

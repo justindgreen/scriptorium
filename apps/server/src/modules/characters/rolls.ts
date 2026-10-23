@@ -21,7 +21,7 @@ import {
   type RollInputs,
 } from '@scriptorium/rules-engine'
 import { schema, type Db } from '../../db/client.js'
-import { CommandError, type CommandRunner } from '../../core/commands.js'
+import { CommandError, type CommandRunner, type Tx } from '../../core/commands.js'
 import { newId } from '../../core/ids.js'
 import type { Scope } from '../../core/policy.js'
 import { characterRootUids, loadSnapshot } from './snapshot.js'
@@ -77,6 +77,68 @@ export function rollForPlan(plan: ActionPlan, dice: DieRoller): RollResults {
     results.damageDetails = { ...results.damageDetails, healing: rolled.breakdown }
   }
   return results
+}
+
+/** 2014 rolled ability scores: 4d6, keep the three highest, six times (issue #3). */
+export const ABILITY_ROLL_EXPRESSION = '4d6kh3'
+
+export type AbilityRoll = { rollId: string; scores: number[]; breakdowns: string[] }
+
+type Executor = Db | Tx
+type AbilityRollContext = { kind: 'abilityScores'; userId: string }
+
+/**
+ * The recorded ability roll a creation or `setAbilities` with the Rolled method points at: it
+ * must exist, belong to the requesting user, be unconsumed (or consumed by this very command,
+ * for an idempotent retry) and hold exactly the six scores submitted, in any assignment.
+ * Returns the roll id; throws otherwise. Rolled scores can therefore never be typed in by hand.
+ */
+export async function requireAbilityRoll(
+  executor: Executor,
+  scope: Scope,
+  rollId: string | undefined,
+  abilities: Record<string, number>,
+  allowConsumedBy?: string,
+): Promise<string> {
+  if (!rollId)
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Rolled ability scores must come from the server roll (roll them first).',
+    })
+  const [stored] = await executor.select().from(schema.rolls).where(eq(schema.rolls.id, rollId))
+  const context = stored?.context as Partial<AbilityRollContext> | undefined
+  if (!stored || context?.kind !== 'abilityScores')
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'Ability roll not found.' })
+  if (!scope.userId || stored.requestedBy !== scope.userId)
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'That ability roll is not yours.' })
+  if (stored.consumedByCommandId && stored.consumedByCommandId !== allowConsumedBy)
+    throw new TRPCError({
+      code: 'PRECONDITION_FAILED',
+      message: 'That ability roll was already used.',
+    })
+  const scores = (stored.results as { scores: number[] }).scores
+  const submitted = Object.values(abilities).sort((a, b) => a - b)
+  if (JSON.stringify(submitted) !== JSON.stringify([...scores].sort((a, b) => a - b)))
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: `The scores do not match the recorded roll (${scores.join(', ')}).`,
+    })
+  return rollId
+}
+
+/** Marks the ability roll used by one creation or command inside its transaction; a second use fails. */
+export async function consumeAbilityRoll(
+  tx: Tx,
+  rollId: string,
+  consumerId: string,
+): Promise<void> {
+  const consumed = await tx
+    .update(schema.rolls)
+    .set({ consumedByCommandId: consumerId })
+    .where(and(eq(schema.rolls.id, rollId), isNull(schema.rolls.consumedByCommandId)))
+    .returning({ id: schema.rolls.id })
+  if (consumed.length === 0)
+    throw new CommandError('PRECONDITION_FAILED', 'that ability roll was already used')
 }
 
 export function createRollService(deps: {
@@ -145,6 +207,35 @@ export function createRollService(deps: {
         results,
       })
       return { id, characterId, ref, ctx, plan, results }
+    },
+
+    /**
+     * Six ability scores for the builder's Rolled method, each 4d6 keeping the three highest,
+     * rolled with the cryptographic RNG and recorded; character creation consumes the roll once
+     * and only with these exact scores (issue #3).
+     */
+    async rollAbilities(scope: Scope): Promise<AbilityRoll> {
+      if (!scope.userId) throw new TRPCError({ code: 'UNAUTHORIZED' })
+      const rolled = Array.from({ length: 6 }, () =>
+        rollExpression(ABILITY_ROLL_EXPRESSION, { dice }),
+      )
+      const id = newId()
+      const context: AbilityRollContext = { kind: 'abilityScores', userId: scope.userId }
+      await deps.db.insert(schema.rolls).values({
+        id,
+        requestedBy: scope.userId,
+        context,
+        expression: `${ABILITY_ROLL_EXPRESSION} ×6`,
+        results: {
+          scores: rolled.map((r) => r.total),
+          breakdowns: rolled.map((r) => r.breakdown),
+        },
+      })
+      return {
+        rollId: id,
+        scores: rolled.map((r) => r.total),
+        breakdowns: rolled.map((r) => r.breakdown),
+      }
     },
 
     /** One hit die for a short rest or a rolled level-up; recorded in the roll log, never consumed. */

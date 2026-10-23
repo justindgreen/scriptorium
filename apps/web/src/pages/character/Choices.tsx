@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { uidLabel, type AbilityKey, type CharacterView } from '@/lib/characters'
+import { LANGUAGES } from '@/lib/languages'
 import { trpc } from '@/lib/trpc'
+import { LanguageSlots } from './LanguageSlots'
 import { ABILITIES, type SendFn } from './shared'
 
 export function PendingChoices({ view, send }: { view: CharacterView; send: SendFn }) {
@@ -43,12 +45,13 @@ function ChoicePicker({
   const [increases, setIncreases] = useState<Partial<Record<AbilityKey, number>>>({})
   const [asiMode, setAsiMode] = useState<'asi' | 'feat'>('asi')
   const [query, setQuery] = useState('')
-  const [text, setText] = useState('')
   const contentKind = (pending.from as { contentKind?: string }).contentKind
   const filter = ((
     pending.from as { filter?: { tags?: string[]; level?: number; maxLevel?: number } }
   ).filter ?? {}) as { tags?: string[]; level?: number; maxLevel?: number }
   const needsSearch = kind === 'content' || kind === 'feat' || asiMode === 'feat'
+  // A language or tool choice the engine cannot enumerate is picked in slots (issue #5).
+  const freeSlots = !pending.options && !needsSearch && (kind === 'language' || kind === 'tool')
   const search = useQuery({
     ...trpc.content.entries.list.queryOptions({
       kind: (kind === 'feat' || (kind === 'asiOrFeat' && asiMode === 'feat')
@@ -86,26 +89,10 @@ function ChoicePicker({
         selection = { kind: 'expertise', skills: ids as never }
         break
       case 'tool':
-        selection = {
-          kind: 'tool',
-          tools: pending.options
-            ? ids
-            : text
-                .split(',')
-                .map((s) => s.trim())
-                .filter(Boolean),
-        }
+        selection = { kind: 'tool', tools: ids }
         break
       case 'language':
-        selection = {
-          kind: 'language',
-          languages: pending.options
-            ? ids
-            : text
-                .split(',')
-                .map((s) => s.trim().toLowerCase().replace(/\s+/g, '-'))
-                .filter(Boolean),
-        }
+        selection = { kind: 'language', languages: ids }
         break
       case 'abilityIncrease':
         selection = { kind: 'abilityIncrease', increases }
@@ -225,19 +212,36 @@ function ChoicePicker({
           </ul>
         </div>
       ) : null}
-      {!options && !needsSearch && (kind === 'language' || kind === 'tool') ? (
-        <Input
-          placeholder={kind === 'language' ? 'e.g. elvish, dwarvish' : 'e.g. smiths-tools'}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          aria-label={pending.name}
+      {freeSlots ? (
+        <LanguageSlots
+          key={pending.selected.join('|')}
+          pending={pending}
+          kind={kind as 'language' | 'tool'}
+          known={(kind === 'language'
+            ? view.sheet.proficiencies.languages
+            : view.sheet.proficiencies.tools
+          ).map((p) => p.id)}
+          options={kind === 'language' ? LANGUAGES : []}
+          onSave={(picked) => {
+            // `setChoice` replaces the whole selection, so the earlier picks are sent again.
+            const all = [...new Set([...pending.selected, ...picked])]
+            void send({
+              type: 'setChoice',
+              key: pending.key,
+              selection:
+                kind === 'language'
+                  ? { kind: 'language', languages: all }
+                  : { kind: 'tool', tools: all },
+            })
+          }}
         />
-      ) : null}
-      <div>
-        <Button size="sm" onClick={save} data-testid={`save-${pending.key}`}>
-          Save
-        </Button>
-      </div>
+      ) : (
+        <div>
+          <Button size="sm" onClick={save} data-testid={`save-${pending.key}`}>
+            Save
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

@@ -39,6 +39,9 @@ export function EncounterPage() {
       { encounterId },
       {
         onData: (event) => {
+          // A participant's sheet changed (conditions, hit points): the encounter version did
+          // not move, so refetch unconditionally (issue #13).
+          if (event.type === 'character.changed') return void invalidate()
           if (event.type !== 'ready' && event.type !== 'encounter.changed') return
           const cached = queryClient.getQueryData(trpc.encounters.get.queryKey({ encounterId }))
           if (!cached || cached.version !== event.version) void invalidate()
@@ -192,18 +195,24 @@ function Participants({
                 <span>
                   {p.id === e.currentParticipantId ? <span aria-hidden="true">▶ </span> : null}
                   <span className="font-medium">{p.displayName}</span>
-                  {p.kind === 'character' && p.characterId ? (
+                  {p.kind === 'character' && p.characterId && p.canOpenSheet ? (
                     <Link
                       to="/characters/$characterId"
                       params={{ characterId: p.characterId }}
                       className="ml-2 text-xs underline underline-offset-4"
+                      data-testid={`sheet-link-${p.id}`}
                     >
                       sheet
                     </Link>
                   ) : null}{' '}
                   {p.defeated ? <Badge variant="destructive">defeated</Badge> : null}
                   {p.conditions.map((c) => (
-                    <Badge key={c.uid} variant="outline" className="ml-1">
+                    <Badge
+                      key={c.uid}
+                      variant="outline"
+                      className="ml-1"
+                      data-testid={`badge-${p.id}-${c.uid}`}
+                    >
                       {uidLabel(c.uid)}
                     </Badge>
                   ))}

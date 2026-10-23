@@ -72,7 +72,9 @@ test('the sword example is authored, previewed, published and lands on a sheet',
   await expect(page.getByTestId('effect-3-spell')).toHaveText('Bless')
 
   await expect(page.getByTestId('validation-status')).toHaveText('valid')
-  await expect(page.getByTestId('automation-level')).toHaveText('automation: full')
+  // A granted spell is listed on the sheet but not castable from it yet, so the item is `partial` (issue #8).
+  await expect(page.getByTestId('automation-level')).toHaveText('automation: partial')
+  await expect(page.getByTestId('validation')).toContainText('Manual parts: casting')
   if (testInfo.project.name === 'desktop') await expectAccessible(page)
 
   await press(page.getByTestId('item-save'))

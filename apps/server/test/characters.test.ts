@@ -79,6 +79,8 @@ describe('characters: creation and the command path', () => {
         speciesUid: 'srd-5.1:species:human',
         backgroundUid: 'srd-5.1:background:acolyte',
         classUid: FIGHTER,
+        // Arbitrary scores need the manual method: creation enforces the array and point-buy rules (A1-R).
+        abilityMethod: 'manual',
         baseAbilities: { str: 15, dex: 13, con: 13, int: 8, wis: 11, cha: 9 },
       },
       player,
@@ -290,6 +292,195 @@ describe('characters: creation and the command path', () => {
     expect(deniedWrite.status).toBe(403)
     const anonymous = await trpcQuery<View>(t.app, 'characters.get', { characterId: id })
     expect(anonymous.status).toBe(401)
+  })
+
+  it('refuses ability scores the method forbids at creation (issue #3)', async () => {
+    const repeated = await trpcMutation(
+      t.app,
+      'characters.create',
+      {
+        name: 'Repeat',
+        abilityMethod: 'standard',
+        baseAbilities: { str: 15, dex: 15, con: 13, int: 12, wis: 10, cha: 8 },
+      },
+      player,
+    )
+    expect(repeated.status).toBe(400)
+    expect(repeated.error?.message).toMatch(/standard array/)
+    const overspent = await trpcMutation(
+      t.app,
+      'characters.create',
+      {
+        name: 'Rich',
+        abilityMethod: 'point_buy',
+        baseAbilities: { str: 15, dex: 15, con: 15, int: 9, wis: 8, cha: 8 },
+      },
+      player,
+    )
+    expect(overspent.status).toBe(400)
+    expect(overspent.error?.message).toMatch(/28 of 27 points/)
+    const outOfRange = await trpcMutation(
+      t.app,
+      'characters.create',
+      {
+        name: 'Low',
+        abilityMethod: 'point_buy',
+        baseAbilities: { str: 7, dex: 8, con: 8, int: 8, wis: 8, cha: 8 },
+      },
+      player,
+    )
+    expect(outOfRange.status).toBe(400)
+    expect(outOfRange.error?.message).toMatch(/8 to 15/)
+    const exact = await trpcMutation<View>(
+      t.app,
+      'characters.create',
+      {
+        name: 'Exact',
+        abilityMethod: 'point_buy',
+        baseAbilities: { str: 15, dex: 15, con: 15, int: 8, wis: 8, cha: 8 },
+      },
+      player,
+    )
+    expect(exact.status).toBe(200)
+    expect(exact.data!.aggregate.definition.abilityMethod).toBe('point_buy')
+  })
+
+  it('rolls ability scores on the server and accepts the Rolled method only with that roll (issue #3)', async () => {
+    type Rolled = { rollId: string; scores: number[]; breakdowns: string[] }
+    const rolled = await trpcMutation<Rolled>(t.app, 'characters.rollAbilities', undefined, player)
+    expect(rolled.status).toBe(200)
+    const { rollId, scores, breakdowns } = rolled.data!
+    expect(scores).toHaveLength(6)
+    for (const s of scores) {
+      expect(s).toBeGreaterThanOrEqual(3)
+      expect(s).toBeLessThanOrEqual(18)
+    }
+    expect(breakdowns).toHaveLength(6)
+    const keys = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const
+    const assigned = Object.fromEntries(keys.map((k, i) => [k, scores[5 - i]]))
+    const create = (body: Record<string, unknown>, cookie = player) =>
+      trpcMutation<View>(t.app, 'characters.create', { name: 'Dice', ...body }, cookie)
+    // No roll: the Rolled designation cannot be claimed for typed-in scores.
+    const typed = await create({ abilityMethod: 'rolled', baseAbilities: assigned })
+    expect(typed.status).toBe(400)
+    expect(typed.error?.message).toMatch(/server roll/)
+    // Substituted values are refused even with a real roll id.
+    const forged = await create({
+      abilityMethod: 'rolled',
+      abilityRollId: rollId,
+      baseAbilities: Object.fromEntries(keys.map((k, i) => [k, scores[i] === 18 ? 17 : 18])),
+    })
+    expect(forged.status).toBe(400)
+    expect(forged.error?.message).toMatch(/do not match the recorded roll/)
+    // Someone else's roll is refused.
+    const stolen = await create(
+      { abilityMethod: 'rolled', abilityRollId: rollId, baseAbilities: assigned },
+      admin.cookie,
+    )
+    expect(stolen.status).toBe(403)
+    // The recorded scores, in any assignment, create the character as Rolled.
+    const ok = await create({
+      abilityMethod: 'rolled',
+      abilityRollId: rollId,
+      baseAbilities: assigned,
+    })
+    expect(ok.status).toBe(200)
+    expect(ok.data!.aggregate.definition.abilityMethod).toBe('rolled')
+    expect(
+      keys.map((k) => ok.data!.aggregate.definition.baseAbilities[k]).sort((a, b) => a - b),
+    ).toEqual([...scores].sort((a, b) => a - b))
+    // The roll is single-use.
+    const again = await create({
+      abilityMethod: 'rolled',
+      abilityRollId: rollId,
+      baseAbilities: assigned,
+    })
+    expect(again.status).toBe(412)
+    // `setAbilities` with the Rolled method needs a fresh roll as well, and consumes it once.
+    const typedCommand = await command(ok.data!.id, 0, {
+      type: 'setAbilities',
+      method: 'rolled',
+      abilities: Object.fromEntries(keys.map((k) => [k, 18])),
+    })
+    expect(typedCommand.status).toBe(400)
+    const second = (
+      await trpcMutation<Rolled>(t.app, 'characters.rollAbilities', undefined, player)
+    ).data!
+    const commandId = randomUUID()
+    const request = {
+      characterId: ok.data!.id,
+      commandId,
+      expectedRevision: 0,
+      abilityRollId: second.rollId,
+      command: {
+        type: 'setAbilities',
+        method: 'rolled',
+        abilities: Object.fromEntries(keys.map((k, i) => [k, second.scores[i]])),
+      },
+    }
+    const applied = await trpcMutation<CommandResult>(t.app, 'characters.command', request, player)
+    expect(applied.status).toBe(200)
+    expect(applied.data!.aggregate.definition.baseAbilities.str).toBe(second.scores[0])
+    // The same command id replays its receipt instead of failing on the consumed roll.
+    const retried = await trpcMutation<CommandResult>(t.app, 'characters.command', request, player)
+    expect(retried.status).toBe(200)
+    expect(retried.data!.replayed).toBe(true)
+    // A different command cannot reuse the roll.
+    const reused = await trpcMutation(
+      t.app,
+      'characters.command',
+      { ...request, commandId: randomUUID(), expectedRevision: 1 },
+      player,
+    )
+    expect(reused.status).toBe(412)
+  })
+
+  it('merges sequential language picks and lists them among proficiencies (issue #5)', async () => {
+    const created = await trpcMutation<View>(
+      t.app,
+      'characters.create',
+      {
+        name: 'Linguist',
+        speciesUid: 'srd-5.1:species:hill-dwarf',
+        backgroundUid: 'srd-5.1:background:acolyte',
+        classUid: FIGHTER,
+        abilityMethod: 'manual',
+        baseAbilities: { str: 15, dex: 13, con: 13, int: 8, wis: 11, cha: 9 },
+      },
+      player,
+    )
+    expect(created.status).toBe(200)
+    const linguist = created.data!.id
+    const key = 'background:srd-5.1:background:acolyte/languages'
+    const pendingKeys = created.data!.sheet.pendingChoices.map((p) => p.key)
+    expect(pendingKeys).toContain(key)
+    const first = await command(linguist, 0, {
+      type: 'setChoice',
+      key,
+      selection: { kind: 'language', languages: ['elvish'] },
+    })
+    expect(first.status).toBe(200)
+    const open = first.data!.sheet.pendingChoices.find((p) => p.key === key)!
+    expect(open.remaining).toBe(1)
+    expect(open.selected).toEqual(['elvish'])
+    // `setChoice` replaces the selection: the client sends the earlier pick plus the new one.
+    const second = await command(linguist, 1, {
+      type: 'setChoice',
+      key,
+      selection: { kind: 'language', languages: ['elvish', 'celestial'] },
+    })
+    expect(second.status).toBe(200)
+    expect(second.data!.sheet.pendingChoices.map((p) => p.key)).not.toContain(key)
+    const languages = second.data!.sheet.proficiencies.languages.map((l) => l.id)
+    expect(languages).toEqual(expect.arrayContaining(['elvish', 'celestial']))
+    // A repeated pick counts once, so the slot stays open.
+    const repeated = await command(linguist, 2, {
+      type: 'setChoice',
+      key,
+      selection: { kind: 'language', languages: ['elvish', 'elvish'] },
+    })
+    expect(repeated.status).toBe(200)
+    expect(repeated.data!.sheet.pendingChoices.find((p) => p.key === key)!.remaining).toBe(1)
   })
 
   it('soft-deletes', async () => {

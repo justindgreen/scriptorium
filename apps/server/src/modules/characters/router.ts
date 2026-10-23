@@ -45,6 +45,10 @@ export const charactersRouter = router({
       ctx.rolls.roll(ctx.scope, input.characterId, input.ref, input.ctx),
     ),
 
+  rollAbilities: procedureFor('character.create').mutation(({ ctx }) =>
+    ctx.rolls.rollAbilities(ctx.scope),
+  ),
+
   rollHitDie: procedureFor('character.write')
     .input(hitDieRequestSchema)
     .mutation(({ ctx, input }) => ctx.rolls.rollHitDie(ctx.scope, input.characterId, input.die)),

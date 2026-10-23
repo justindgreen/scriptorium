@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import type { AddressInfo } from 'node:net'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { ComputedSheet, CharacterAggregate } from '@scriptorium/rules-engine'
 import { defaultContentDir, seedBundledContent } from '../src/modules/content/seed.js'
@@ -20,6 +21,8 @@ type View = { id: string; revision: number; aggregate: CharacterAggregate; sheet
 type Participant = {
   id: string
   kind: 'monster' | 'character'
+  characterId: string | null
+  canOpenSheet: boolean
   displayName: string
   initiative: number | null
   hpCurrent: number | null
@@ -648,6 +651,50 @@ describe('encounters', () => {
     expect(sheet.data!.aggregate.state.conditions.map((c) => c.uid)).toContain(
       'srd-5.1:condition:blinded',
     )
+    // Issue #13: the tracker reads a character's conditions from the character aggregate.
+    expect(withConditions.participants.find((p) => p.id === fighter.id)!.conditions).toEqual([
+      { uid: 'srd-5.1:condition:blinded' },
+    ])
+    // A condition applied on the sheet shows in the tracker although the encounter did not change.
+    const fromSheet = await trpcMutation<{ revision: number }>(
+      t.app,
+      'characters.command',
+      {
+        characterId,
+        commandId: randomUUID(),
+        expectedRevision: sheet.data!.revision,
+        command: { type: 'applyCondition', uid: 'srd-5.1:condition:prone' },
+      },
+      player.cookie,
+    )
+    expect(fromSheet.status).toBe(200)
+    const afterSheet = await encounter()
+    expect(afterSheet.version).toBe(withConditions.version)
+    expect(
+      afterSheet.participants
+        .find((p) => p.id === fighter.id)!
+        .conditions.map((c) => c.uid)
+        .sort(),
+    ).toEqual(['srd-5.1:condition:blinded', 'srd-5.1:condition:prone'])
+    // One removed in the tracker is gone from the sheet; the sheet's other condition stays.
+    await trpcMutation(
+      t.app,
+      'encounters.setCondition',
+      { encounterId, participantId: fighter.id, uid: 'srd-5.1:condition:blinded', active: false },
+      dm.cookie,
+    )
+    const sheetAfter = await trpcQuery<View>(
+      t.app,
+      'characters.get',
+      { characterId },
+      player.cookie,
+    )
+    expect(sheetAfter.data!.aggregate.state.conditions.map((c) => c.uid)).toEqual([
+      'srd-5.1:condition:prone',
+    ])
+    expect((await encounter()).participants.find((p) => p.id === fighter.id)!.conditions).toEqual([
+      { uid: 'srd-5.1:condition:prone' },
+    ])
     const down = await trpcMutation<{ hpCurrent: number }>(
       t.app,
       'encounters.adjustHp',
@@ -710,5 +757,111 @@ describe('encounters', () => {
     expect(ended.status).toBe(200)
     e = await encounter()
     expect(e.status).toBe('completed')
+  })
+
+  it('streams a sheet change to tracker subscribers although the encounter version is unchanged (issue #13)', async () => {
+    await t.app.listen({ port: 0, host: '127.0.0.1' })
+    const port = (t.app.server.address() as AddressInfo).port
+    const input = encodeURIComponent(JSON.stringify({ encounterId }))
+    const controller = new AbortController()
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/trpc/encounters.subscribe?input=${input}`,
+      {
+        headers: { accept: 'text/event-stream', cookie: player.cookie },
+        signal: controller.signal,
+      },
+    )
+    expect(response.status).toBe(200)
+    const reader = response.body!.getReader()
+    const decoder = new TextDecoder()
+    let text = ''
+    const readUntil = async (needle: string) => {
+      const deadline = Date.now() + 10_000
+      while (!text.includes(needle) && Date.now() < deadline) {
+        const { value, done } = await reader.read()
+        if (done) break
+        text += decoder.decode(value, { stream: true })
+      }
+      expect(text).toContain(needle)
+    }
+    await readUntil('"ready"')
+    const before = (await encounter()).version
+    const sheet = await trpcQuery<View>(t.app, 'characters.get', { characterId }, player.cookie)
+    const applied = await trpcMutation<{ revision: number }>(
+      t.app,
+      'characters.command',
+      {
+        characterId,
+        commandId: randomUUID(),
+        expectedRevision: sheet.data!.revision,
+        command: { type: 'setInspiration', value: true },
+      },
+      player.cookie,
+    )
+    expect(applied.status).toBe(200)
+    await readUntil('"character.changed"')
+    expect(text).toContain(`"characterId":"${characterId}"`)
+    expect((await encounter()).version).toBe(before)
+    controller.abort()
+  }, 20_000)
+
+  it('tells each viewer which sheets they may open and never advertises the others (issue #19)', async () => {
+    // The DM's own character joins the party, so the player's view holds a sheet they may not open.
+    const grim = await trpcMutation<View>(
+      t.app,
+      'characters.create',
+      {
+        name: 'Grim',
+        classUid: 'srd-5.1:class:fighter',
+        baseAbilities: { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 },
+      },
+      dm.cookie,
+    )
+    expect(grim.status).toBe(200)
+    const grimId = grim.data!.id
+    for (const step of ['submit', 'approve'] as const) {
+      const res = await trpcMutation(
+        t.app,
+        `campaigns.characters.${step}`,
+        { campaignId, characterId: grimId },
+        dm.cookie,
+      )
+      expect(res.status).toBe(200)
+    }
+    const created = await trpcMutation<{ id: string }>(
+      t.app,
+      'encounters.create',
+      { campaignId, name: 'Second' },
+      dm.cookie,
+    )
+    const second = created.data!.id
+    for (const id of [characterId, grimId]) {
+      const added = await trpcMutation(
+        t.app,
+        'encounters.addCharacter',
+        { encounterId: second, characterId: id },
+        dm.cookie,
+      )
+      expect(added.status).toBe(200)
+    }
+    const asPlayer = (
+      await trpcQuery<Encounter>(t.app, 'encounters.get', { encounterId: second }, player.cookie)
+    ).data!
+    expect(asPlayer.participants.find((p) => p.characterId === characterId)!.canOpenSheet).toBe(
+      true,
+    )
+    expect(asPlayer.participants.find((p) => p.characterId === grimId)!.canOpenSheet).toBe(false)
+    const asDm = (
+      await trpcQuery<Encounter>(t.app, 'encounters.get', { encounterId: second }, dm.cookie)
+    ).data!
+    expect(
+      asDm.participants.filter((p) => p.kind === 'character').map((p) => p.canOpenSheet),
+    ).toEqual([true, true])
+    // The flag mirrors the character service: the player really cannot read that sheet.
+    const denied = await trpcQuery(t.app, 'characters.get', { characterId: grimId }, player.cookie)
+    expect(denied.error?.code).toBe('FORBIDDEN')
+    // Monster rows never advertise a sheet.
+    const monsters = (await encounter()).participants.filter((p) => p.kind === 'monster')
+    expect(monsters.every((p) => p.canOpenSheet === false)).toBe(true)
   })
 })

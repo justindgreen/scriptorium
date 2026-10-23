@@ -90,6 +90,22 @@ test('the acceptance scenario runs end to end, across a restart, with a retried 
   await press(page.getByTestId(`approve-${characterId}`))
   await expect(page.getByTestId(`party-${characterId}`)).toContainText('approved')
 
+  // The DM's own character joins the party too: the player's tracker will show a sheet they may not open (issue #19).
+  const grimName = `Grim ${stamp}`
+  await buildCharacter(page, grimName, {
+    label: 'Fighter',
+    species: 'Human',
+    background: 'Acolyte',
+  })
+  await page.goto(`/campaigns/${campaignId}`)
+  await page.getByTestId('submit-character-select').selectOption({ label: grimName })
+  await press(page.getByTestId('submit-character'))
+  const grimRow = page.locator('[data-testid^="party-"]').filter({ hasText: grimName })
+  await expect(grimRow).toContainText('pending')
+  const grimId = await testIdOf(grimRow, 'party-')
+  await press(page.getByTestId(`approve-${grimId}`))
+  await expect(page.getByTestId(`party-${grimId}`)).toContainText('approved')
+
   // A homebrew weapon with an automatic modifier and charges, shared with the campaign, given to the character.
   const source = await trpc<{ id: string; slug: string }>(page, 'homebrew.sources.create', {
     name: `Acceptance Forge ${stamp}`,
@@ -145,6 +161,9 @@ test('the acceptance scenario runs end to end, across a restart, with a retried 
   await page.getByTestId('add-character-select').selectOption({ label: heroName })
   await press(page.getByTestId('add-character'))
   await expect(page.getByTestId('participants')).toContainText(heroName)
+  await page.getByTestId('add-character-select').selectOption({ label: grimName })
+  await press(page.getByTestId('add-character'))
+  await expect(page.getByTestId('participants')).toContainText(grimName)
   await page.getByTestId('monster-search').fill('skeleton')
   await press(page.getByTestId('add-monster-srd-5.1:monster:skeleton'))
   await expect(page.getByTestId('participants')).toContainText('Skeleton 1')
@@ -152,10 +171,41 @@ test('the acceptance scenario runs end to end, across a restart, with a retried 
   await press(page.getByTestId('add-monster-srd-5.1:monster:skeleton'))
   await expect(page.getByTestId('participants')).toContainText('Skeleton 2')
   await press(page.getByTestId('roll-initiative'))
-  await expect(page.locator('[data-testid^="initiative-"]')).toHaveCount(3)
+  await expect(page.locator('[data-testid^="initiative-"]')).toHaveCount(4)
   await press(page.getByTestId('start-encounter'))
   await expect(page.getByText(/active · round 1, turn 1/)).toBeVisible()
   await expect(page.locator('[aria-current="true"]')).toHaveCount(1)
+
+  // Issue #13: the player's sheet and the DM's open tracker stay in step without a reload.
+  await expect(page.getByTestId('live-status')).toHaveText('Live', { timeout: 30_000 })
+  await player.goto(`/characters/${characterId}`)
+  await expect(player.getByTestId('live-status')).toHaveText('Live', { timeout: 30_000 })
+  await player.getByTestId('condition-select').selectOption({ label: 'Blinded' })
+  await press(player.getByTestId('condition-add'))
+  await expect(player.getByTestId('active-conditions')).toContainText('Blinded')
+  // The badge, not the row text: the row's "+ condition" select lists Blinded as an option too.
+  const heroRow = page.locator('[data-testid^="participant-"]').filter({ hasText: heroName })
+  const blindedBadge = heroRow.locator('[data-testid$="srd-5.1:condition:blinded"]')
+  await expect(blindedBadge).toBeVisible({ timeout: 20_000 })
+  await press(heroRow.getByRole('button', { name: 'remove Blinded' }))
+  await expect(blindedBadge).toHaveCount(0)
+  await expect(player.getByTestId('active-conditions')).not.toContainText('Blinded', {
+    timeout: 20_000,
+  })
+
+  // Issue #19: the player's tracker links only the sheet they may open.
+  await player.goto(`/encounters/${encounterId}`)
+  const playerHero = player.locator('[data-testid^="participant-"]').filter({ hasText: heroName })
+  const playerGrim = player.locator('[data-testid^="participant-"]').filter({ hasText: grimName })
+  await expect(playerGrim).toBeVisible()
+  await expect(playerHero.getByRole('link', { name: 'sheet' })).toBeVisible()
+  await expect(playerGrim.getByRole('link', { name: 'sheet' })).toHaveCount(0)
+  await expect(
+    page
+      .locator('[data-testid^="participant-"]')
+      .filter({ hasText: grimName })
+      .getByRole('link', { name: 'sheet' }),
+  ).toBeVisible()
 
   // The fighter attacks Skeleton 1 with the blade; the roll is applied through the coordinator.
   await page.getByTestId('attacker-select').selectOption({ label: heroName })
@@ -189,7 +239,7 @@ test('the acceptance scenario runs end to end, across a restart, with a retried 
   await restartServer(request)
   await page.reload()
   await expect(page.getByText(/active · round 1, turn 1/)).toBeVisible()
-  await expect(page.locator('[data-testid^="participant-"]')).toHaveCount(3)
+  await expect(page.locator('[data-testid^="participant-"]')).toHaveCount(4)
   await expect(skeletonRow.locator('[data-testid^="hp-"]')).toHaveText(hpAfter!)
   await expect(page.getByTestId('encounter-log')).toContainText(/hit|miss/)
   await expect(page.getByTestId('live-status')).toHaveText('Live', { timeout: 90_000 })

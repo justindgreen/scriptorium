@@ -15,6 +15,7 @@ import { History } from './character/History'
 import { Inventory } from './character/Inventory'
 import { LevelUp } from './character/LevelUp'
 import { OverridesPanel } from './character/OverridesPanel'
+import { Proficiencies } from './character/Proficiencies'
 import { ResourcesPanel } from './character/ResourcesPanel'
 import { Spells } from './character/Spells'
 import { Vitals } from './character/Vitals'
@@ -87,6 +88,7 @@ export function CharacterPage() {
           {sheet.spellcasting ? <Spells view={data} send={send} onError={setError} /> : null}
         </div>
         <div className="grid min-w-0 grid-cols-1 gap-6 self-start">
+          <Proficiencies sheet={sheet} />
           <ConditionsPanel view={data} send={send} />
           <CurrencyPanel view={data} send={send} />
           <OverridesPanel view={data} send={send} />

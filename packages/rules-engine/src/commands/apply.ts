@@ -1,5 +1,5 @@
-import type { Ability } from '@scriptorium/content-schema'
 import { applyPackets } from '../actions/apply.js'
+import { validateAbilityScores } from './abilities.js'
 import type { DamagePacket, TargetDefense } from '../actions/types.js'
 import { entryOfKind } from '../snapshot.js'
 import { evaluateStaticPredicate, type PredicateEnv } from '../static/predicates.js'
@@ -21,8 +21,6 @@ import {
   type CommandResult,
   type Patch,
 } from './types.js'
-
-const ABILITIES: Ability[] = ['str', 'dex', 'con', 'int', 'wis', 'cha']
 
 function fail(code: CommandErrorCode, message: string): CommandResult {
   return { ok: false, code, message }
@@ -450,29 +448,8 @@ export function applyCommand(
       break
     }
     case 'setAbilities': {
-      for (const ability of ABILITIES) {
-        const v = command.abilities[ability]
-        if (!Number.isInteger(v) || v < 1 || v > 30)
-          return fail('INVALID', `${ability} must be 1 to 30`)
-      }
-      if (command.method === 'standard') {
-        const array = context.ruleset?.config.standardArray ?? [15, 14, 13, 12, 10, 8]
-        const sorted = ABILITIES.map((a) => command.abilities[a]).sort((a, b) => b - a)
-        if (JSON.stringify(sorted) !== JSON.stringify([...array].sort((a, b) => b - a)))
-          return fail('INVALID', 'the standard array must be used exactly once')
-      }
-      if (command.method === 'point_buy' && context.ruleset) {
-        const pb = context.ruleset.config.pointBuy
-        let spent = 0
-        for (const ability of ABILITIES) {
-          const v = command.abilities[ability]
-          if (v < pb.min || v > pb.max)
-            return fail('INVALID', `point buy scores are ${pb.min} to ${pb.max}`)
-          spent += pb.costs[String(v)] ?? 0
-        }
-        if (spent > pb.budget)
-          return fail('INVALID', `point buy spends ${spent} of ${pb.budget} points`)
-      }
+      const problem = validateAbilityScores(command.method, command.abilities, context.ruleset)
+      if (problem) return fail('INVALID', problem)
       const d = definition()
       d.abilityMethod = command.method
       d.baseAbilities = { ...command.abilities }

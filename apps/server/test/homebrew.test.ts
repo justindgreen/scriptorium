@@ -23,6 +23,7 @@ type Preview = {
   templates: ActionTemplate[]
   plan: ActionPlan | null
   granted: Array<{ spellUid: string; chargeCost?: number }>
+  diagnostics: Array<{ code: string; severity: string; message: string }>
   changes: Array<{ path: string; before: number; after: number }>
 }
 type View = { id: string; revision: number; sheet: ComputedSheet }
@@ -124,7 +125,14 @@ afterAll(async () => {
 describe('helpers', () => {
   it('slugifies names and infers automation honestly', () => {
     expect(slugify('Fiendbane Longsword!')).toBe('fiendbane-longsword')
-    expect(inferAutomation(sword as never)).toEqual({ level: 'full' })
+    // A granted spell is listed but not castable from the sheet (D-4), so never `full` (issue #8).
+    expect(inferAutomation(sword as never)).toEqual({
+      level: 'partial',
+      manualParts: [expect.stringContaining('casting srd-5.1:spell:bless')],
+    })
+    expect(inferAutomation({ ...sword, effects: sword.effects.slice(0, 3) } as never)).toEqual({
+      level: 'full',
+    })
     expect(
       inferAutomation({
         data: { category: 'wondrous', description: '', magic: true, requiresAttunement: false },
@@ -182,7 +190,7 @@ describe('homebrew sources and item drafts', () => {
     expect(validated.data!.issues[0]!.path).toContain('effects.0')
   })
 
-  it('creates the sword as a draft with inferred full automation', async () => {
+  it('creates the sword as a draft with inferred partial automation (granted spell casting is manual)', async () => {
     const created = await trpcMutation<Created>(
       t.app,
       'homebrew.items.create',
@@ -193,7 +201,7 @@ describe('homebrew sources and item drafts', () => {
     entryId = created.data!.entryId
     uid = created.data!.uid
     expect(uid).toBe(`${source.slug}:item:fiendbane-longsword`)
-    expect(created.data!.automation.level).toBe('full')
+    expect(created.data!.automation.level).toBe('partial')
     const item = await trpcQuery<{ status: string; draft: { versionNo: number }; head: null }>(
       t.app,
       'homebrew.items.get',
@@ -237,6 +245,13 @@ describe('homebrew sources and item drafts', () => {
       spellUid: 'srd-5.1:spell:bless',
       chargeCost: 1,
     })
+    // Issue #8: the diagnostic explains the manual part instead of calling the grant unsupported.
+    const codes = preview.data!.diagnostics.map((d) => d.code)
+    expect(codes).toContain('PARTIAL_AUTOMATION')
+    expect(codes).not.toContain('UNSUPPORTED_EFFECT')
+    expect(preview.data!.diagnostics.find((d) => d.code === 'PARTIAL_AUTOMATION')!.message).toMatch(
+      /listed under granted spells/,
+    )
     const noTarget = await trpcQuery<Preview>(
       t.app,
       'homebrew.items.preview',

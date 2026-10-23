@@ -357,14 +357,20 @@ function applyStatic(
       })
       return
     }
+    // Computed by the spellcasting module from the deferred list: slots, DC and attack bonus,
+    // bonus slots, and the list of granted spells.
     case 'spellcasting.grant':
-    case 'spell.grant':
     case 'spellSlots.bonus':
       outputs.deferred.push(instance)
+      return
+    case 'spell.grant':
+      outputs.deferred.push(instance)
+      // Honest about what is and is not automated (rule 7): the grant is listed with its uses or
+      // charges, but casting it from the sheet is a manual step until spell actions exist.
       diagnostic({
-        code: 'UNSUPPORTED_EFFECT',
+        code: 'PARTIAL_AUTOMATION',
         severity: 'info',
-        message: `"${source.name}": ${effect.type} is computed by action resolution and spellcasting (M2.3); not reflected on this sheet yet`,
+        message: `"${source.name}": grants ${effect.spell}; it is listed under granted spells, but casting it from the sheet is not automated yet`,
         sources: [source],
       })
       return

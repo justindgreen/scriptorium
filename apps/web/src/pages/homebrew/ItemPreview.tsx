@@ -157,7 +157,11 @@ export function ItemPreview({
               </ul>
             ) : null}
             {p.diagnostics.map((d, i) => (
-              <p key={i} className="text-destructive">
+              <p
+                key={i}
+                className={d.severity === 'info' ? 'text-muted-foreground' : 'text-destructive'}
+                data-testid={`preview-diagnostic-${d.code}`}
+              >
                 {d.code}: {d.message}
               </p>
             ))}

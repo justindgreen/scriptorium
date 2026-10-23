@@ -101,7 +101,7 @@ Notes (M2.8): `campaign_members` carries the DM as a member row (`role = dm`); `
 
 A participant representing a player character stores no HP of its own; the tracker issues character commands.
 
-Notes (M2.8): `encounter_participants` stores a monster's `entry_uid` and the pinned `version_id`, its hit points, AC, conditions and `combat.turn`; a character participant keeps `character_id` only. `encounter_events.version_after` orders the log; attack events carry the command id as `action_id`, the same id the character events of that attack carry. Receipts for encounter commands use `command_receipts` with `aggregate_type = encounter`.
+Notes (M2.8): `encounter_participants` stores a monster's `entry_uid` and the pinned `version_id`, its hit points, AC, conditions and `combat.turn`; a character participant keeps `character_id` only: its hit points and conditions are read from `character_state` on every encounter response and never copied into the participant row (A1-R, issue #13). Rolled ability scores (A1-R, issue #3) are `rolls` rows with context `{ kind: 'abilityScores', userId }` and results `{ scores[6], breakdowns[6] }`; creation or `setAbilities` consumes the row (`consumed_by_command_id` = the new character's id or the command id), so a roll is used once and only with its own scores. `encounter_events.version_after` orders the log; attack events carry the command id as `action_id`, the same id the character events of that attack carry. Receipts for encounter commands use `command_receipts` with `aggregate_type = encounter`.
 
 ## 6. Aggregates, locking and idempotency
 

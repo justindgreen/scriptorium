@@ -43,19 +43,32 @@ export function slugify(name: string): string {
   return slug || 'item'
 }
 
+/** What the sheet does not automate for an item-granted spell (A1 finding D-4, issue #8). */
+export function grantedSpellManualPart(spellUid: string): string {
+  return `casting ${spellUid}: it is listed under granted spells with its uses or charges, but casting it from the sheet is not automated yet`
+}
+
 /**
  * The automation level the effects imply (docs/RULES_ENGINE.md §9): full when every effect is
- * mechanical, partial when manual text sits next to mechanics, manual when nothing is automated.
+ * mechanical, partial when manual text or a granted spell sits next to mechanics, manual when
+ * nothing is automated. A granted spell is never `full` while casting it is a manual step
+ * (rule 7: automation levels are honest).
  */
 export function inferAutomation(draft: Pick<ItemDraftInput, 'data' | 'effects'>): Automation {
   const manual = draft.effects.filter(
     (e): e is Extract<typeof e, { type: 'manual' }> => e.type === 'manual',
   )
+  const granted = draft.effects.filter(
+    (e): e is Extract<typeof e, { type: 'spell.grant' }> => e.type === 'spell.grant',
+  )
   const structural = Boolean(draft.data.weapon || draft.data.armor || draft.data.charges)
-  const mechanical = draft.effects.length - manual.length + (structural ? 1 : 0)
-  if (mechanical > 0 && manual.length === 0) return { level: 'full' }
-  if (mechanical > 0)
-    return { level: 'partial', manualParts: manual.map((m) => m.text.slice(0, 200)) }
+  const mechanical = draft.effects.length - manual.length - granted.length + (structural ? 1 : 0)
+  const manualParts = [
+    ...granted.map((g) => grantedSpellManualPart(g.spell).slice(0, 200)),
+    ...manual.map((m) => m.text.slice(0, 200)),
+  ]
+  if (manualParts.length === 0) return mechanical > 0 ? { level: 'full' } : { level: 'manual' }
+  if (mechanical > 0 || granted.length > 0) return { level: 'partial', manualParts }
   return { level: 'manual' }
 }
 

@@ -6,16 +6,18 @@ import {
   type CharacterAggregate,
   type CharacterCommand,
   type ComputedSheet,
+  validateAbilityScores,
 } from '@scriptorium/rules-engine'
 import { randomUUID } from 'node:crypto'
 import type { Db } from '../../db/client.js'
-import { CommandError, summaryOf, type CommandRunner } from '../../core/commands.js'
+import { CommandError, summaryOf, type CommandRunner, type Tx } from '../../core/commands.js'
 import { newId } from '../../core/ids.js'
 import type { Scope } from '../../core/policy.js'
 import type { DomainEvent, EventBus } from '../../core/events.js'
 import type { ContentRepo } from '../content/repo.js'
 import type { CampaignService } from '../campaigns/service.js'
 import type { CharacterRepo } from './repo.js'
+import { consumeAbilityRoll, requireAbilityRoll } from './rolls.js'
 import { characterRootUids, loadSnapshot } from './snapshot.js'
 import type { createCharacterSchema } from './schemas.js'
 import type { z } from 'zod'
@@ -122,7 +124,8 @@ export function createCharacterService(deps: {
     ): AsyncGenerator<LiveEvent> {
       const row = await repo.getRow(deps.db, characterId)
       if (!row) throw new TRPCError({ code: 'NOT_FOUND', message: 'Character not found.' })
-      assertOwner(scope, row.ownerUserId)
+      // Authorized exactly like `get`: the DM of an approved party character may follow it live too.
+      await assertCanRead(scope, row)
       yield { type: 'ready', characterId, revision: row.revision }
       const queue: LiveEvent[] = []
       let wake: (() => void) | null = null
@@ -153,13 +156,24 @@ export function createCharacterService(deps: {
     ): Promise<CharacterView> {
       if (!scope.userId) throw new TRPCError({ code: 'UNAUTHORIZED' })
       const ruleset = await commands.rulesetProfile(input.rulesetId).catch(translate)
+      const baseAbilities =
+        input.baseAbilities ?? standardArrayDefault(ruleset.config.standardArray)
+      // The rules the `setAbilities` command enforces apply at creation too (issue #3), and
+      // rolled scores must be the server's recorded roll, consumed inside the creating transaction.
+      const problem = validateAbilityScores(input.abilityMethod, baseAbilities, ruleset)
+      if (problem)
+        throw new TRPCError({ code: 'BAD_REQUEST', message: `Ability scores: ${problem}.` })
+      const abilityRollId =
+        input.abilityMethod === 'rolled'
+          ? await requireAbilityRoll(deps.db, scope, input.abilityRollId, baseAbilities)
+          : null
       const aggregate = createAggregate({
         id: newId(),
         rulesetId: input.rulesetId,
         name: input.name,
         definition: {
           abilityMethod: input.abilityMethod,
-          baseAbilities: input.baseAbilities ?? standardArrayDefault(ruleset.config.standardArray),
+          baseAbilities,
           ...(input.speciesUid ? { speciesUid: input.speciesUid } : {}),
           ...(input.backgroundUid ? { backgroundUid: input.backgroundUid } : {}),
           classes: input.classUid ? [{ classUid: input.classUid, level: 1, order: 0 }] : [],
@@ -167,23 +181,26 @@ export function createCharacterService(deps: {
         },
       })
       const owner = scope.userId
-      const created = await deps.db.transaction(async (tx) => {
-        const loaded = await loadSnapshot(tx, characterRootUids(aggregate))
-        for (const uid of [input.speciesUid, input.backgroundUid, input.classUid]) {
-          if (uid && !loaded.snapshot.has(uid))
-            throw new TRPCError({ code: 'BAD_REQUEST', message: `Unknown content ${uid}.` })
-        }
-        const sheet = (await import('@scriptorium/rules-engine')).computeSheet(
-          aggregate,
-          loaded.snapshot,
-          ruleset,
-        )
-        aggregate.state.hpCurrent = sheet.hp.max
-        await repo.insert(tx, owner, aggregate)
-        await repo.applyPatch(tx, aggregate.id, {}, 0, summaryOf(sheet, aggregate))
-        await repo.replaceRefs(tx, aggregate.id, loaded.refs)
-        return { aggregate, sheet }
-      })
+      const created = await deps.db
+        .transaction(async (tx) => {
+          const loaded = await loadSnapshot(tx, characterRootUids(aggregate))
+          for (const uid of [input.speciesUid, input.backgroundUid, input.classUid]) {
+            if (uid && !loaded.snapshot.has(uid))
+              throw new TRPCError({ code: 'BAD_REQUEST', message: `Unknown content ${uid}.` })
+          }
+          const sheet = (await import('@scriptorium/rules-engine')).computeSheet(
+            aggregate,
+            loaded.snapshot,
+            ruleset,
+          )
+          aggregate.state.hpCurrent = sheet.hp.max
+          await repo.insert(tx, owner, aggregate)
+          await repo.applyPatch(tx, aggregate.id, {}, 0, summaryOf(sheet, aggregate))
+          await repo.replaceRefs(tx, aggregate.id, loaded.refs)
+          if (abilityRollId) await consumeAbilityRoll(tx, abilityRollId, aggregate.id)
+          return { aggregate, sheet }
+        })
+        .catch(translate)
       return {
         id: aggregate.id,
         ownerUserId: owner,
@@ -201,6 +218,7 @@ export function createCharacterService(deps: {
         commandId: string
         expectedRevision: number
         command: CharacterCommand
+        abilityRollId?: string | undefined
       },
     ) {
       const row = await repo.getRow(deps.db, request.characterId)
@@ -221,8 +239,27 @@ export function createCharacterService(deps: {
             message: `Unknown content ${request.command.itemUid}.`,
           })
       }
+      const { abilityRollId, ...commandRequest } = request
+      let prepare: ((tx: Tx) => Promise<void>) | undefined
+      if (
+        commandRequest.command.type === 'setAbilities' &&
+        commandRequest.command.method === 'rolled'
+      ) {
+        // Scores keep the Rolled designation only as the server's recorded roll (issue #3).
+        const rollId = await requireAbilityRoll(
+          deps.db,
+          scope,
+          abilityRollId,
+          commandRequest.command.abilities,
+          commandRequest.commandId,
+        )
+        prepare = (tx) => consumeAbilityRoll(tx, rollId, commandRequest.commandId)
+      }
       try {
-        const result = await commands.run({ ...request, actorUserId: scope.userId ?? null })
+        const result = await commands.run(
+          { ...commandRequest, actorUserId: scope.userId ?? null },
+          prepare ? { prepare } : {},
+        )
         return {
           revision: result.revision,
           eventId: result.eventId,

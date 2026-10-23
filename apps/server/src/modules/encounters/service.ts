@@ -295,7 +295,23 @@ export function createEncounterService(deps: {
     return { ...e, payload }
   }
 
-  function serializeParticipant(p: ParticipantRow, role: 'dm' | 'player') {
+  /**
+   * A character participant has one source of truth, the character aggregate (issue #13): its
+   * conditions are read from there, never from the participant row, which holds conditions for
+   * monsters only. `canOpenSheet` is computed here so the client never advertises a sheet the
+   * viewer cannot open (issue #19); the character service still enforces it on read.
+   */
+  type CharacterFacts = {
+    view: Awaited<ReturnType<typeof characterView>>
+    conditions: Array<{ uid: string }>
+    canOpenSheet: boolean
+  }
+
+  function serializeParticipant(
+    p: ParticipantRow,
+    role: 'dm' | 'player',
+    character: CharacterFacts | undefined,
+  ) {
     const hidden = role === 'player' && p.kind === 'monster'
     return {
       id: p.id,
@@ -308,11 +324,30 @@ export function createEncounterService(deps: {
       hpMax: hidden ? null : p.hpMax,
       hpTemp: hidden ? 0 : p.hpTemp,
       ac: hidden ? null : p.ac,
-      conditions: p.conditions as Array<{ uid: string }>,
+      conditions: character ? character.conditions : (p.conditions as Array<{ uid: string }>),
       combat: p.combat as { turn?: { turnId: string; ownTurn: boolean; round: number } },
       defeated: p.defeated,
       visibleToPlayers: p.visibleToPlayers,
+      canOpenSheet: character?.canOpenSheet ?? false,
     }
+  }
+
+  async function characterFacts(
+    scope: Scope,
+    role: 'dm' | 'player',
+    participants: ParticipantRow[],
+  ): Promise<Map<string, CharacterFacts>> {
+    const facts = new Map<string, CharacterFacts>()
+    for (const p of participants) {
+      if (p.kind !== 'character' || !p.characterId) continue
+      const view = await characterView(p.characterId)
+      facts.set(p.id, {
+        view,
+        conditions: view.aggregate.state.conditions.map((c) => ({ uid: c.uid })),
+        canOpenSheet: role === 'dm' || scope.role === 'admin' || view.ownerUserId === scope.userId,
+      })
+    }
+    return facts
   }
 
   return {
@@ -328,12 +363,13 @@ export function createEncounterService(deps: {
       const events = await repo.events(deps.db, encounterId, SUMMARY_LIMIT)
       const order = orderOf(participants)
       const current = encounter.status === 'active' ? order[encounter.turnIndex] : undefined
+      const characters = await characterFacts(scope, role, participants)
       // The DM's attack picker: every attack each participant can make.
       const actions: Record<string, Array<{ action: AttackAction; label: string }>> = {}
       if (role === 'dm') {
         for (const p of participants) {
           if (p.kind === 'character' && p.characterId) {
-            const view = await characterView(p.characterId)
+            const view = characters.get(p.id)!.view
             actions[p.id] = view.sheet.actionTemplates
               .filter((t) => t.attack)
               .map((t) => ({
@@ -368,7 +404,7 @@ export function createEncounterService(deps: {
         currentParticipantId: current?.id ?? null,
         version: encounter.version,
         role,
-        participants: order.map((p) => serializeParticipant(p, role)),
+        participants: order.map((p) => serializeParticipant(p, role, characters.get(p.id))),
         actions,
         events: events.map((e) => serializeEvent(e, role)),
         ...(role === 'dm' ? { dmNotesMd: encounter.dmNotesMd } : {}),
@@ -879,13 +915,28 @@ export function createEncounterService(deps: {
       return { hpCurrent: next }
     },
 
+    /**
+     * Live updates for the tracker: `encounter.changed` for this encounter and, because character
+     * participants change through their own sheets without touching the encounter version
+     * (issue #13), `character.changed` for every character in it. The set of characters is
+     * refreshed whenever the encounter itself changes (participants are added that way).
+     */
     async *subscribe(scope: Scope, encounterId: string, signal: AbortSignal | undefined) {
       const { encounter } = await load(scope, encounterId)
       yield { type: 'ready' as const, encounterId, version: encounter.version }
+      let characterIds = new Set<string>()
+      const refreshCharacters = async () => {
+        const rows = await repo.participants(deps.db, encounterId)
+        characterIds = new Set(rows.flatMap((p) => (p.characterId ? [p.characterId] : [])))
+      }
+      await refreshCharacters()
       const queue: DomainEvent[] = []
       let wake: (() => void) | null = null
       const unsubscribe = deps.events.subscribe((event) => {
-        if (event.type !== 'encounter.changed' || event.encounterId !== encounterId) return
+        const relevant =
+          (event.type === 'encounter.changed' && event.encounterId === encounterId) ||
+          (event.type === 'character.changed' && characterIds.has(event.characterId))
+        if (!relevant) return
         queue.push(event)
         wake?.()
       })
@@ -898,7 +949,11 @@ export function createEncounterService(deps: {
             })
             wake = null
           }
-          while (queue.length > 0 && !signal?.aborted) yield queue.shift()!
+          while (queue.length > 0 && !signal?.aborted) {
+            const event = queue.shift()!
+            if (event.type === 'encounter.changed') await refreshCharacters()
+            yield event
+          }
         }
       } finally {
         unsubscribe()
