@@ -18,7 +18,7 @@ import type {
 export function applyRolls(
   plan: ActionPlan,
   rolls: RollInputs,
-  options: { targetAc?: number } = {},
+  options: { targetAc?: number; saved?: boolean } = {},
 ): ActionOutcome {
   if (plan.blocked) throw new Error(`action is blocked: ${plan.blocked}`)
   const outcome: ActionOutcome = {
@@ -59,7 +59,27 @@ export function applyRolls(
       total: rolls.check.total ?? rolls.check.natural + plan.check.bonus,
     }
   }
-  if (plan.save) outcome.save = plan.save
+  // A saving throw is rolled by the target's side; `saved` is the table's answer (D-1). Until it
+  // is known the full packets stand; a successful save halves (rounded down) or removes them per
+  // the spell, and 'special' outcomes are left to the text.
+  let factor = 1
+  if (plan.save) {
+    const applied =
+      options.saved === true
+        ? plan.save.onSuccess === 'half'
+          ? 'half'
+          : plan.save.onSuccess === 'none'
+            ? 'none'
+            : 'full'
+        : 'full'
+    outcome.save = {
+      ...plan.save,
+      ...(options.saved !== undefined ? { saved: options.saved } : {}),
+      applied,
+    }
+    if (applied === 'none') dealsDamage = false
+    if (applied === 'half') factor = 0.5
+  }
   if (dealsDamage) {
     for (const spec of plan.damage) {
       const amount = rolls.damage?.[spec.id]
@@ -68,7 +88,7 @@ export function applyRolls(
       const packet: DamagePacket = {
         id: spec.id,
         label: spec.label,
-        amount: Math.max(0, Math.floor(amount)),
+        amount: Math.max(0, Math.floor(Math.floor(amount) * factor)),
         damageType: spec.damageType,
         flags: spec.flags,
       }

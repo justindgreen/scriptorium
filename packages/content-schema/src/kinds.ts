@@ -19,6 +19,12 @@ import { staticPredicateSchema } from './predicates.js'
 
 const nameRef = z.strictObject({ uid: uidSchema, name: z.string().min(1) })
 
+const spellDamageEntrySchema = z.strictObject({
+  damageType: damageTypeSchema.optional(),
+  bySlotLevel: z.record(z.string(), z.string()).optional(),
+  byCharacterLevel: z.record(z.string(), z.string()).optional(),
+})
+
 export const spellDataSchema = z.strictObject({
   level: z.number().int().min(0).max(9),
   school: z.enum([
@@ -55,13 +61,19 @@ export const spellDataSchema = z.strictObject({
       onSuccess: z.enum(['half', 'none', 'special']).default('none'),
     })
     .optional(),
+  /**
+   * Structured damage (D-1): one entry per damage type, dice by slot level (`"3": "8d6"`) or, for
+   * cantrips, by character level. An entry without a damage type carries numbers that are not
+   * damage (a hit-point pool, a random type) and produces no packet. The pre-D-1 shape (a single
+   * object, possibly empty) is still accepted and normalised to the array form.
+   */
   damage: z
-    .strictObject({
-      damageType: damageTypeSchema.optional(),
-      /** Dice by slot level (`"3": "8d6"`) or by character level for cantrips. */
-      bySlotLevel: z.record(z.string(), z.string()).optional(),
-      byCharacterLevel: z.record(z.string(), z.string()).optional(),
-    })
+    .union([
+      z.array(spellDamageEntrySchema).max(6),
+      spellDamageEntrySchema.transform((d) =>
+        d.damageType || d.bySlotLevel || d.byCharacterLevel ? [d] : [],
+      ),
+    ])
     .optional(),
   healing: z.record(z.string(), z.string()).optional(),
   areaOfEffect: z

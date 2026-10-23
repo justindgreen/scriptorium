@@ -19,6 +19,7 @@ import {
   applyPackets,
   applyRolls,
   defensesFromSheet,
+  entryOfKind,
   monsterDefenses,
   planAction,
   type ActionContext,
@@ -47,6 +48,7 @@ export type AttackAction =
   | { kind: 'unarmed' }
   | { kind: 'action'; templateId: string }
   | { kind: 'monster'; index: number }
+  | { kind: 'spell'; spellUid: string; slotLevel?: number }
 
 /** A monster's stat-block attack, resolved the same way as a character plan but without the engine. */
 export type MonsterPlan = {
@@ -288,7 +290,13 @@ export function createEncounterService(deps: {
         ? { kind: 'weapon', itemId: action.itemId }
         : action.kind === 'unarmed'
           ? { kind: 'unarmed' }
-          : { kind: 'action', templateId: action.templateId }
+          : action.kind === 'spell'
+            ? {
+                kind: 'spell',
+                spellUid: action.spellUid,
+                ...(action.slotLevel ? { slotLevel: action.slotLevel } : {}),
+              }
+            : { kind: 'action', templateId: action.templateId }
     const situation =
       mode === 'advantage'
         ? { advantageSources: ['DM'] }
@@ -402,6 +410,33 @@ export function createEncounterService(deps: {
                       : { kind: 'action' as const, templateId: t.id },
                 label: `${t.name} (${t.attack!.bonus >= 0 ? '+' : ''}${t.attack!.bonus}, ${t.damage.map((d) => d.text).join(' / ')})`,
               }))
+            // Damage and saving-throw spells the character can cast now (D-1): prepared or
+            // always-prepared spells and cantrips whose data carries typed damage or a save.
+            const casting = view.sheet.spellcasting
+            if (casting && !casting.blocked) {
+              const pinned = await deps.characters.getPinnedRefs(deps.db, p.characterId)
+              const { snapshot } = await loadSnapshot(
+                deps.db,
+                characterRootUids(view.aggregate),
+                pinned,
+              )
+              for (const known of casting.known) {
+                if (!(known.prepared || known.alwaysPrepared || known.cantrip)) continue
+                const spell = entryOfKind(snapshot, known.spellUid, 'spell')
+                if (!spell) continue
+                const typed = (spell.data.damage ?? []).filter((d) => d.damageType)
+                if (typed.length === 0 && !spell.data.save) continue
+                const how = spell.data.attackType
+                  ? 'spell attack'
+                  : spell.data.save
+                    ? `${spell.data.save.ability.toUpperCase()} save DC ${casting.sources.find((s) => s.id === casting.primary)?.saveDC ?? '?'}`
+                    : 'no roll'
+                actions[p.id]!.push({
+                  action: { kind: 'spell' as const, spellUid: spell.uid },
+                  label: `${spell.name} (${spell.data.level === 0 ? 'cantrip' : `level ${spell.data.level}`}, ${how}${typed.length ? `, ${typed.map((d) => d.damageType).join(' + ')}` : ''})`,
+                })
+              }
+            }
           } else if (p.entryUid) {
             const entry = await monsterEntry(p.entryUid, p.versionId)
             actions[p.id] = entry.data.actions
@@ -656,7 +691,13 @@ export function createEncounterService(deps: {
      */
     async commitAttack(
       scope: Scope,
-      input: { encounterId: string; commandId: string; rollId: string; expectedVersion: number },
+      input: {
+        encounterId: string
+        commandId: string
+        rollId: string
+        expectedVersion: number
+        saved?: boolean
+      },
     ) {
       const { encounter } = await loadForEdit(scope, input.encounterId)
       const receipt = await deps.characters.getReceipt(deps.db, input.commandId)
@@ -725,12 +766,15 @@ export function createEncounterService(deps: {
           let total: number
           let packets: DamagePacket[] = []
           let name: string
+          let saveNote = ''
           if (attack.plan.kind === 'character') {
-            const result = applyRolls(
-              attack.plan.plan,
-              attack.results,
-              attack.plan.targetAc !== null ? { targetAc: attack.plan.targetAc } : {},
-            )
+            const result = applyRolls(attack.plan.plan, attack.results, {
+              ...(attack.plan.targetAc !== null ? { targetAc: attack.plan.targetAc } : {}),
+              ...(input.saved !== undefined ? { saved: input.saved } : {}),
+            })
+            saveNote = result.save
+              ? ` · ${result.save.ability.toUpperCase()} save DC ${result.save.dc}${result.save.saved === undefined ? ' (not rolled yet)' : result.save.saved ? ` succeeded (${result.save.applied === 'none' ? 'no damage' : result.save.applied === 'half' ? 'half damage' : 'full damage'})` : ' failed'}`
+              : ''
             name = result.name
             hit = result.attack?.hit ?? null
             critical = result.attack?.critical ?? false
@@ -821,7 +865,7 @@ export function createEncounterService(deps: {
           }
 
           const version = locked.version + 1
-          const summary = `${name}: ${hit === null ? 'rolled' : hit ? (critical ? 'critical hit' : 'hit') : 'miss'} (${total})${damageTaken ? `, ${damageTaken} damage to ${target.displayName}` : ''}`
+          const summary = `${name}: ${hit === null ? (saveNote ? 'cast' : 'rolled') : hit ? (critical ? 'critical hit' : 'hit') : 'miss'}${hit === null && saveNote ? '' : ` (${total})`}${saveNote}${damageTaken ? `, ${damageTaken} damage to ${target.displayName}` : ''}`
           await repo.appendEvent(tx, {
             encounterId: input.encounterId,
             actorUserId: scope.userId ?? null,

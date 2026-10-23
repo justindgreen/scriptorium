@@ -506,6 +506,7 @@ function AttackPanel({
   const [advantage, setAdvantage] = useState<'normal' | 'advantage' | 'disadvantage'>('normal')
   const [rolled, setRolled] = useState<(Rolled & { commandId: string }) | null>(null)
   const [committed, setCommitted] = useState<Committed | null>(null)
+  const [saved, setSaved] = useState(false)
   const attacker = attackerId || e.currentParticipantId || e.participants[0]?.id || ''
   const options = e.actions[attacker] ?? []
   const action: AttackAction | undefined = options[actionIndex]?.action ?? options[0]?.action
@@ -542,6 +543,7 @@ function AttackPanel({
         commandId: rolled!.commandId,
         rollId: rolled!.rollId,
         expectedVersion: e.version,
+        ...(hasSave ? { saved } : {}),
       }),
     onSuccess: async (result) => {
       onError(null)
@@ -552,9 +554,10 @@ function AttackPanel({
     onError: (err) => onError(errorMessage(err)),
   })
   const p = plan.data
+  const hasSave = Boolean(p && p.kind === 'character' && p.plan.save)
   const summary =
     p && p.kind === 'character'
-      ? `${p.plan.name}: ${p.plan.attack ? `${p.plan.attack.bonus >= 0 ? '+' : ''}${p.plan.attack.bonus} to hit (${p.plan.attack.mode})` : 'no attack roll'}${p.plan.damage.length ? `, ${p.plan.damage.map((d) => `${d.formula} ${d.damageType}`).join(' + ')}` : ''}${p.targetAc !== null ? ` vs AC ${p.targetAc}` : ''}${p.plan.blocked ? ` · blocked: ${p.plan.blocked}` : ''}`
+      ? `${p.plan.name}: ${p.plan.attack ? `${p.plan.attack.bonus >= 0 ? '+' : ''}${p.plan.attack.bonus} to hit (${p.plan.attack.mode})` : p.plan.save ? `${p.plan.save.ability.toUpperCase()} save DC ${p.plan.save.dc}${p.plan.save.onSuccess === 'half' ? ', half on a success' : p.plan.save.onSuccess === 'none' ? ', nothing on a success' : ''}` : 'no attack roll'}${p.plan.damage.length ? `, ${p.plan.damage.map((d) => `${d.formula} ${d.damageType}`).join(' + ')}` : ''}${p.plan.attack && p.targetAc !== null ? ` vs AC ${p.targetAc}` : ''}${p.plan.costs.some((c) => c.kind === 'slot') ? ` · spends a level ${p.plan.costs.find((c) => c.kind === 'slot')!.level} slot` : ''}${p.plan.blocked ? ` · blocked: ${p.plan.blocked}` : ''}`
       : p
         ? `${p.name}: +${p.attackBonus} to hit (${p.mode}), ${p.damage.map((d) => `${d.formula} ${d.damageType}`).join(' + ')}${p.targetAc !== null ? ` vs AC ${p.targetAc}` : ''}`
         : ''
@@ -649,6 +652,17 @@ function AttackPanel({
               <p className="text-muted-foreground">This participant has no attack.</p>
             ) : null}
             {summary ? <p data-testid="attack-plan">{summary}</p> : null}
+            {hasSave ? (
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={saved}
+                  onChange={(ev) => setSaved(ev.target.checked)}
+                  data-testid="attack-saved"
+                />
+                The target succeeded on its saving throw
+              </label>
+            ) : null}
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 disabled={

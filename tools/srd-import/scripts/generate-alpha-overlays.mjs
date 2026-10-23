@@ -1766,6 +1766,148 @@ for (const n of [1, 2, 3]) {
 }
 void benchWeapon
 
+// ------------------------------------------------------------------------------------ spells (D-1)
+// Every SRD spell with typed damage in the upstream data gets an honest classification and a
+// behavioural case through the real planner: the attack roll or save DC and the damage packet
+// (with slot or character-level scaling) are automated; target choice, extra darts or rays
+// from higher slots, later-turn damage, conditions and the rest of the text stay manual.
+const SPELL_SOURCE = path.join(
+  import.meta.dirname,
+  '..',
+  '..',
+  '..',
+  '.data',
+  'srd-source',
+  '5e-SRD-Spells.json',
+)
+const highestAtMost = (table, atMost) => {
+  if (!table) return undefined
+  let best
+  for (const key of Object.keys(table)) {
+    const n = Number(key)
+    if (Number.isNaN(n) || n > atMost) continue
+    if (best === undefined || n > best) best = n
+  }
+  return best === undefined ? undefined : table[String(best)]
+}
+if (fs.existsSync(SPELL_SOURCE)) {
+  const raw = JSON.parse(fs.readFileSync(SPELL_SOURCE, 'utf8'))
+  const spells = Array.isArray(raw) ? raw : raw.results
+  let count = 0
+  for (const s of spells) {
+    const entries = Array.isArray(s.damage) ? s.damage : s.damage ? [s.damage] : []
+    if (entries.length === 0) continue
+    const typed = entries.filter((d) => d.damage_type)
+    const slug = s.index
+    const level = Number(s.level)
+    if (typed.length === 0) {
+      add('spells-damage.json', {
+        uid: SPELL(slug),
+        automation: manualLevel(
+          slug === 'sleep'
+            ? 'The dice are a hit-point pool of creatures affected, not damage; applied by hand.'
+            : 'The damage type is decided at random by the text; applied by hand.',
+        ),
+      })
+      continue
+    }
+    const higher = (s.higher_level ?? []).join(' ')
+    const text = `${(s.desc ?? []).join(' ')} ${higher}`
+    const manualParts = []
+    if (!s.attack_type && !s.dc)
+      manualParts.push('when the damage applies (no attack roll or saving throw in the data)')
+    if (s.area_of_effect)
+      manualParts.push(
+        `choosing every creature in the ${s.area_of_effect.size}-foot ${s.area_of_effect.type} and applying the result to each`,
+      )
+    else manualParts.push('applying the result to each target')
+    if (
+      /additional (ray|dart|beam|bolt|target|creature)|one more (dart|ray|beam)|creates? (one|two|three) more/i.test(
+        higher,
+      )
+    )
+      manualParts.push('extra darts, rays or targets from a higher slot (repeat the single packet)')
+    if (
+      /on each of your turns|start of each of its turns|end of each of its turns|each round|subsequent turns|on later turns/i.test(
+        text,
+      )
+    )
+      manualParts.push('damage on later turns')
+    if (
+      /\b(blinded|charmed|deafened|frightened|grappled|incapacitated|paralyzed|petrified|poisoned|prone|restrained|stunned|unconscious)\b/i.test(
+        text,
+      )
+    )
+      manualParts.push('the condition it imposes')
+    if (/speed is (reduced|halved)|pushed|knocked|half its speed|can't take reactions/i.test(text))
+      manualParts.push('movement or other effects in the text')
+    const automated = s.attack_type
+      ? 'the spell attack roll'
+      : s.dc
+        ? `the ${String(s.dc.dc_type.index).toUpperCase()} save against the caster's DC`
+        : null
+    const dmgAt = (d, slotLevel, charLevel) =>
+      d.damage_at_slot_level?.[String(slotLevel)] ??
+      highestAtMost(d.damage_at_slot_level, slotLevel) ??
+      (level === 0 ? highestAtMost(d.damage_at_character_level, charLevel) : undefined)
+    const contains = (slotLevel, charLevel) => ({
+      damage: typed
+        .map((d) => ({ formula: dmgAt(d, slotLevel, charLevel), damageType: d.damage_type.index }))
+        .filter((d) => d.formula),
+      ...(s.dc
+        ? {
+            save: {
+              ability: s.dc.dc_type.index,
+              onSuccess:
+                s.dc.dc_success === 'half'
+                  ? 'half'
+                  : s.dc.dc_success === 'none'
+                    ? 'none'
+                    : 'special',
+            },
+          }
+        : {}),
+    })
+    const ref = (slotLevel) => ({
+      kind: 'spell',
+      spellUid: SPELL(slug),
+      ...(level > 0 ? { slotLevel } : {}),
+    })
+    const tests = []
+    const base = contains(level, 20)
+    if (base.damage.length > 0) tests.push(plan('cleric-20-life', ref(level), {}, base))
+    if (level > 0 && typed.some((d) => d.damage_at_slot_level?.[String(level + 1)])) {
+      const up = contains(level + 1, 20)
+      if (up.damage.length > 0) tests.push(plan('cleric-20-life', ref(level + 1), {}, up))
+    }
+    if (level === 0) {
+      const low = contains(0, 5)
+      if (low.damage.length > 0) tests.push(plan('cleric-5-life', ref(0), {}, low))
+    }
+    if (tests.length === 0) {
+      add('spells-damage.json', {
+        uid: SPELL(slug),
+        automation: manualLevel(
+          "The damage table has no entry at the spell's own level; applied by hand.",
+        ),
+      })
+      continue
+    }
+    add('spells-damage.json', {
+      uid: SPELL(slug),
+      automation: partial(
+        manualParts,
+        `Automated: ${automated ? `${automated}, ` : ''}the ${typed.map((d) => d.damage_type.index).join(' and ')} damage dice with slot or character-level scaling, the slot cost${s.concentration ? ', concentration' : ''}.`,
+      ),
+      tests,
+    })
+    count += 1
+  }
+  console.log(`spells-damage.json: ${count} damage spells classified`)
+} else {
+  console.warn(`spell source not found at ${SPELL_SOURCE}; spells-damage.json not regenerated`)
+}
+
 // ------------------------------------------------------------------------------------ write overlays
 for (const [file, entries] of Object.entries(overlays)) {
   fs.writeFileSync(path.join(out, file), JSON.stringify(entries, null, 2) + '\n')

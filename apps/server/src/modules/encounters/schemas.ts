@@ -36,6 +36,11 @@ export const attackActionSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('unarmed') }),
   z.object({ kind: z.literal('action'), templateId: z.string().min(1).max(200) }),
   z.object({ kind: z.literal('monster'), index: z.number().int().min(0).max(20) }),
+  z.object({
+    kind: z.literal('spell'),
+    spellUid: z.string().min(3).max(200),
+    slotLevel: z.number().int().min(1).max(9).optional(),
+  }),
 ])
 
 export const attackSchema = z.object({
@@ -50,6 +55,8 @@ export const commitAttackSchema = z.object({
   encounterId: z.string().uuid(),
   commandId: z.string().uuid(),
   rollId: z.string().uuid(),
+  /** For a saving-throw spell: whether the target succeeded (the table rolls the save). */
+  saved: z.boolean().optional(),
   expectedVersion: z.number().int().min(0),
 })
 

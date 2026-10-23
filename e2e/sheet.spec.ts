@@ -180,3 +180,33 @@ test('a long rest asks for confirmation before it restores anything (issue #6)',
   await expect(page.getByTestId('stat-hp')).toContainText('12 / 12')
   await expect(page.getByText(/revision 2$/)).toBeVisible()
 })
+
+test('a cleric casts a damage cantrip from the sheet: save DC, typed dice, roll and apply (D-1)', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(180_000)
+  await signInAs(page, admin.username, admin.password)
+  await buildCharacter(page, `Caster ${testInfo.project.name} ${Date.now().toString(36)}`, {
+    label: 'Cleric',
+    species: 'Hill Dwarf',
+    background: 'Acolyte',
+  })
+  // Add Sacred Flame to the known spells (cantrips need no preparation).
+  await page.getByLabel('Search spells').fill('sacred')
+  await page
+    .getByRole('button', { name: /^Sacred Flame/ })
+    .first()
+    .click()
+  await expect(page.getByTestId('cast-srd-5.1:spell:sacred-flame')).toBeVisible()
+  await expect(page.getByText(/revision 1$/)).toBeVisible()
+
+  await press(page.getByTestId('cast-srd-5.1:spell:sacred-flame'))
+  const area = page.getByTestId('cast-area')
+  await press(area.getByTestId('action-spell-toggle'))
+  await expect(area).toContainText('Save DEX DC')
+  await expect(area).toContainText('1d8 radiant')
+  await press(area.getByTestId('action-spell-roll'))
+  await press(area.getByTestId('action-spell-apply'))
+  await expect(page.getByText(/revision 2$/)).toBeVisible()
+  await expect(page.getByTestId('event-log').locator('li').first()).toContainText('Sacred Flame')
+})

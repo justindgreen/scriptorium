@@ -250,5 +250,13 @@
   {
     "uid": "srd-5.1:item:armor-3",
     "reason": "Generic template; concrete variants are generated per armor."
+  },
+  {
+    "uid": "srd-5.1:spell:prismatic-spray",
+    "reason": "The damage type is decided at random by the text; applied by hand."
+  },
+  {
+    "uid": "srd-5.1:spell:sleep",
+    "reason": "The dice are a hit-point pool of creatures affected, not damage; applied by hand."
   }
 ]

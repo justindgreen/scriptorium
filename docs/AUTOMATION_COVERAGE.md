@@ -19,71 +19,73 @@ A feature is **verified** only when every behavioural case in its overlay passes
 
 ## Manual allow-list (alpha)
 
-| Feature                                                         | Reason                                                               |
-| --------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `srd-5.1:feature:fighter-fighting-style-protection`             | A reaction the table adjudicates.                                    |
-| `srd-5.1:feature:fighter-fighting-style-two-weapon-fighting`    | Off-hand attacks are not modelled yet.                               |
-| `srd-5.1:feature:action-surge-2-uses`                           | Scaling lives on the level-2 feature table.                          |
-| `srd-5.1:feature:martial-archetype`                             | Subclass selection is structural.                                    |
-| `srd-5.1:feature:martial-archetype-improvement-1`               | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:martial-archetype-improvement-2`               | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:martial-archetype-improvement-3`               | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:martial-archetype-improvement-4`               | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:indomitable-2-uses`                            | Scaling lives on the level-9 feature table.                          |
-| `srd-5.1:feature:indomitable-3-uses`                            | Scaling lives on the level-9 feature table.                          |
-| `srd-5.1:feature:survivor`                                      | Turn-start healing is bookkeeping the tracker does not automate yet. |
-| `srd-5.1:feature:roguish-archetype`                             | Subclass selection is structural.                                    |
-| `srd-5.1:feature:roguish-archetype-improvement-1`               | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:roguish-archetype-improvement-2`               | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:roguish-archetype-improvement-3`               | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:rogue-evasion`                                 | Depends on the save outcome, which the engine does not see.          |
-| `srd-5.1:feature:reliable-talent`                               | Minimum roll rules need the roll step.                               |
-| `srd-5.1:feature:elusive`                                       | Advantage against you is the attacker's roll.                        |
-| `srd-5.1:feature:second-story-work`                             | Movement costs are not modelled.                                     |
-| `srd-5.1:feature:use-magic-device`                              | Item requirements are not enforced yet.                              |
-| `srd-5.1:feature:thiefs-reflexes`                               | Initiative order is the tracker's job.                               |
-| `srd-5.1:feature:divine-domain`                                 | Subclass selection is structural.                                    |
-| `srd-5.1:feature:domain-spells-1`                               | Domain spells come from the subclass data.                           |
-| `srd-5.1:feature:domain-spells-2`                               | Domain spells come from the subclass data.                           |
-| `srd-5.1:feature:domain-spells-3`                               | Domain spells come from the subclass data.                           |
-| `srd-5.1:feature:domain-spells-4`                               | Domain spells come from the subclass data.                           |
-| `srd-5.1:feature:domain-spells-5`                               | Domain spells come from the subclass data.                           |
-| `srd-5.1:feature:divine-domain-improvement-1`                   | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:divine-domain-improvement-2`                   | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:divine-domain-improvement-3`                   | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:divine-domain-improvement-4`                   | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:destroy-undead-cr-1-2-or-below`                | Turn Undead outcomes are applied by the table.                       |
-| `srd-5.1:feature:destroy-undead-cr-1-or-below`                  | Turn Undead outcomes are applied by the table.                       |
-| `srd-5.1:feature:destroy-undead-cr-2-or-below`                  | Turn Undead outcomes are applied by the table.                       |
-| `srd-5.1:feature:destroy-undead-cr-3-or-below`                  | Turn Undead outcomes are applied by the table.                       |
-| `srd-5.1:feature:destroy-undead-cr-4-or-below`                  | Turn Undead outcomes are applied by the table.                       |
-| `srd-5.1:feature:channel-divinity-2-rest`                       | Scaling lives on the level-2 feature table.                          |
-| `srd-5.1:feature:channel-divinity-3-rest`                       | Scaling lives on the level-2 feature table.                          |
-| `srd-5.1:feature:divine-intervention-improvement`               | See Divine Intervention.                                             |
-| `srd-5.1:feature:disciple-of-life`                              | Healing bonuses have no effect type yet.                             |
-| `srd-5.1:feature:blessed-healer`                                | Healing side effects have no effect type yet.                        |
-| `srd-5.1:feature:supreme-healing`                               | Maximised healing needs the roll step.                               |
-| `srd-5.1:feature:otherworldly-patron`                           | Subclass selection is structural.                                    |
-| `srd-5.1:feature:otherworldly-patron-improvement-1`             | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:otherworldly-patron-improvement-2`             | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:otherworldly-patron-improvement-3`             | Placeholder row; mechanics live on the subclass.                     |
-| `srd-5.1:feature:dark-ones-blessing`                            | Kill triggers are not observed by the engine.                        |
-| `srd-5.1:feature:eldritch-invocation-book-of-ancient-secrets`   | Ritual books are tracked by the player.                              |
-| `srd-5.1:feature:eldritch-invocation-eldritch-spear`            | Spell range changes are not modelled.                                |
-| `srd-5.1:feature:eldritch-invocation-eyes-of-the-rune-keeper`   | Narrative.                                                           |
-| `srd-5.1:feature:eldritch-invocation-gaze-of-two-minds`         | Narrative.                                                           |
-| `srd-5.1:feature:eldritch-invocation-repelling-blast`           | Forced movement is the tracker's job.                                |
-| `srd-5.1:feature:eldritch-invocation-voice-of-the-chain-master` | Narrative.                                                           |
-| `srd-5.1:feature:eldritch-invocation-one-with-shadows`          | Lighting is not modelled.                                            |
-| `srd-5.1:feature:eldritch-invocation-witch-sight`               | Narrative.                                                           |
-| `srd-5.1:feature:stonecunning`                                  | Context-specific check bonuses are decided at the table.             |
-| `srd-5.1:feature:trance`                                        | Rest duration is narrative.                                          |
-| `srd-5.1:item:weapon-1`                                         | Generic template; concrete variants are generated per weapon.        |
-| `srd-5.1:item:armor-1`                                          | Generic template; concrete variants are generated per armor.         |
-| `srd-5.1:item:weapon-2`                                         | Generic template; concrete variants are generated per weapon.        |
-| `srd-5.1:item:armor-2`                                          | Generic template; concrete variants are generated per armor.         |
-| `srd-5.1:item:weapon-3`                                         | Generic template; concrete variants are generated per weapon.        |
-| `srd-5.1:item:armor-3`                                          | Generic template; concrete variants are generated per armor.         |
+| Feature                                                         | Reason                                                                            |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `srd-5.1:feature:fighter-fighting-style-protection`             | A reaction the table adjudicates.                                                 |
+| `srd-5.1:feature:fighter-fighting-style-two-weapon-fighting`    | Off-hand attacks are not modelled yet.                                            |
+| `srd-5.1:feature:action-surge-2-uses`                           | Scaling lives on the level-2 feature table.                                       |
+| `srd-5.1:feature:martial-archetype`                             | Subclass selection is structural.                                                 |
+| `srd-5.1:feature:martial-archetype-improvement-1`               | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:martial-archetype-improvement-2`               | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:martial-archetype-improvement-3`               | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:martial-archetype-improvement-4`               | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:indomitable-2-uses`                            | Scaling lives on the level-9 feature table.                                       |
+| `srd-5.1:feature:indomitable-3-uses`                            | Scaling lives on the level-9 feature table.                                       |
+| `srd-5.1:feature:survivor`                                      | Turn-start healing is bookkeeping the tracker does not automate yet.              |
+| `srd-5.1:feature:roguish-archetype`                             | Subclass selection is structural.                                                 |
+| `srd-5.1:feature:roguish-archetype-improvement-1`               | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:roguish-archetype-improvement-2`               | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:roguish-archetype-improvement-3`               | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:rogue-evasion`                                 | Depends on the save outcome, which the engine does not see.                       |
+| `srd-5.1:feature:reliable-talent`                               | Minimum roll rules need the roll step.                                            |
+| `srd-5.1:feature:elusive`                                       | Advantage against you is the attacker's roll.                                     |
+| `srd-5.1:feature:second-story-work`                             | Movement costs are not modelled.                                                  |
+| `srd-5.1:feature:use-magic-device`                              | Item requirements are not enforced yet.                                           |
+| `srd-5.1:feature:thiefs-reflexes`                               | Initiative order is the tracker's job.                                            |
+| `srd-5.1:feature:divine-domain`                                 | Subclass selection is structural.                                                 |
+| `srd-5.1:feature:domain-spells-1`                               | Domain spells come from the subclass data.                                        |
+| `srd-5.1:feature:domain-spells-2`                               | Domain spells come from the subclass data.                                        |
+| `srd-5.1:feature:domain-spells-3`                               | Domain spells come from the subclass data.                                        |
+| `srd-5.1:feature:domain-spells-4`                               | Domain spells come from the subclass data.                                        |
+| `srd-5.1:feature:domain-spells-5`                               | Domain spells come from the subclass data.                                        |
+| `srd-5.1:feature:divine-domain-improvement-1`                   | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:divine-domain-improvement-2`                   | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:divine-domain-improvement-3`                   | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:divine-domain-improvement-4`                   | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:destroy-undead-cr-1-2-or-below`                | Turn Undead outcomes are applied by the table.                                    |
+| `srd-5.1:feature:destroy-undead-cr-1-or-below`                  | Turn Undead outcomes are applied by the table.                                    |
+| `srd-5.1:feature:destroy-undead-cr-2-or-below`                  | Turn Undead outcomes are applied by the table.                                    |
+| `srd-5.1:feature:destroy-undead-cr-3-or-below`                  | Turn Undead outcomes are applied by the table.                                    |
+| `srd-5.1:feature:destroy-undead-cr-4-or-below`                  | Turn Undead outcomes are applied by the table.                                    |
+| `srd-5.1:feature:channel-divinity-2-rest`                       | Scaling lives on the level-2 feature table.                                       |
+| `srd-5.1:feature:channel-divinity-3-rest`                       | Scaling lives on the level-2 feature table.                                       |
+| `srd-5.1:feature:divine-intervention-improvement`               | See Divine Intervention.                                                          |
+| `srd-5.1:feature:disciple-of-life`                              | Healing bonuses have no effect type yet.                                          |
+| `srd-5.1:feature:blessed-healer`                                | Healing side effects have no effect type yet.                                     |
+| `srd-5.1:feature:supreme-healing`                               | Maximised healing needs the roll step.                                            |
+| `srd-5.1:feature:otherworldly-patron`                           | Subclass selection is structural.                                                 |
+| `srd-5.1:feature:otherworldly-patron-improvement-1`             | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:otherworldly-patron-improvement-2`             | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:otherworldly-patron-improvement-3`             | Placeholder row; mechanics live on the subclass.                                  |
+| `srd-5.1:feature:dark-ones-blessing`                            | Kill triggers are not observed by the engine.                                     |
+| `srd-5.1:feature:eldritch-invocation-book-of-ancient-secrets`   | Ritual books are tracked by the player.                                           |
+| `srd-5.1:feature:eldritch-invocation-eldritch-spear`            | Spell range changes are not modelled.                                             |
+| `srd-5.1:feature:eldritch-invocation-eyes-of-the-rune-keeper`   | Narrative.                                                                        |
+| `srd-5.1:feature:eldritch-invocation-gaze-of-two-minds`         | Narrative.                                                                        |
+| `srd-5.1:feature:eldritch-invocation-repelling-blast`           | Forced movement is the tracker's job.                                             |
+| `srd-5.1:feature:eldritch-invocation-voice-of-the-chain-master` | Narrative.                                                                        |
+| `srd-5.1:feature:eldritch-invocation-one-with-shadows`          | Lighting is not modelled.                                                         |
+| `srd-5.1:feature:eldritch-invocation-witch-sight`               | Narrative.                                                                        |
+| `srd-5.1:feature:stonecunning`                                  | Context-specific check bonuses are decided at the table.                          |
+| `srd-5.1:feature:trance`                                        | Rest duration is narrative.                                                       |
+| `srd-5.1:item:weapon-1`                                         | Generic template; concrete variants are generated per weapon.                     |
+| `srd-5.1:item:armor-1`                                          | Generic template; concrete variants are generated per armor.                      |
+| `srd-5.1:item:weapon-2`                                         | Generic template; concrete variants are generated per weapon.                     |
+| `srd-5.1:item:armor-2`                                          | Generic template; concrete variants are generated per armor.                      |
+| `srd-5.1:item:weapon-3`                                         | Generic template; concrete variants are generated per weapon.                     |
+| `srd-5.1:item:armor-3`                                          | Generic template; concrete variants are generated per armor.                      |
+| `srd-5.1:spell:prismatic-spray`                                 | The damage type is decided at random by the text; applied by hand.                |
+| `srd-5.1:spell:sleep`                                           | The dice are a hit-point pool of creatures affected, not damage; applied by hand. |
 
 ## All content by category
 
@@ -110,7 +112,7 @@ A feature is **verified** only when every behavioural case in its overlay passes
 | monster                             |     334 |    0 |      12 |      0 |     322 |       12 |          0 |
 | rule                                |      39 |    0 |       0 |      0 |      39 |        0 |          0 |
 | species                             |      13 |    5 |       0 |      0 |       8 |        5 |          0 |
-| spell                               |     319 |    0 |       0 |      0 |     319 |        0 |          0 |
+| spell                               |     319 |    0 |      64 |      2 |     253 |       64 |          0 |
 | spell_list                          |       8 |    0 |       0 |      0 |       8 |        0 |          0 |
 | Barbarian (class)                   |      23 |    0 |       0 |      0 |      23 |        0 |          0 |
 | Bard (class)                        |      26 |    0 |       0 |      0 |      26 |        0 |          0 |
@@ -149,4 +151,4 @@ A feature is **verified** only when every behavioural case in its overlay passes
 | Open Hand (subclass)                |       4 |    0 |       0 |      0 |       4 |        0 |          0 |
 | Thief (subclass)                    |       5 |    0 |       2 |      3 |       0 |        2 |          0 |
 | subclass                            |      12 |    4 |       0 |      0 |       8 |        4 |          0 |
-| **Total**                           |    1948 |  295 |      41 |     63 |    1549 |      336 |          0 |
+| **Total**                           |    1948 |  295 |     105 |     65 |    1483 |      400 |          0 |

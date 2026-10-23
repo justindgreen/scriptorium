@@ -283,6 +283,9 @@ export function summarize(plan: ActionPlan): Record<string, unknown> {
     costs: plan.costs,
     riders: plan.riders.map((r) => r.text),
     economy: plan.economy,
+    ...(plan.save ? { save: plan.save } : {}),
+    ...(plan.healing !== undefined ? { healing: plan.healing } : {}),
+    ...(plan.concentration ? { concentration: true } : {}),
     ...(plan.attack
       ? {
           attack: {

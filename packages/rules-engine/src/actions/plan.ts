@@ -691,20 +691,25 @@ function resolveBase(
           dc: source.saveDC,
           onSuccess: entry.data.save.onSuccess,
         }
-      const dice =
-        entry.data.damage?.bySlotLevel?.[String(slotLevel)] ??
-        highestKey(entry.data.damage?.bySlotLevel, slotLevel) ??
-        (level === 0 ? highestKey(entry.data.damage?.byCharacterLevel, sheet.level) : undefined)
-      if (dice && entry.data.damage?.damageType) {
+      // One packet per typed damage entry (D-1): slot-level dice for leveled spells (the highest
+      // key at or below the slot used, so an upcast keeps scaling), character-level dice for
+      // cantrips. Entries without a damage type are numbers that are not damage and make no packet.
+      const damageEntries = entry.data.damage ?? []
+      damageEntries.forEach((d, i) => {
+        const dice =
+          d.bySlotLevel?.[String(slotLevel)] ??
+          highestKey(d.bySlotLevel, slotLevel) ??
+          (level === 0 ? highestKey(d.byCharacterLevel, sheet.level) : undefined)
+        if (!dice || !d.damageType) return
         base.packets.push({
-          id: 'spell',
-          label: entry.name,
+          id: i === 0 ? 'spell' : `spell-${i + 1}`,
+          label: damageEntries.length > 1 ? `${entry.name} (${d.damageType})` : entry.name,
           formula: dice,
-          damageType: entry.data.damage.damageType,
+          damageType: d.damageType,
           source: source.source,
           weapon: false,
         })
-      }
+      })
       const healing =
         entry.data.healing?.[String(slotLevel)] ?? highestKey(entry.data.healing, slotLevel)
       if (healing) base.healing = healing.replace(/\bMOD\b/g, 'castingMod')

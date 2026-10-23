@@ -1,0 +1,3342 @@
+[
+  {
+    "uid": "srd-5.1:spell:acid-arrow",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the spell attack roll, the acid damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:acid-arrow",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d4",
+                "damageType": "acid"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:acid-arrow",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "5d4",
+                "damageType": "acid"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:acid-splash",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the DEX save against the caster's DC, the acid damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:acid-splash"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d6",
+                "damageType": "acid"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "none"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:acid-splash"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d6",
+                "damageType": "acid"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "none"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:arcane-sword",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target", "damage on later turns"],
+      "notes": "Automated: the spell attack roll, the force damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:arcane-sword",
+              "slotLevel": 7
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d10",
+                "damageType": "force"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:black-tentacles",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 20-foot cube and applying the result to each",
+        "the condition it imposes"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the bludgeoning damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:black-tentacles",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d6",
+                "damageType": "bludgeoning"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "none"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:blade-barrier",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 100-foot line and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the slashing damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:blade-barrier",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "6d10",
+                "damageType": "slashing"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:blight",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the CON save against the caster's DC, the necrotic damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:blight",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "8d8",
+                "damageType": "necrotic"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:blight",
+              "slotLevel": 5
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "9d8",
+                "damageType": "necrotic"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:branding-smite",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "when the damage applies (no attack roll or saving throw in the data)",
+        "applying the result to each target"
+      ],
+      "notes": "Automated: the radiant damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:branding-smite",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d6",
+                "damageType": "radiant"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:branding-smite",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d6",
+                "damageType": "radiant"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:burning-hands",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 15-foot cone and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the fire damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:burning-hands",
+              "slotLevel": 1
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d6",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:burning-hands",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d6",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:call-lightning",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "when the damage applies (no attack roll or saving throw in the data)",
+        "choosing every creature in the 5-foot sphere and applying the result to each",
+        "damage on later turns"
+      ],
+      "notes": "Automated: the lightning damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:call-lightning",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d10",
+                "damageType": "lightning"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:call-lightning",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d10",
+                "damageType": "lightning"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:chain-lightning",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "applying the result to each target",
+        "extra darts, rays or targets from a higher slot (repeat the single packet)"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the lightning damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:chain-lightning",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "10d8",
+                "damageType": "lightning"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:chill-touch",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the spell attack roll, the necrotic damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:chill-touch"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d8",
+                "damageType": "necrotic"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:chill-touch"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d8",
+                "damageType": "necrotic"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:circle-of-death",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 60-foot sphere and applying the result to each"
+      ],
+      "notes": "Automated: the CON save against the caster's DC, the necrotic damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:circle-of-death",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "8d6",
+                "damageType": "necrotic"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:circle-of-death",
+              "slotLevel": 7
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "10d6",
+                "damageType": "necrotic"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:cloudkill",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 20-foot sphere and applying the result to each"
+      ],
+      "notes": "Automated: the CON save against the caster's DC, the poison damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:cloudkill",
+              "slotLevel": 5
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "5d8",
+                "damageType": "poison"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:cloudkill",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "6d8",
+                "damageType": "poison"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:cone-of-cold",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 60-foot cone and applying the result to each"
+      ],
+      "notes": "Automated: the CON save against the caster's DC, the cold damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:cone-of-cold",
+              "slotLevel": 5
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "8d8",
+                "damageType": "cold"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:cone-of-cold",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "9d8",
+                "damageType": "cold"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:control-water",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 100-foot cube and applying the result to each",
+        "damage on later turns"
+      ],
+      "notes": "Automated: the STR save against the caster's DC, the bludgeoning damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:control-water",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d8",
+                "damageType": "bludgeoning"
+              }
+            ],
+            "save": {
+              "ability": "str",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:delayed-blast-fireball",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 20-foot sphere and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the fire damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:delayed-blast-fireball",
+              "slotLevel": 7
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "12d6",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:delayed-blast-fireball",
+              "slotLevel": 8
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "13d6",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:dimension-door",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "when the damage applies (no attack roll or saving throw in the data)",
+        "applying the result to each target"
+      ],
+      "notes": "Automated: the force damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:dimension-door",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d6",
+                "damageType": "force"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:disintegrate",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 10-foot cube and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the force damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:disintegrate",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "10d6 + 40",
+                "damageType": "force"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "none"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:divine-favor",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "when the damage applies (no attack roll or saving throw in the data)",
+        "applying the result to each target"
+      ],
+      "notes": "Automated: the radiant damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:divine-favor",
+              "slotLevel": 1
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "1d4",
+                "damageType": "radiant"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:dream",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the WIS save against the caster's DC, the psychic damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:dream",
+              "slotLevel": 5
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d6",
+                "damageType": "psychic"
+              }
+            ],
+            "save": {
+              "ability": "wis",
+              "onSuccess": "none"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:eldritch-blast",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the spell attack roll, the force damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:eldritch-blast"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "1d10",
+                "damageType": "force"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:eldritch-blast"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "1d10",
+                "damageType": "force"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:faithful-hound",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the spell attack roll, the piercing damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:faithful-hound",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d8",
+                "damageType": "piercing"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:feeblemind",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the INT save against the caster's DC, the psychic damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:feeblemind",
+              "slotLevel": 8
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d6",
+                "damageType": "psychic"
+              }
+            ],
+            "save": {
+              "ability": "int",
+              "onSuccess": "special"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:finger-of-death",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the CON save against the caster's DC, the necrotic damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:finger-of-death",
+              "slotLevel": 7
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "7d8 + 30",
+                "damageType": "necrotic"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:fire-bolt",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the spell attack roll, the fire damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:fire-bolt"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d10",
+                "damageType": "fire"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:fire-bolt"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d10",
+                "damageType": "fire"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:fire-shield",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "when the damage applies (no attack roll or saving throw in the data)",
+        "choosing every creature in the 5-foot sphere and applying the result to each"
+      ],
+      "notes": "Automated: the fire damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:fire-shield",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d8",
+                "damageType": "fire"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:fire-storm",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 100-foot cube and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the fire damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:fire-storm",
+              "slotLevel": 7
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "7d10",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:fireball",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 20-foot sphere and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the fire damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:fireball",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "8d6",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:fireball",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "9d6",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:flame-blade",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "when the damage applies (no attack roll or saving throw in the data)",
+        "applying the result to each target"
+      ],
+      "notes": "Automated: the fire damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:flame-blade",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d6",
+                "damageType": "fire"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:flame-strike",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 40-foot cylinder and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the fire and radiant damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:flame-strike",
+              "slotLevel": 5
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d6",
+                "damageType": "fire"
+              },
+              {
+                "formula": "4d6",
+                "damageType": "radiant"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:flame-strike",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d6 OR 5d6",
+                "damageType": "fire"
+              },
+              {
+                "formula": "4d6 OR 5d6",
+                "damageType": "radiant"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:flaming-sphere",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "when the damage applies (no attack roll or saving throw in the data)",
+        "applying the result to each target"
+      ],
+      "notes": "Automated: the fire damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:flaming-sphere",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d6",
+                "damageType": "fire"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:flaming-sphere",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d6",
+                "damageType": "fire"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:freezing-sphere",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 60-foot sphere and applying the result to each"
+      ],
+      "notes": "Automated: the CON save against the caster's DC, the cold damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:freezing-sphere",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "10d6",
+                "damageType": "cold"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:guardian-of-faith",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 10-foot cylinder and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the radiant damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:guardian-of-faith",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "20",
+                "damageType": "radiant"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:guiding-bolt",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the spell attack roll, the radiant damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:guiding-bolt",
+              "slotLevel": 1
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d6",
+                "damageType": "radiant"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:guiding-bolt",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "5d6",
+                "damageType": "radiant"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:harm",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the CON save against the caster's DC, the necrotic damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:harm",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "14d6",
+                "damageType": "necrotic"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:heat-metal",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target", "damage on later turns"],
+      "notes": "Automated: the CON save against the caster's DC, the fire damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:heat-metal",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d8",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "special"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:heat-metal",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d8",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "special"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:hellish-rebuke",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the DEX save against the caster's DC, the fire damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:hellish-rebuke",
+              "slotLevel": 1
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d10",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:hellish-rebuke",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d10",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:ice-storm",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 20-foot cylinder and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the bludgeoning and cold damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:ice-storm",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d8",
+                "damageType": "bludgeoning"
+              },
+              {
+                "formula": "4d6",
+                "damageType": "cold"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:ice-storm",
+              "slotLevel": 5
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d8",
+                "damageType": "bludgeoning"
+              },
+              {
+                "formula": "4d6",
+                "damageType": "cold"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:incendiary-cloud",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 20-foot sphere and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the fire damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:incendiary-cloud",
+              "slotLevel": 8
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "10d8",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:inflict-wounds",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the spell attack roll, the necrotic damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:inflict-wounds",
+              "slotLevel": 1
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d10",
+                "damageType": "necrotic"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:inflict-wounds",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d10",
+                "damageType": "necrotic"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:insect-plague",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 20-foot sphere and applying the result to each"
+      ],
+      "notes": "Automated: the CON save against the caster's DC, the piercing damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:insect-plague",
+              "slotLevel": 5
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d10",
+                "damageType": "piercing"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:insect-plague",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "5d10",
+                "damageType": "piercing"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:lightning-bolt",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 100-foot line and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the lightning damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:lightning-bolt",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "8d6",
+                "damageType": "lightning"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:lightning-bolt",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "9d6",
+                "damageType": "lightning"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:magic-missile",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "when the damage applies (no attack roll or saving throw in the data)",
+        "applying the result to each target",
+        "extra darts, rays or targets from a higher slot (repeat the single packet)"
+      ],
+      "notes": "Automated: the force damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:magic-missile",
+              "slotLevel": 1
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d4 + 3",
+                "damageType": "force"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:magic-missile",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d4 + 4",
+                "damageType": "force"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:meteor-swarm",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 40-foot sphere and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the fire and bludgeoning damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:meteor-swarm",
+              "slotLevel": 9
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "20d6",
+                "damageType": "fire"
+              },
+              {
+                "formula": "20d6",
+                "damageType": "bludgeoning"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:moonbeam",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 5-foot cylinder and applying the result to each",
+        "damage on later turns"
+      ],
+      "notes": "Automated: the CON save against the caster's DC, the radiant damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:moonbeam",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d10",
+                "damageType": "radiant"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:moonbeam",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d10",
+                "damageType": "radiant"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:phantasmal-killer",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target", "the condition it imposes"],
+      "notes": "Automated: the WIS save against the caster's DC, the psychic damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:phantasmal-killer",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d10",
+                "damageType": "psychic"
+              }
+            ],
+            "save": {
+              "ability": "wis",
+              "onSuccess": "none"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:poison-spray",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the CON save against the caster's DC, the poison damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:poison-spray"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d12",
+                "damageType": "poison"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "none"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:poison-spray"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d12",
+                "damageType": "poison"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "none"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:prismatic-spray",
+    "automation": {
+      "level": "manual",
+      "notes": "The damage type is decided at random by the text; applied by hand."
+    }
+  },
+  {
+    "uid": "srd-5.1:spell:produce-flame",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the spell attack roll, the fire damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:produce-flame"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d8",
+                "damageType": "fire"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:produce-flame"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d8",
+                "damageType": "fire"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:ray-of-frost",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "applying the result to each target",
+        "movement or other effects in the text"
+      ],
+      "notes": "Automated: the spell attack roll, the cold damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:ray-of-frost"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d8",
+                "damageType": "cold"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:ray-of-frost"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d8",
+                "damageType": "cold"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:sacred-flame",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the DEX save against the caster's DC, the radiant damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:sacred-flame"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d8",
+                "damageType": "radiant"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "none"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:sacred-flame"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d8",
+                "damageType": "radiant"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "none"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:scorching-ray",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "when the damage applies (no attack roll or saving throw in the data)",
+        "applying the result to each target",
+        "extra darts, rays or targets from a higher slot (repeat the single packet)"
+      ],
+      "notes": "Automated: the fire damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:scorching-ray",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d6",
+                "damageType": "fire"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:shatter",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 10-foot sphere and applying the result to each"
+      ],
+      "notes": "Automated: the CON save against the caster's DC, the thunder damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:shatter",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d8",
+                "damageType": "thunder"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:shatter",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d8",
+                "damageType": "thunder"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:shocking-grasp",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "applying the result to each target",
+        "movement or other effects in the text"
+      ],
+      "notes": "Automated: the spell attack roll, the lightning damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:shocking-grasp"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d8",
+                "damageType": "lightning"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:shocking-grasp"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d8",
+                "damageType": "lightning"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:sleep",
+    "automation": {
+      "level": "manual",
+      "notes": "The dice are a hit-point pool of creatures affected, not damage; applied by hand."
+    }
+  },
+  {
+    "uid": "srd-5.1:spell:spiritual-weapon",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the spell attack roll, the force damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:spiritual-weapon",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "1d8 + MOD",
+                "damageType": "force"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:spiritual-weapon",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "1d8 + MOD",
+                "damageType": "force"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:storm-of-vengeance",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 360-foot sphere and applying the result to each",
+        "damage on later turns",
+        "the condition it imposes"
+      ],
+      "notes": "Automated: the CON save against the caster's DC, the thunder damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:storm-of-vengeance",
+              "slotLevel": 9
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d6",
+                "damageType": "thunder"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "none"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:sunbeam",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 60-foot line and applying the result to each",
+        "the condition it imposes"
+      ],
+      "notes": "Automated: the CON save against the caster's DC, the radiant damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:sunbeam",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "6d8",
+                "damageType": "radiant"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:sunburst",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 60-foot cylinder and applying the result to each",
+        "damage on later turns",
+        "the condition it imposes"
+      ],
+      "notes": "Automated: the CON save against the caster's DC, the radiant damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:sunburst",
+              "slotLevel": 8
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "12d6",
+                "damageType": "radiant"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:thunderwave",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 15-foot cube and applying the result to each",
+        "movement or other effects in the text"
+      ],
+      "notes": "Automated: the CON save against the caster's DC, the thunder damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:thunderwave",
+              "slotLevel": 1
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d8",
+                "damageType": "thunder"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:thunderwave",
+              "slotLevel": 2
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d8",
+                "damageType": "thunder"
+              }
+            ],
+            "save": {
+              "ability": "con",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:vampiric-touch",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target", "damage on later turns"],
+      "notes": "Automated: the spell attack roll, the necrotic damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:vampiric-touch",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d6",
+                "damageType": "necrotic"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:vampiric-touch",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d6",
+                "damageType": "necrotic"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:vicious-mockery",
+    "automation": {
+      "level": "partial",
+      "manualParts": ["applying the result to each target"],
+      "notes": "Automated: the WIS save against the caster's DC, the psychic damage dice with slot or character-level scaling, the slot cost."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:vicious-mockery"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "4d4",
+                "damageType": "psychic"
+              }
+            ],
+            "save": {
+              "ability": "wis",
+              "onSuccess": "none"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-5-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:vicious-mockery"
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "2d4",
+                "damageType": "psychic"
+              }
+            ],
+            "save": {
+              "ability": "wis",
+              "onSuccess": "none"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:wall-of-fire",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 60-foot line and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the fire damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:wall-of-fire",
+              "slotLevel": 4
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "5d8",
+                "damageType": "fire"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:wall-of-ice",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 10-foot sphere and applying the result to each",
+        "movement or other effects in the text"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the cold damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:wall-of-ice",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "10d6",
+                "damageType": "cold"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:wall-of-ice",
+              "slotLevel": 7
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "12d6",
+                "damageType": "cold"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:wall-of-thorns",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 60-foot line and applying the result to each"
+      ],
+      "notes": "Automated: the DEX save against the caster's DC, the piercing damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:wall-of-thorns",
+              "slotLevel": 6
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "7d8",
+                "damageType": "piercing"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      },
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:wall-of-thorns",
+              "slotLevel": 7
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "8d8",
+                "damageType": "piercing"
+              }
+            ],
+            "save": {
+              "ability": "dex",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "srd-5.1:spell:wind-wall",
+    "automation": {
+      "level": "partial",
+      "manualParts": [
+        "choosing every creature in the 50-foot line and applying the result to each"
+      ],
+      "notes": "Automated: the STR save against the caster's DC, the bludgeoning damage dice with slot or character-level scaling, the slot cost, concentration."
+    },
+    "tests": [
+      {
+        "given": {
+          "fixture": "cleric-20-life"
+        },
+        "expect": {
+          "actionPlan": {
+            "ref": {
+              "kind": "spell",
+              "spellUid": "srd-5.1:spell:wind-wall",
+              "slotLevel": 3
+            },
+            "ctx": {}
+          },
+          "contains": {
+            "damage": [
+              {
+                "formula": "3d8",
+                "damageType": "bludgeoning"
+              }
+            ],
+            "save": {
+              "ability": "str",
+              "onSuccess": "half"
+            }
+          }
+        }
+      }
+    ]
+  }
+]

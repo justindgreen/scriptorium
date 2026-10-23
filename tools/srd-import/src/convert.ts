@@ -93,7 +93,12 @@ export function convertSpells(dir: string): ContentEntry[] {
       uid('subclass', slugify(c.index)),
     )
     const components = (s['components'] as string[] | undefined) ?? []
-    const damage = s['damage'] as AnyRecord | undefined
+    // The upstream dataset lists damage as an array (one entry per damage type); older copies
+    // used a single object. Entries without a damage type are kept out: those numbers are not
+    // damage (Sleep's hit-point pool, Prismatic Spray's random type).
+    const damageEntries = (
+      Array.isArray(s['damage']) ? s['damage'] : s['damage'] ? [s['damage']] : []
+    ) as AnyRecord[]
     const dc = s['dc'] as AnyRecord | undefined
     const school = String((s['school'] as Ref).index)
     const spellUid = uid('spell', slug)
@@ -148,24 +153,21 @@ export function convertSpells(dir: string): ContentEntry[] {
               },
             }
           : {}),
-        ...(damage
+        ...(damageEntries.length > 0
           ? {
-              damage: {
-                ...(damage['damage_type']
-                  ? { damageType: String((damage['damage_type'] as Ref).index) as 'fire' }
+              damage: damageEntries.map((d) => ({
+                ...(d['damage_type']
+                  ? { damageType: String((d['damage_type'] as Ref).index) as 'fire' }
                   : {}),
-                ...(damage['damage_at_slot_level']
-                  ? { bySlotLevel: damage['damage_at_slot_level'] as Record<string, string> }
+                ...(d['damage_at_slot_level']
+                  ? { bySlotLevel: d['damage_at_slot_level'] as Record<string, string> }
                   : {}),
-                ...(damage['damage_at_character_level']
+                ...(d['damage_at_character_level']
                   ? {
-                      byCharacterLevel: damage['damage_at_character_level'] as Record<
-                        string,
-                        string
-                      >,
+                      byCharacterLevel: d['damage_at_character_level'] as Record<string, string>,
                     }
                   : {}),
-              },
+              })),
             }
           : {}),
         ...(s['heal_at_slot_level']

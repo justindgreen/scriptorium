@@ -203,7 +203,7 @@
       }
     },
     {
-      "name": "Guiding Bolt is a spell attack",
+      "name": "Guiding Bolt is a spell attack with radiant dice scaled to the slot used",
       "ref": {
         "kind": "spell",
         "spellUid": "srd-5.1:spell:guiding-bolt"
@@ -219,18 +219,33 @@
             "kind": "slot",
             "level": 2
           }
+        ],
+        "damage": [
+          {
+            "id": "spell",
+            "formula": "5d6",
+            "damageType": "radiant"
+          }
         ]
       },
       "rolls": {
         "attack": {
           "natural": 15
+        },
+        "damage": {
+          "spell": 17
         }
       },
       "targetAc": 13,
       "expectOutcome": {
         "hit": true,
         "critical": false,
-        "packets": []
+        "packets": [
+          {
+            "id": "spell",
+            "amount": 17
+          }
+        ]
       }
     },
     {

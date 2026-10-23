@@ -194,6 +194,158 @@ describe('the roll step', () => {
   })
 })
 
+describe('casting spells (D-1)', () => {
+  const CLERIC = 'srd-5.1:class:cleric'
+  const SACRED_FLAME = 'srd-5.1:spell:sacred-flame'
+  const GUIDING_BOLT = 'srd-5.1:spell:guiding-bolt'
+  let cleric: string
+  let rev = 0
+
+  async function cmd(command: unknown, commandId = randomUUID()) {
+    const res = await trpcMutation<{
+      revision: number
+      replayed: boolean
+      aggregate: CharacterAggregate
+      sheet: ComputedSheet
+    }>(
+      t.app,
+      'characters.command',
+      { characterId: cleric, commandId, expectedRevision: rev, command },
+      admin.cookie,
+    )
+    if (res.status === 200 && !res.data!.replayed) rev = res.data!.revision
+    return res
+  }
+
+  it('gives a cleric a damage cantrip and a prepared attack spell', async () => {
+    const created = await trpcMutation<{ id: string; sheet: ComputedSheet }>(
+      t.app,
+      'characters.create',
+      {
+        name: 'Vesper',
+        speciesUid: 'srd-5.1:species:human',
+        backgroundUid: 'srd-5.1:background:acolyte',
+        classUid: CLERIC,
+        abilityMethod: 'manual',
+        baseAbilities: { str: 10, dex: 12, con: 14, int: 10, wis: 16, cha: 8 },
+      },
+      admin.cookie,
+    )
+    expect(created.status).toBe(200)
+    cleric = created.data!.id
+    const prepared = await cmd({
+      type: 'setSpells',
+      spells: [
+        {
+          spellUid: SACRED_FLAME,
+          origin: `class:${CLERIC}`,
+          known: true,
+          prepared: false,
+          alwaysPrepared: false,
+        },
+        {
+          spellUid: GUIDING_BOLT,
+          origin: `class:${CLERIC}`,
+          known: true,
+          prepared: true,
+          alwaysPrepared: false,
+        },
+      ],
+    })
+    expect(prepared.status).toBe(200)
+    const known = prepared.data!.sheet.spellcasting!.known.map((k) => k.spellUid)
+    expect(known).toEqual(expect.arrayContaining([SACRED_FLAME, GUIDING_BOLT]))
+  })
+
+  it('plans a saving-throw cantrip with typed damage and no slot cost, and commits it once', async () => {
+    const plan = await trpcQuery<ActionPlan>(
+      t.app,
+      'characters.plan',
+      { characterId: cleric, ref: { kind: 'spell', spellUid: SACRED_FLAME } },
+      admin.cookie,
+    )
+    expect(plan.status).toBe(200)
+    expect(plan.data!.save).toEqual({ ability: 'dex', dc: 13, onSuccess: 'none' })
+    expect(plan.data!.attack).toBeUndefined()
+    expect(plan.data!.damage.map((d) => [d.id, d.formula, d.damageType])).toEqual([
+      ['spell', '1d8', 'radiant'],
+    ])
+    expect(plan.data!.costs).toEqual([])
+    const rolled = await trpcMutation<{ id: string; results: { damage: Record<string, number> } }>(
+      t.app,
+      'characters.roll',
+      { characterId: cleric, ref: { kind: 'spell', spellUid: SACRED_FLAME } },
+      admin.cookie,
+    )
+    expect(rolled.status).toBe(200)
+    expect(rolled.data!.results.damage['spell']).toBeGreaterThanOrEqual(1)
+    const commandId = randomUUID()
+    const committed = await trpcMutation<{
+      revision: number
+      outcome: { packets: Array<{ amount: number }> }
+      aggregate: CharacterAggregate
+    }>(
+      t.app,
+      'characters.commitAction',
+      { characterId: cleric, commandId, expectedRevision: rev, rollId: rolled.data!.id },
+      admin.cookie,
+    )
+    expect(committed.status).toBe(200)
+    rev = committed.data!.revision
+    expect(committed.data!.outcome.packets).toHaveLength(1)
+    expect(committed.data!.aggregate.state.spellSlotsUsed).toEqual({})
+  })
+
+  it('upcasts an attack spell, spends the slot exactly once across a retry, and scales the dice', async () => {
+    const at1 = await trpcQuery<ActionPlan>(
+      t.app,
+      'characters.plan',
+      { characterId: cleric, ref: { kind: 'spell', spellUid: GUIDING_BOLT, slotLevel: 1 } },
+      admin.cookie,
+    )
+    expect(at1.data!.attack?.attackType).toBe('spell')
+    expect(at1.data!.attack?.bonus).toBe(5)
+    expect(at1.data!.damage.map((d) => [d.formula, d.damageType])).toEqual([['4d6', 'radiant']])
+    expect(at1.data!.costs).toEqual([
+      expect.objectContaining({ kind: 'slot', level: 1, amount: 1, sufficient: true }),
+    ])
+    const rolled = await trpcMutation<{ id: string }>(
+      t.app,
+      'characters.roll',
+      { characterId: cleric, ref: { kind: 'spell', spellUid: GUIDING_BOLT, slotLevel: 1 } },
+      admin.cookie,
+    )
+    expect(rolled.status).toBe(200)
+    const commandId = randomUUID()
+    const body = { characterId: cleric, commandId, expectedRevision: rev, rollId: rolled.data!.id }
+    const first = await trpcMutation<{
+      revision: number
+      replayed: boolean
+      aggregate: CharacterAggregate
+    }>(t.app, 'characters.commitAction', body, admin.cookie)
+    expect(first.status).toBe(200)
+    expect(first.data!.aggregate.state.spellSlotsUsed).toEqual({ '1': 1 })
+    const retry = await trpcMutation<{
+      revision: number
+      replayed: boolean
+      aggregate: CharacterAggregate
+    }>(t.app, 'characters.commitAction', body, admin.cookie)
+    expect(retry.status).toBe(200)
+    expect(retry.data!.replayed).toBe(true)
+    expect(retry.data!.aggregate.state.spellSlotsUsed).toEqual({ '1': 1 })
+    rev = first.data!.revision
+    // A level-1 cleric has no level-2 slot: the upcast plan is blocked, not silently cast lower.
+    const at2 = await trpcQuery<ActionPlan>(
+      t.app,
+      'characters.plan',
+      { characterId: cleric, ref: { kind: 'spell', spellUid: GUIDING_BOLT, slotLevel: 2 } },
+      admin.cookie,
+    )
+    expect(at2.data!.damage[0]!.formula).toBe('5d6')
+    expect(at2.data!.blocked).toMatch(/level 2 spell slots/)
+  })
+})
+
 describe('live updates', () => {
   it('streams ready and character.changed to the owner and refuses strangers', async () => {
     const address = await t.app.listen({ port: 0, host: '127.0.0.1' })

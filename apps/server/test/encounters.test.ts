@@ -1029,3 +1029,191 @@ describe('encounters', () => {
     expect(onDeleted.error?.message).toMatch(/has ended/)
   })
 })
+
+describe('spells in the encounter (D-1)', () => {
+  const SACRED_FLAME = 'srd-5.1:spell:sacred-flame'
+  let clericId: string
+  let third: string
+
+  it('a party cleric casts a saving-throw cantrip through the coordinator: the save decides the damage, retries apply once', async () => {
+    const created = await trpcMutation<View>(
+      t.app,
+      'characters.create',
+      {
+        name: 'Wren',
+        speciesUid: 'srd-5.1:species:human',
+        classUid: 'srd-5.1:class:cleric',
+        abilityMethod: 'manual',
+        baseAbilities: { str: 10, dex: 12, con: 14, int: 10, wis: 16, cha: 8 },
+      },
+      player.cookie,
+    )
+    expect(created.status).toBe(200)
+    clericId = created.data!.id
+    const chosen = await trpcMutation<View>(
+      t.app,
+      'characters.command',
+      {
+        characterId: clericId,
+        commandId: randomUUID(),
+        expectedRevision: 0,
+        command: {
+          type: 'setSpells',
+          spells: [
+            {
+              spellUid: SACRED_FLAME,
+              origin: 'class:srd-5.1:class:cleric',
+              known: true,
+              prepared: false,
+              alwaysPrepared: false,
+            },
+          ],
+        },
+      },
+      player.cookie,
+    )
+    expect(chosen.status).toBe(200)
+    for (const step of ['submit', 'approve'] as const) {
+      const res = await trpcMutation(
+        t.app,
+        `campaigns.characters.${step}`,
+        { campaignId, characterId: clericId },
+        step === 'submit' ? player.cookie : dm.cookie,
+      )
+      expect(res.status).toBe(200)
+    }
+    const enc = await trpcMutation<{ id: string }>(
+      t.app,
+      'encounters.create',
+      { campaignId, name: 'Third' },
+      dm.cookie,
+    )
+    third = enc.data!.id
+    expect(
+      (
+        await trpcMutation(
+          t.app,
+          'encounters.addCharacter',
+          { encounterId: third, characterId: clericId },
+          dm.cookie,
+        )
+      ).status,
+    ).toBe(200)
+    expect(
+      (
+        await trpcMutation(
+          t.app,
+          'encounters.addMonster',
+          { encounterId: third, uid: 'srd-5.1:monster:skeleton', count: 1 },
+          dm.cookie,
+        )
+      ).status,
+    ).toBe(200)
+    expect(
+      (await trpcMutation(t.app, 'encounters.rollInitiative', { encounterId: third }, dm.cookie))
+        .status,
+    ).toBe(200)
+    let state = (
+      await trpcQuery<Encounter>(t.app, 'encounters.get', { encounterId: third }, dm.cookie)
+    ).data!
+    expect(
+      (
+        await trpcMutation(
+          t.app,
+          'encounters.start',
+          { encounterId: third, expectedVersion: state.version },
+          dm.cookie,
+        )
+      ).status,
+    ).toBe(200)
+    state = (await trpcQuery<Encounter>(t.app, 'encounters.get', { encounterId: third }, dm.cookie))
+      .data!
+    const wren = state.participants.find((p) => p.characterId === clericId)!
+    const skeleton = state.participants.find((p) => p.kind === 'monster')!
+    // The DM's picker offers the cantrip with its save.
+    const offered = state.actions[wren.id]!.find(
+      (a) => (a.action as { kind: string; spellUid?: string }).spellUid === SACRED_FLAME,
+    )
+    expect(offered?.label).toMatch(/Sacred Flame \(cantrip, DEX save DC 13, radiant\)/)
+    const action = { kind: 'spell', spellUid: SACRED_FLAME }
+    const plan = await trpcQuery<{
+      kind: string
+      plan: { save?: unknown; damage: Array<{ formula: string }> }
+    }>(
+      t.app,
+      'encounters.attackPlan',
+      { encounterId: third, attackerId: wren.id, targetId: skeleton.id, action },
+      dm.cookie,
+    )
+    expect(plan.status).toBe(200)
+    expect(plan.data!.kind).toBe('character')
+    expect(plan.data!.plan.save).toMatchObject({ ability: 'dex', onSuccess: 'none' })
+    expect(plan.data!.plan.damage[0]!.formula).toBe('1d8')
+    // The skeleton saves: no damage, nothing changes but the log.
+    const roll1 = await trpcMutation<{ rollId: string }>(
+      t.app,
+      'encounters.attackRoll',
+      { encounterId: third, attackerId: wren.id, targetId: skeleton.id, action },
+      dm.cookie,
+    )
+    const savedCommit = await trpcMutation<Commit>(
+      t.app,
+      'encounters.commitAttack',
+      {
+        encounterId: third,
+        commandId: randomUUID(),
+        rollId: roll1.data!.rollId,
+        expectedVersion: state.version,
+        saved: true,
+      },
+      dm.cookie,
+    )
+    expect(savedCommit.status).toBe(200)
+    expect(savedCommit.data!.damageTaken).toBe(0)
+    expect(savedCommit.data!.summary).toMatch(/DEX save DC 13 succeeded \(no damage\)/)
+    let after = (
+      await trpcQuery<Encounter>(t.app, 'encounters.get', { encounterId: third }, dm.cookie)
+    ).data!
+    expect(after.participants.find((p) => p.id === skeleton.id)!.hpCurrent).toBe(skeleton.hpCurrent)
+    // The skeleton fails: radiant damage lands once, even when the commit is retried.
+    const roll2 = await trpcMutation<{ rollId: string }>(
+      t.app,
+      'encounters.attackRoll',
+      { encounterId: third, attackerId: wren.id, targetId: skeleton.id, action },
+      dm.cookie,
+    )
+    const commandId = randomUUID()
+    const body = {
+      encounterId: third,
+      commandId,
+      rollId: roll2.data!.rollId,
+      expectedVersion: after.version,
+      saved: false,
+    }
+    const failedCommit = await trpcMutation<Commit>(
+      t.app,
+      'encounters.commitAttack',
+      body,
+      dm.cookie,
+    )
+    expect(failedCommit.status).toBe(200)
+    expect(failedCommit.data!.damageTaken).toBeGreaterThanOrEqual(1)
+    expect(failedCommit.data!.summary).toMatch(/DEX save DC 13 failed/)
+    const retried = await trpcMutation<Commit>(t.app, 'encounters.commitAttack', body, dm.cookie)
+    expect(retried.status).toBe(200)
+    expect(retried.data!.replayed).toBe(true)
+    after = (await trpcQuery<Encounter>(t.app, 'encounters.get', { encounterId: third }, dm.cookie))
+      .data!
+    expect(after.participants.find((p) => p.id === skeleton.id)!.hpCurrent).toBe(
+      skeleton.hpCurrent! - failedCommit.data!.damageTaken,
+    )
+    // A cantrip spends no slot on the sheet.
+    const sheet = await trpcQuery<View>(
+      t.app,
+      'characters.get',
+      { characterId: clericId },
+      player.cookie,
+    )
+    expect(sheet.data!.aggregate.state.spellSlotsUsed).toEqual({})
+  })
+})

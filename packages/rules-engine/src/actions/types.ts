@@ -173,7 +173,8 @@ export type ActionOutcome = {
     targetAc?: number
   }
   check?: { natural: number; total: number }
-  save?: SaveSpec
+  /** The save the target had to make and, once the table decided, what the result did to the packets. */
+  save?: SaveSpec & { saved?: boolean; applied?: 'full' | 'half' | 'none' }
   packets: DamagePacket[]
   healing?: number
   costs: CostSpec[]
