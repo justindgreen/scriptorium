@@ -57,6 +57,8 @@ Homebrew items are authored through the editor rather than packages, but they ar
 - `tests` are behavioural cases run by the conformance suite (docs/TEST_STRATEGY.md §3).
 - Relations are stored by target uid so they may point at entries imported later. Implied relations are added on import: subclass → class (`subclass_of`), species → parent (`variant_of`), species → traits and spell lists → spells (`grants`), spell → class (`list_member`), feature → owner (`owner_of`), item → variant base (`variant_of`), class → features (`grants`).
 
+Item provenance (UX-1): item `data.basedOn { uid, name?, source?, versionId?, versionNo? }` records which entry and version the editor copied weapon stats from. It is a one-time copy for the record; the import and the engine never read it as inheritance, and `variantOf` keeps its converter meaning (a ±N variant of a generic SRD item).
+
 ## Import semantics
 
 1. The whole package is validated; any issue aborts the import and is reported with its JSON path.

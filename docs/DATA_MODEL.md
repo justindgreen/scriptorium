@@ -91,6 +91,8 @@ Reset rules are specified in `RULES_ENGINE.md` §7.
 
 Notes (M2.8): `campaign_members` carries the DM as a member row (`role = dm`); `campaign_characters` is the approval state and `characters.campaign_id` is set on approval; `campaign_content_sources` widens content visibility to every active member (see the content repository); `campaign_invites` stores a SHA-256 of the join code with expiry and use counts. Notes, NPCs, awards and the roll log arrive with M4.2.
 
+Notes (UX-1, ADR-0041): `campaign_characters.status = 'retired'` is set by `campaigns.characters.withdraw` (the character's owner or the DM; refused while the character is in an unfinished encounter of that campaign) and ends the DM's table rights on the sheet; the row stays as history and a new submission sets it back to `pending`. A character is soft-deleted (`characters.deleted_at`) only by its owner or an administrator and only when no roster row is pending or approved and no encounter holding it is other than `completed`; its events, snapshots, receipts and encounter participant rows are kept. Item data may carry `basedOn` (the entry and version copied from in the editor, provenance only).
+
 ## 5. Encounters (own aggregate)
 
 | Table                    | Columns                                                                                                                                                                                                                                                                                                                                                                                          |

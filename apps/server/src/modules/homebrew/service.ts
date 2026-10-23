@@ -3,7 +3,7 @@
  * the owner of the source (or an administrator); every stored version passes `contentEntrySchema`.
  */
 import { TRPCError } from '@trpc/server'
-import { eq } from 'drizzle-orm'
+import { and, eq, inArray, isNull } from 'drizzle-orm'
 import {
   contentEntrySchema,
   type Automation,
@@ -43,9 +43,29 @@ export function slugify(name: string): string {
   return slug || 'item'
 }
 
-/** What the sheet does not automate for an item-granted spell (A1 finding D-4, issue #8). */
-export function grantedSpellManualPart(spellUid: string): string {
-  return `casting ${spellUid}: it is listed under granted spells with its uses or charges, but casting it from the sheet is not automated yet`
+/** `srd-5.1:spell:misty-step` -> `Misty Step`, for a spell the content system cannot name. */
+export function humanizeUid(uid: string): string {
+  const slug = uid.split(':').pop() ?? uid
+  return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+type GrantedSpell = {
+  spell: string
+  chargeCost?: number
+  atWill?: boolean
+  uses?: { max: unknown; recharge: string }
+}
+
+function grantCost(g: GrantedSpell): string {
+  if (g.chargeCost !== undefined) return ` (${g.chargeCost} charge${g.chargeCost === 1 ? '' : 's'})`
+  if (g.uses) return ` (${String(g.uses.max)} per ${g.uses.recharge})`
+  if (g.atWill) return ' (at will)'
+  return ''
+}
+
+/** What the sheet does not automate for an item-granted spell (A1 finding D-4, issues #8 and #23). */
+export function grantedSpellManualPart(g: GrantedSpell, name: string): string {
+  return `${name} is granted${grantCost(g)}, but casting it from this item is not automated yet`
 }
 
 /**
@@ -54,7 +74,10 @@ export function grantedSpellManualPart(spellUid: string): string {
  * nothing is automated. A granted spell is never `full` while casting it is a manual step
  * (rule 7: automation levels are honest).
  */
-export function inferAutomation(draft: Pick<ItemDraftInput, 'data' | 'effects'>): Automation {
+export function inferAutomation(
+  draft: Pick<ItemDraftInput, 'data' | 'effects'>,
+  names: Record<string, string> = {},
+): Automation {
   const manual = draft.effects.filter(
     (e): e is Extract<typeof e, { type: 'manual' }> => e.type === 'manual',
   )
@@ -64,7 +87,12 @@ export function inferAutomation(draft: Pick<ItemDraftInput, 'data' | 'effects'>)
   const structural = Boolean(draft.data.weapon || draft.data.armor || draft.data.charges)
   const mechanical = draft.effects.length - manual.length - granted.length + (structural ? 1 : 0)
   const manualParts = [
-    ...granted.map((g) => grantedSpellManualPart(g.spell).slice(0, 200)),
+    ...granted.map((g) =>
+      grantedSpellManualPart(g as GrantedSpell, names[g.spell] ?? humanizeUid(g.spell)).slice(
+        0,
+        200,
+      ),
+    ),
     ...manual.map((m) => m.text.slice(0, 200)),
   ]
   if (manualParts.length === 0) return mechanical > 0 ? { level: 'full' } : { level: 'manual' }
@@ -80,6 +108,7 @@ function issuesOf(error: { issues: Array<{ path: PropertyKey[]; message: string 
 export function entryFromDraft(
   draft: ItemDraftInput,
   ids: { uid: string; slug: string },
+  names: Record<string, string> = {},
 ): { ok: true; entry: ContentEntryOf<'item'> } | { ok: false; issues: ValidationIssue[] } {
   const parsed = contentEntrySchema.safeParse({
     kind: 'item',
@@ -89,7 +118,7 @@ export function entryFromDraft(
     data: draft.data,
     effects: draft.effects,
     choices: [],
-    automation: draft.automation ?? inferAutomation(draft),
+    automation: draft.automation ?? inferAutomation(draft, names),
     tests: [],
     tags: [],
     relations: [],
@@ -137,6 +166,21 @@ export function createHomebrewService(deps: {
   commands: CommandRunner
 }) {
   const { repo } = deps
+
+  /** Names for the spells a draft grants, so automation notes read "Bless", not a uid (issue #23). */
+  async function spellNames(effects: ItemDraftInput['effects']): Promise<Record<string, string>> {
+    const uids = [
+      ...new Set(
+        effects.flatMap((e) => (e.type === 'spell.grant' ? [(e as { spell: string }).spell] : [])),
+      ),
+    ]
+    if (uids.length === 0) return {}
+    const rows = await deps.db
+      .select({ uid: schema.contentEntries.uid, name: schema.contentEntries.name })
+      .from(schema.contentEntries)
+      .where(and(inArray(schema.contentEntries.uid, uids), isNull(schema.contentEntries.deletedAt)))
+    return Object.fromEntries(rows.map((r) => [r.uid, r.name]))
+  }
 
   function assertOwner(scope: Scope, ownerUserId: string | null): void {
     if (scope.role === 'admin') return
@@ -208,7 +252,11 @@ export function createHomebrewService(deps: {
       for (let n = 2; await repo.uidTaken(`${source.slug}:item:${slug}`); n += 1)
         slug = `${base}-${n}`
       const uid = `${source.slug}:item:${slug}`
-      const built = entryFromDraft(input.draft, { uid, slug })
+      const built = entryFromDraft(
+        input.draft,
+        { uid, slug },
+        await spellNames(input.draft.effects),
+      )
       if (!built.ok) invalid(built.issues)
       const [ruleset] = await deps.db
         .select({ id: schema.rulesets.id })
@@ -228,7 +276,11 @@ export function createHomebrewService(deps: {
     async saveItem(scope: Scope, input: { entryId: string; draft: ItemDraftInput }) {
       if (!scope.userId) throw new TRPCError({ code: 'UNAUTHORIZED' })
       const item = await loadOwned(scope, input.entryId)
-      const built = entryFromDraft(input.draft, { uid: item.uid, slug: item.slug })
+      const built = entryFromDraft(
+        input.draft,
+        { uid: item.uid, slug: item.slug },
+        await spellNames(input.draft.effects),
+      )
       if (!built.ok) invalid(built.issues)
       const versionId = await repo.saveDraft({
         entryId: item.id,
@@ -242,18 +294,23 @@ export function createHomebrewService(deps: {
     },
 
     /** Validates a draft without storing it: the editor shows issues as the author types. */
-    validate(input: unknown): {
+    async validate(input: unknown): Promise<{
       ok: boolean
       issues: ValidationIssue[]
       automation: Automation | null
-    } {
+    }> {
       const parsed = itemDraftSchema.safeParse(input)
       if (!parsed.success) return { ok: false, issues: issuesOf(parsed.error), automation: null }
       const draft = parsed.data
-      const built = entryFromDraft(draft, { uid: 'preview:item:draft', slug: 'draft' })
+      const names = await spellNames(draft.effects)
+      const built = entryFromDraft(draft, { uid: 'preview:item:draft', slug: 'draft' }, names)
       return built.ok
-        ? { ok: true, issues: [], automation: built.entry.automation ?? inferAutomation(draft) }
-        : { ok: false, issues: built.issues, automation: inferAutomation(draft) }
+        ? {
+            ok: true,
+            issues: [],
+            automation: built.entry.automation ?? inferAutomation(draft, names),
+          }
+        : { ok: false, issues: built.issues, automation: inferAutomation(draft, names) }
     },
 
     async publishItem(scope: Scope, entryId: string) {

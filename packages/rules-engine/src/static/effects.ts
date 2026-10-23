@@ -364,15 +364,9 @@ function applyStatic(
       outputs.deferred.push(instance)
       return
     case 'spell.grant':
+      // The spellcasting module lists the grant and reports the manual casting step with the
+      // spell's name (PARTIAL_AUTOMATION, info).
       outputs.deferred.push(instance)
-      // Honest about what is and is not automated (rule 7): the grant is listed with its uses or
-      // charges, but casting it from the sheet is a manual step until spell actions exist.
-      diagnostic({
-        code: 'PARTIAL_AUTOMATION',
-        severity: 'info',
-        message: `"${source.name}": grants ${effect.spell}; it is listed under granted spells, but casting it from the sheet is not automated yet`,
-        sources: [source],
-      })
       return
     case 'action.grant':
       outputs.actionGrants.push(instance)

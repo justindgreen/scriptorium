@@ -385,12 +385,17 @@ function ItemEditor({
                     </li>
                   ))}
                 </ul>
+              ) : validation.data?.automation?.level === 'partial' ? (
+                <div className="grid gap-1 text-sm" data-testid="manual-parts">
+                  <p className="text-muted-foreground">Partly automated. Still by hand:</p>
+                  <ul className="list-disc pl-5">
+                    {validation.data.automation.manualParts?.map((part, i) => (
+                      <li key={i}>{part}</li>
+                    ))}
+                  </ul>
+                </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  {validation.data?.automation?.level === 'partial'
-                    ? `Manual parts: ${validation.data.automation.manualParts?.join('; ')}`
-                    : 'No issues.'}
-                </p>
+                <p className="text-sm text-muted-foreground">No issues.</p>
               )}
             </CardContent>
           </Card>
@@ -507,6 +512,14 @@ function WeaponFields({ form, set }: { form: ItemForm; set: (patch: Partial<Item
           versatile: data.weapon.versatileDamage ?? '',
           properties: [...new Set([...(data.weapon.properties ?? []), 'magical'])],
         },
+        // Provenance (issue #7): remembered with the item; the stats above are a one-time copy.
+        basedOn: {
+          uid: entry.uid,
+          name: entry.name,
+          source: entry.source.name,
+          versionId: entry.version.id,
+          versionNo: entry.version.versionNo,
+        },
       })
       setBaseQuery('')
     },
@@ -545,6 +558,22 @@ function WeaponFields({ form, set }: { form: ItemForm; set: (patch: Partial<Item
           </ul>
         ) : null}
       </div>
+      {form.basedOn ? (
+        <p className="text-xs text-muted-foreground" data-testid="based-on">
+          Based on {form.basedOn.name ?? form.basedOn.uid}
+          {form.basedOn.source
+            ? ` (${form.basedOn.source}${form.basedOn.versionNo ? `, version ${form.basedOn.versionNo}` : ''})`
+            : ''}
+          . The stats were copied once; later changes to the original do not flow in.{' '}
+          <button
+            type="button"
+            className="underline underline-offset-4"
+            onClick={() => set({ basedOn: null })}
+          >
+            Forget the link
+          </button>
+        </p>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <FormField id="weapon-category" label="Weapon class">
           <select

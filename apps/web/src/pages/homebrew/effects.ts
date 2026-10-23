@@ -195,6 +195,8 @@ export type ItemForm = {
     maxDex: string
   }
   charges: { enabled: boolean; max: string; time: (typeof RECHARGE_TIMES)[number]; formula: string }
+  /** Where the weapon stats were copied from, kept with the item (issue #7). */
+  basedOn: NonNullable<ItemData['basedOn']> | null
   rows: BuilderRow[]
 }
 
@@ -214,6 +216,7 @@ export const EMPTY_FORM: ItemForm = {
   },
   armor: { category: 'light', baseAc: '11', addDex: true, maxDex: '' },
   charges: { enabled: false, max: '3', time: 'dawn', formula: '' },
+  basedOn: null,
   rows: [],
 }
 
@@ -260,6 +263,7 @@ export function formToDraft(form: ItemForm): ItemDraft {
           },
         }
       : {}),
+    ...(form.basedOn ? { basedOn: form.basedOn } : {}),
   }
   return { name: form.name, data, effects: rowsToEffects(form.rows) }
 }
@@ -299,6 +303,7 @@ export function draftToForm(name: string, data: ItemData, effects: Effect[]): It
           formula: data.charges.recharge.formula ?? '',
         }
       : EMPTY_FORM.charges,
+    basedOn: data.basedOn ?? null,
     rows: effectsToRows(effects),
   }
 }

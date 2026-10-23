@@ -571,6 +571,23 @@ function grantedSpells(ctx: SpellcastingContext): SpellcastingView['granted'] {
         sources: [instance.source],
       })
     }
+    // Honest about what is and is not automated (rule 7): the grant is listed with its uses or
+    // charges, but casting it from the sheet is a manual step until spell actions exist (D-4).
+    const spellName = ctx.snapshot.get(effect.spell)?.name ?? effect.spell
+    const cost =
+      effect.chargeCost !== undefined
+        ? ` (${effect.chargeCost} charge${effect.chargeCost === 1 ? '' : 's'})`
+        : row.uses
+          ? ` (${row.uses.max} per ${row.uses.recharge})`
+          : effect.atWill
+            ? ' (at will)'
+            : ''
+    ctx.diagnostic({
+      code: 'PARTIAL_AUTOMATION',
+      severity: 'info',
+      message: `"${instance.source.name}" grants ${spellName}${cost}; casting it from the sheet is not automated yet`,
+      sources: [instance.source],
+    })
     out.push(row)
   }
   return out

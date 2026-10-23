@@ -147,3 +147,7 @@ Deferred issues #22–#24 remain open; a roadmap assignment is not a resolution.
 - **Authorization boundary:** final A1 verification **does not initiate or authorize UX-1, UX-2 or Phase 3**. The next milestone requires a separate explicit owner decision.
 
 This §11 supersedes the earlier A1-R retest-pending language in §§1, 7 and 10 for current status, while preserving the original proposal and acceptance criteria as an audit trail.
+
+## 12. UX-1 delivered (2026-10-23, owner acceptance pending)
+
+The owner authorised UX-1 as proposed in §4 (plus #22 and #23 from §10). Delivered in two checkpoints (ADR-0041): A, commit e94408b: #22, #6, #15, #10, #14 (short form); B, the milestone commit: #23, #11, #7, #9, #4 (first pass). Each issue has server and E2E coverage; the owner's checklist is `docs/UX1_RETEST.md`. The UX-1 issues stay open until the owner confirms the Unraid retest. UX-2 keeps #16, #20, the in-encounter panel of #14 and the second pass of #4; the M3.2 commitments (eleven features, six conflicts, D-1, D-2, D-4, #24) and the roadmap items are unchanged.

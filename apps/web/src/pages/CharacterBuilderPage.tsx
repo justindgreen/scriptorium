@@ -96,8 +96,11 @@ export function CharacterBuilderPage() {
         <div className="grid gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Basics</CardTitle>
-              <CardDescription>Name, species, background and first class.</CardDescription>
+              <CardTitle>1 · Basics</CardTitle>
+              <CardDescription>
+                Name, species, background and first class. Anything left as "Choose later" can be
+                completed on the sheet.
+              </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <FormField id="name" label="Name">
@@ -179,7 +182,7 @@ export function CharacterBuilderPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Ability scores</CardTitle>
+              <CardTitle>2 · Ability scores</CardTitle>
               <CardDescription data-testid="method-help">{METHOD_HELP[method]}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
@@ -213,9 +216,10 @@ export function CharacterBuilderPage() {
         </div>
         <Card className="self-start">
           <CardHeader>
-            <CardTitle>Create</CardTitle>
+            <CardTitle>3 · Create</CardTitle>
             <CardDescription>
-              You can change everything later; every change is logged.
+              Skills, fighting style, spells and equipment are chosen on the sheet afterwards, under
+              "Needs your attention". Everything can be changed later; every change is logged.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3">

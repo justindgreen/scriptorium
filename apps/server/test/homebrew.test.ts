@@ -18,7 +18,11 @@ import {
  * stays pinned when the author publishes a new version.
  */
 type Source = { id: string; slug: string }
-type Created = { entryId: string; uid: string; automation: { level: string } }
+type Created = {
+  entryId: string
+  uid: string
+  automation: { level: string; manualParts?: string[] }
+}
 type Preview = {
   templates: ActionTemplate[]
   plan: ActionPlan | null
@@ -128,7 +132,24 @@ describe('helpers', () => {
     // A granted spell is listed but not castable from the sheet (D-4), so never `full` (issue #8).
     expect(inferAutomation(sword as never)).toEqual({
       level: 'partial',
-      manualParts: [expect.stringContaining('casting srd-5.1:spell:bless')],
+      manualParts: [
+        'Bless is granted (1 charge), but casting it from this item is not automated yet',
+      ],
+    })
+    // Issue #23: names come from the content system when known, never raw uids.
+    expect(
+      inferAutomation(
+        {
+          ...sword,
+          effects: [{ type: 'spell.grant', spell: 'home:spell:eldritch-ward', atWill: true }],
+        } as never,
+        { 'home:spell:eldritch-ward': 'Eldritch Ward' },
+      ),
+    ).toEqual({
+      level: 'partial',
+      manualParts: [
+        'Eldritch Ward is granted (at will), but casting it from this item is not automated yet',
+      ],
     })
     expect(inferAutomation({ ...sword, effects: sword.effects.slice(0, 3) } as never)).toEqual({
       level: 'full',
@@ -202,6 +223,7 @@ describe('homebrew sources and item drafts', () => {
     uid = created.data!.uid
     expect(uid).toBe(`${source.slug}:item:fiendbane-longsword`)
     expect(created.data!.automation.level).toBe('partial')
+    expect(created.data!.automation.manualParts?.[0]).toMatch(/^Bless is granted \(1 charge\)/)
     const item = await trpcQuery<{ status: string; draft: { versionNo: number }; head: null }>(
       t.app,
       'homebrew.items.get',
@@ -249,9 +271,11 @@ describe('homebrew sources and item drafts', () => {
     const codes = preview.data!.diagnostics.map((d) => d.code)
     expect(codes).toContain('PARTIAL_AUTOMATION')
     expect(codes).not.toContain('UNSUPPORTED_EFFECT')
-    expect(preview.data!.diagnostics.find((d) => d.code === 'PARTIAL_AUTOMATION')!.message).toMatch(
-      /listed under granted spells/,
+    const note = preview.data!.diagnostics.find((d) => d.code === 'PARTIAL_AUTOMATION')!.message
+    expect(note).toMatch(
+      /grants Bless \(1 charge\); casting it from the sheet is not automated yet/,
     )
+    expect(note).not.toMatch(/srd-5\.1:spell:bless/)
     const noTarget = await trpcQuery<Preview>(
       t.app,
       'homebrew.items.preview',

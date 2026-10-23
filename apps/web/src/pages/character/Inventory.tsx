@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { uidLabel, type CharacterView } from '@/lib/characters'
 import { trpc } from '@/lib/trpc'
+import { ItemDetails } from './ItemDetails'
 import type { SendFn } from './shared'
 
 export function Inventory({ view, send }: { view: CharacterView; send: SendFn }) {
@@ -96,6 +97,9 @@ export function Inventory({ view, send }: { view: CharacterView; send: SendFn })
                   Remove
                 </Button>
               </span>
+              <div className="basis-full">
+                <ItemDetails item={i} view={views.get(i.id)} />
+              </div>
             </li>
           ))}
         </ul>

@@ -145,6 +145,19 @@ export const itemDataSchema = z.strictObject({
     .optional(),
   /** Items that come in several variants in the source text (e.g. +1/+2/+3). */
   variantOf: uidSchema.optional(),
+  /**
+   * Editor provenance (UX-1, issue #7): the entry and version whose stats were copied into this
+   * item. A one-time copy for the record, never live inheritance.
+   */
+  basedOn: z
+    .strictObject({
+      uid: uidSchema,
+      name: z.string().max(120).optional(),
+      source: z.string().max(120).optional(),
+      versionId: z.string().uuid().optional(),
+      versionNo: z.number().int().min(1).optional(),
+    })
+    .optional(),
   quantityPerPurchase: z.number().int().min(1).optional(),
 })
 

@@ -52,6 +52,8 @@ Application-level pieces live in `src/components` and `src/layout`:
 - Responsive breakpoints: phone (375), tablet (768), desktop (1280) are the three widths tested end to end.
 - Game-specific colour tokens (damage types, conditions, spell schools) are added when the character sheet lands, as additional `--color-*` entries here, never as ad-hoc hex values in components.
 
+Sheet layout (UX-1, issue #4): the character sheet is five named sections rendered by `SheetSection` (a small uppercase heading with a hint): Needs your attention (only when something is open), Play, Character, Equipment, Management. Two columns from `lg` (Play 2fr beside Character 1fr), one column below, always in that order; nothing may scroll sideways at 375 px (checked by E2E). Irreversible actions use `ConfirmButton`: the first press opens an inline prompt that says what will happen, with Confirm and Cancel; deletion additionally asks for the character's name. Errors show in one `FormError` under the page header.
+
 ## Print
 
 The character sheet prints from the browser ("Save as PDF" is the 1.0 export). `@media print` in `apps/web/src/index.css` switches to white paper and black ink and hides every control (`button`, `input`, `select`, `textarea`, disclosure summaries, alerts) and the shell (sidebar and header carry `print:hidden`; the shell grid becomes a single column with `print:block`). Components mark control groups with the Tailwind `print:hidden` variant and let open disclosures print their content. Nothing is rendered specially for print: what prints is the same computed sheet.

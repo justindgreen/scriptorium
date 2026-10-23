@@ -39,7 +39,16 @@ test('builds every alpha class at level 1 and levels it to 5', async ({ page }, 
     await buildCharacter(page, name, cls)
     await expect(page.getByText(/Level 1 ·/)).toBeVisible()
     await expect(page.getByTestId('pending-choices')).toBeVisible()
-    if (cls.label === 'Fighter') await expectAccessible(page)
+    if (cls.label === 'Fighter') {
+      await expectAccessible(page)
+      // Issue #4: named sections in a fixed order, and no sideways scrolling at any width.
+      for (const id of ['attention', 'play', 'character', 'equipment', 'management'])
+        await expect(page.getByTestId(`section-${id}`)).toBeVisible()
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      )
+      expect(overflow).toBeLessThanOrEqual(0)
+    }
 
     let revision = 0
     for (let level = 2; level <= 5; level += 1) {

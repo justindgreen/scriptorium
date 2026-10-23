@@ -51,6 +51,8 @@ test('the sword example is authored, previewed, published and lands on a sheet',
   await page.getByTestId('base-weapon-search').fill('longsword')
   await press(page.getByTestId('base-srd-5.1:item:longsword'))
   await expect(page.getByTestId('weapon-dice')).toHaveValue('1d8')
+  // Issue #7: the copy remembers where it came from.
+  await expect(page.getByTestId('based-on')).toContainText('Based on Longsword')
   await page.getByTestId('item-attunement').check()
   await page.getByTestId('item-charges').check()
   await page.getByTestId('charges-max').fill('3')
@@ -74,7 +76,9 @@ test('the sword example is authored, previewed, published and lands on a sheet',
   await expect(page.getByTestId('validation-status')).toHaveText('valid')
   // A granted spell is listed on the sheet but not castable from it yet, so the item is `partial` (issue #8).
   await expect(page.getByTestId('automation-level')).toHaveText('automation: partial')
-  await expect(page.getByTestId('validation')).toContainText('Manual parts: casting')
+  // Issue #23: the manual part names the spell in plain words, no uids or codes.
+  await expect(page.getByTestId('manual-parts')).toContainText('Bless is granted (1 charge)')
+  await expect(page.getByTestId('validation')).not.toContainText('srd-5.1:spell:bless')
   if (testInfo.project.name === 'desktop') await expectAccessible(page)
 
   await press(page.getByTestId('item-save'))
@@ -83,7 +87,18 @@ test('the sword example is authored, previewed, published and lands on a sheet',
 
   // Preview on the fighter: STR 16 (+3) + proficiency 2 + 3 = +8; the rider needs a fiend.
   await page.getByTestId('preview-character').selectOption({ label: heroName })
+  // Issue #9: before a target is chosen the preview asks, and says the plan leaves the rider out.
+  await expect(page.getByTestId('preview-question')).toBeVisible()
+  await expect(page.getByTestId('preview-plan')).toContainText(
+    'Plan without the conditional damage',
+  )
+  // Codes stay out of the visible text; they sit under the collapsed "Diagnostic details".
+  await expect(page.getByTestId('preview-result')).not.toContainText('PARTIAL_AUTOMATION', {
+    useInnerText: true,
+  })
+  await expect(page.getByTestId('preview-diagnostics')).not.toHaveAttribute('open', '')
   await page.getByTestId('preview-target').selectOption('fiend')
+  await expect(page.getByTestId('preview-question')).toHaveCount(0)
   const preview = page.getByTestId('preview-result')
   await expect(preview).toContainText(`${itemName} +8, 1d8 + 6 slashing`)
   await expect(page.getByTestId('preview-plan')).toContainText('1d8 + 6 slashing + 1d8 radiant')
@@ -102,9 +117,24 @@ test('the sword example is authored, previewed, published and lands on a sheet',
   await expect(inventory).toContainText(itemName)
   await expect(inventory).toContainText('3/3 charges')
   await expect(page.getByTestId('action-templates')).toContainText(`${itemName} +5`)
+  // Issue #10: before attuning, the row says the effects are inactive and why.
+  await expect(inventory.locator('[data-testid^="inactive-"]').first()).toContainText(
+    'effects inactive',
+  )
   await press(inventory.getByRole('button', { name: 'Attune' }).first())
   await expect(page.getByTestId('action-templates')).toContainText(`${itemName} +8`)
   await expect(page.getByTestId('granted-spells')).toContainText('Bless')
+  await expect(inventory.locator('[data-testid^="inactive-"]')).toHaveCount(0)
+  // Issue #11: the item can be read on the sheet, effects as sentences, with its provenance.
+  const details = inventory.locator('[data-testid^="item-details-"]').first()
+  await details.locator('summary').click()
+  await expect(inventory.locator('[data-testid^="item-effects-"]').first()).toContainText(
+    '+3 to attack rolls with this weapon',
+  )
+  await expect(inventory.locator('[data-testid^="item-based-on-"]').first()).toContainText(
+    'Longsword',
+  )
+  await expect(details).toContainText('A +3 longsword that burns fiends and undead.')
 
   const toggle = page
     .getByTestId(/^action-.*-toggle$/)

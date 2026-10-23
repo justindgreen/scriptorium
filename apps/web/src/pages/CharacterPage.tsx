@@ -19,6 +19,7 @@ import { LevelUp } from './character/LevelUp'
 import { OverridesPanel } from './character/OverridesPanel'
 import { Proficiencies } from './character/Proficiencies'
 import { ResourcesPanel } from './character/ResourcesPanel'
+import { SheetSection } from './character/SheetSection'
 import { Spells } from './character/Spells'
 import { Vitals } from './character/Vitals'
 import type { SendFn } from './character/shared'
@@ -27,6 +28,10 @@ import type { SendFn } from './character/shared'
  * The interactive sheet (M2.6). Every control issues a command through `useCommand`; the page
  * never computes a rule. Live updates arrive over the character subscription, with polling as the
  * fallback; a print stylesheet hides the controls.
+ *
+ * Layout (issue #4): what needs the player's attention first, then play controls beside the
+ * character's details, equipment across the page, and management (level-ups, history, overrides,
+ * diagnostics, deletion) last. One column on a phone, in that order.
  */
 export function CharacterPage() {
   const { characterId } = useParams({ strict: false }) as { characterId: string }
@@ -58,11 +63,14 @@ export function CharacterPage() {
   const classes = sheet.classes
     .map((c) => `${c.name}${c.subclassName ? ` (${c.subclassName})` : ''} ${c.level}`)
     .join(' / ')
+  const background = aggregate.definition.backgroundUid
+  const needsClass = sheet.level === 0
+  const attention = !background || needsClass || sheet.pendingChoices.length > 0
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-8">
       <PageHeader
         title={aggregate.name}
-        description={`${sheet.level > 0 ? `Level ${sheet.level} · ${classes}` : 'No class yet'}${aggregate.definition.speciesUid ? ` · ${uidLabel(aggregate.definition.speciesUid)}` : ''} · ${aggregate.definition.backgroundUid ? uidLabel(aggregate.definition.backgroundUid) : 'Background: Not selected'} · revision ${data.revision}`}
+        description={`${sheet.level > 0 ? `Level ${sheet.level} · ${classes}` : 'No class yet'}${aggregate.definition.speciesUid ? ` · ${uidLabel(aggregate.definition.speciesUid)}` : ''} · ${background ? uidLabel(background) : 'Background: Not selected'} · revision ${data.revision}`}
         actions={
           <>
             <Badge variant={live ? 'secondary' : 'outline'} data-testid="live-status">
@@ -80,28 +88,53 @@ export function CharacterPage() {
         }
       />
       <FormError message={error} />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] print:block">
-        <div className="grid min-w-0 grid-cols-1 gap-6">
+      {attention ? (
+        <SheetSection
+          id="attention"
+          title="Needs your attention"
+          hint="Finish these to complete the character."
+          className="print:hidden"
+        >
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {!background ? <BackgroundPanel view={data} send={send} /> : null}
+            {needsClass ? <LevelUp view={data} send={send} onError={setError} /> : null}
+            <div className="min-w-0 lg:col-span-2">
+              <PendingChoices view={data} send={send} />
+            </div>
+          </div>
+        </SheetSection>
+      ) : null}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] print:block">
+        <SheetSection id="play" title="Play" hint="Rolls, actions, resources and rests.">
           <Vitals view={data} send={send} />
-          {!aggregate.definition.backgroundUid ? <BackgroundPanel view={data} send={send} /> : null}
           <ActionsPanel view={data} send={send} onError={setError} />
-          <PendingChoices view={data} send={send} />
           <ResourcesPanel view={data} send={send} onError={setError} />
-          <Inventory view={data} send={send} />
           {sheet.spellcasting ? <Spells view={data} send={send} onError={setError} /> : null}
-        </div>
-        <div className="grid min-w-0 grid-cols-1 gap-6 self-start">
-          {aggregate.definition.backgroundUid ? <BackgroundPanel view={data} send={send} /> : null}
-          <Proficiencies sheet={sheet} />
+        </SheetSection>
+        <SheetSection id="character" title="Character" hint="Who they are and what applies now.">
           <ConditionsPanel view={data} send={send} />
+          {background ? <BackgroundPanel view={data} send={send} /> : null}
+          <Proficiencies sheet={sheet} />
           <CurrencyPanel view={data} send={send} />
-          <OverridesPanel view={data} send={send} />
-          <LevelUp view={data} send={send} onError={setError} />
+        </SheetSection>
+      </div>
+      <SheetSection id="equipment" title="Equipment" hint="Carried, equipped and attuned items.">
+        <Inventory view={data} send={send} />
+      </SheetSection>
+      <SheetSection
+        id="management"
+        title="Management"
+        hint="Occasional changes, history, overrides, diagnostics."
+        className="print:hidden"
+      >
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {!needsClass ? <LevelUp view={data} send={send} onError={setError} /> : null}
           <History characterId={characterId} revision={data.revision} onError={setError} />
+          <OverridesPanel view={data} send={send} />
           <Diagnostics sheet={sheet} />
           <DangerZone characterId={characterId} name={aggregate.name} />
         </div>
-      </div>
+      </SheetSection>
     </div>
   )
 }

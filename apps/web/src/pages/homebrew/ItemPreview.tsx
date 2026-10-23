@@ -60,6 +60,11 @@ export function ItemPreview({
     onError: (e) => onError(errorMessage(e)),
   })
   const p = preview.data
+  // Issue #9: a rider that depends on the target is asked about before the plan is read.
+  const openQuestion =
+    p?.plan && !targetType
+      ? p.plan.questions.find((q) => q.id === 'target.creatureType')
+      : undefined
   return (
     <Card data-testid="item-preview">
       <CardHeader>
@@ -124,12 +129,23 @@ export function ItemPreview({
                 ) : null}
               </p>
             ))}
+            {openQuestion ? (
+              <p
+                className="rounded-md border border-primary/40 bg-accent/30 p-2"
+                data-testid="preview-question"
+              >
+                {openQuestion.text} Pick the imagined target above to include the conditional damage
+                in the plan.
+              </p>
+            ) : null}
             {p.plan ? (
               <p data-testid="preview-plan">
-                Plan{targetType ? ` against a ${targetType}` : ''}:{' '}
+                {openQuestion
+                  ? 'Plan without the conditional damage: '
+                  : `Plan${targetType ? ` against a ${targetType}` : ''}: `}
                 {p.plan.damage.map((d) => `${d.formula} ${d.damageType}`).join(' + ') ||
                   'no damage'}
-                {p.plan.questions.length
+                {p.plan.questions.length && !openQuestion
                   ? ` · asks: ${p.plan.questions.map((q) => q.text).join('; ')}`
                   : ''}
               </p>
@@ -156,15 +172,31 @@ export function ItemPreview({
                 ))}
               </ul>
             ) : null}
-            {p.diagnostics.map((d, i) => (
-              <p
-                key={i}
-                className={d.severity === 'info' ? 'text-muted-foreground' : 'text-destructive'}
-                data-testid={`preview-diagnostic-${d.code}`}
-              >
-                {d.code}: {d.message}
-              </p>
-            ))}
+            {p.diagnostics
+              .filter((d) => d.severity !== 'info')
+              .map((d, i) => (
+                <p
+                  key={i}
+                  className="text-destructive"
+                  data-testid={`preview-diagnostic-${d.code}`}
+                >
+                  {d.message}
+                </p>
+              ))}
+            {p.diagnostics.length > 0 ? (
+              <details className="text-xs" data-testid="preview-diagnostics">
+                <summary className="cursor-pointer text-muted-foreground">
+                  Diagnostic details ({p.diagnostics.length})
+                </summary>
+                <ul className="mt-1 grid gap-0.5 text-muted-foreground">
+                  {p.diagnostics.map((d, i) => (
+                    <li key={i}>
+                      <code>{d.code}</code> {d.message}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
             {p.templates.length === 0 && p.changes.length === 0 && p.granted.length === 0 ? (
               <p className="text-muted-foreground">
                 Nothing on the sheet changes yet: add a weapon block, bonuses or a granted spell.
