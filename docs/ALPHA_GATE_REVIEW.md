@@ -1,6 +1,6 @@
 # Alpha Gate (A1) review
 
-Date: 2026-10-22. Repository state audited: `main` at d9d6195 (M2.8). Reviewer: the implementation session, acting as an independent audit per the owner's A1 brief. Nothing in this document marks A1 verified; the recommendation at the end is for the owner's decision.
+Date: 2026-10-22. Repository state audited: `main` at d9d6195 (M2.8). Reviewer: the implementation session, acting as an independent audit per the owner's A1 brief. This original audit did not mark A1 verified; see §11 for the subsequent owner sign-off.
 
 ## 1. Executive summary
 
@@ -204,3 +204,15 @@ Corrections delivered before Phase 3, narrowly scoped:
 A1 remains **not verified**: owner acceptance testing (§8) is outstanding, and Phase 3 has not been started.
 
 Follow-up (2026-10-22, later): owner acceptance testing on Unraid passed the §8 checklist after the issue #2 hotfix (48fbe40). The nineteen findings it produced are reconciled in `docs/A1_RECONCILIATION.md`; the owner approved the bounded A1-R milestone (ADR-0039: issues #3, #5, #13, #19, #8), delivered with tests and `docs/A1R_RETEST.md`. A1 remains conditional pass, owner testing passed, remediation pending the owner's retest of those five items; the coverage exception of ADR-0038 is unchanged.
+
+## 11. Final owner acceptance and A1 sign-off (2026-10-22)
+
+**Gate A1: VERIFIED — conditional pass with the expressly limited ADR-0038 coverage exception.** The owner completed the original Unraid acceptance walkthrough, then retested all five A1-R corrections from commit `767e681` (#3, #5, #13, #19, #8) successfully. All five issues, along with the prior #2 HTTP-LAN hotfix, are closed as completed. The final background completion and change workflow (#21, ADR-0040) was delivered in `ef37fa0` and passed **all nine owner-specified Unraid acceptance checks**, including creation without a background, later Acolyte selection, language choices, reload/restart persistence, warning/confirmation when removing the background, clearing obsolete grants and choices, selecting it again, and preserving an existing Acolyte character. Issue #21 was then closed as completed.
+
+Verification evidence: CI run [39905866800](https://github.com/justindgreen/scriptorium/actions/runs/39905866800) on `ef37fa0` succeeded (verify and image jobs); lint, format, typecheck clean; `pnpm test` **337 passed** (33 files); `pnpm test:e2e` **63 passed**, 2 intentional skips; `pnpm coverage:automation` **1,948 entries, 336 verified, zero unverified**. The Unraid application and PostgreSQL readiness checks and backup verification passed. The prior independent two-instance restore check remains **27/27**; no destructive restore was performed on the live installation.
+
+**The 95% automation gate is still not met.** The unchanged original class/subclass measurements are **63.1% overall, 81.7% excluding structural placeholders and 89.5% after the ten named narrative exceptions**. Per ADR-0038 this is an accepted **limited exception, not compliance**. Early M3.2 must still remediate the eleven mechanical features, six numeric/resource-bearing conflicts, D-1 spell damage, D-2 death saves and D-4 item-granted casting. The species-granted-language content gap remains open as [#24](https://github.com/justindgreen/scriptorium/issues/24) and is explicitly assigned to the mandatory M3.2 workstream.
+
+Remaining UI and product requirements are **not closed by gate verification**: character deletion [#22](https://github.com/justindgreen/scriptorium/issues/22) and friendly homebrew diagnostics [#23](https://github.com/justindgreen/scriptorium/issues/23) belong to UX-1, and the other previously recorded UX-1, UX-2 and roadmap issues keep their approved dispositions in `docs/A1_RECONCILIATION.md`. **A1 verification does not authorize UX-1, UX-2 or Phase 3**; work on those milestones requires a separate owner instruction.
+
+This §11 supersedes the earlier *pending/not verified* statements in the dated audit and follow-up sections; their original findings and evidence are retained for traceability.

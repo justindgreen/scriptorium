@@ -71,3 +71,11 @@ Rebuild exactly as in §1 at the commit named in the completion report (no migra
 - [ ] Choose Acolyte again: the Languages choice is open again with nothing pre-chosen.
 - [ ] A character created with Acolyte in the builder is unchanged: its card shows Acolyte, its earlier language picks remain; pressing Change background with Acolyte still selected is disabled.
 - [ ] As another player, the character's sheet is still not reachable; the API refuses `setBackground` for it (403).
+
+## 5. Owner retest outcome and sign-off (2026-10-22)
+
+**PASS.** The owner confirmed all nine targeted Issue #21 checks passed on the running Unraid deployment at commit `ef37fa0`, after the five earlier A1-R items (#3, #5, #13, #19, #8) had already passed on Unraid. Background selection, feature/proficiency grants, language selection, reload and container restart persistence, confirmation before clearing a background, removal of superseded grants and choices, re-selection, and the unchanged previously completed character were included. Automated regression tests cover cross-owner authorization and the command behavior.
+
+**Gate disposition:** A1 **verified as a conditional pass under ADR-0038**, with the 95% automation threshold unmet and the limited exception recorded (63.1% / 81.7% / 89.5%). Issue #21 was closed as completed. Issues #22 and #23 remain UX-1 deferrals; issue #24 remains mandatory M3.2 content remediation. No subsequent milestone has been authorized by this sign-off.
+
+Verification baseline: `ef37fa0`; [green CI 39905866800](https://github.com/justindgreen/scriptorium/actions/runs/39905866800), 337 tests, 63 E2E passed (2 intentional skips), 336 automation cases verified.

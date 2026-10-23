@@ -1,5 +1,7 @@
 # A1 owner acceptance: reconciliation report and remediation plan
 
+**Final outcome (2026-10-22): A1 verified as a conditional pass with ADR-0038's explicit limited coverage exception.** The original proposal and earlier pending states below are retained as historical decisions; see §11 for final evidence. UX-1, UX-2 and Phase 3 are not yet authorised.
+
 Date: 2026-10-22. Repository: `main` at 48fbe40. Status: approved by the owner on 2026-10-22 for A1-R and the sequence (ADR-0039); A1-R implemented the same day (retest checklist in `docs/A1R_RETEST.md`); UX-1, UX-2 and Phase 3 remain unauthorised. The text below is the proposal as reviewed. Nothing here changes ADR-0038, the recorded coverage numbers (63.1% / 81.7% / 89.5% against the 95% gate), the Phase 3 remediation commitments (eleven mechanical features, six numeric conflicts, D-1, D-2, D-4 at the start of M3.2), or the A1 status. No implementation has started.
 
 ## 1. Baseline and where A1 stands
@@ -133,4 +135,15 @@ The owner's Unraid retest of A1-R (767e681) passed all five items; issues #3, #5
 | #23   | Homebrew automation wording shows raw uids and codes              | incomplete (presentation)         | UX-1, grouped with item details and validation UX; `partial` stays accurate until D-4                                    | UX-1          | B        |
 | #24   | Species innate languages (Common, Dwarvish) are prose, not grants | incomplete alpha content          | M3.2 content remediation, added to the mandatory workstream next to the eleven features, six conflicts, D-1, D-2 and D-4 | M3.2          | B        |
 
-None of these is closed by its milestone assignment. The A1 verification conditions of §7 now read: A1-R (five items) passed on Unraid; #21 passes the owner's retest; the exception of ADR-0038 stays recorded; UX-1, UX-2 and Phase 3 stay unauthorised until the owner says otherwise.
+Deferred issues #22–#24 remain open; a roadmap assignment is not a resolution. Issue #21 was resolved by implementation and owner retest, not by deferral (see §11). The A1 verification conditions of §7 now read: A1-R (five items) passed on Unraid; #21 passes the owner's retest; the exception of ADR-0038 stays recorded; UX-1, UX-2 and Phase 3 stay unauthorised until the owner says otherwise.
+
+## 11. Final owner disposition and gate completion (2026-10-22)
+
+- **A1-R (ADR-0039): owner retest passed** on Unraid at `767e681` for issues #3, #5, #13, #19 and #8; those issues were closed as completed. HTTP-LAN issue #2 had already been resolved and closed.
+- **Final A1 correction (ADR-0040): owner retest passed all nine checks** on Unraid at `ef37fa0`. A character without a background can select Acolyte later, gain the appropriate feature/proficiencies and complete languages, then confirm background removal (with obsolete background selections and effects cleared); persistence and existing background-equipped characters were verified. Issue #21 is **closed as completed**.
+- **Green CI:** [39905866800](https://github.com/justindgreen/scriptorium/actions/runs/39905866800) for `ef37fa0`, with 337 unit/integration tests passing, 63 E2E passing, two intentional skips; automation coverage still 1,948 entries / 336 verified. Existing 27/27 two-instance restore evidence and owner Unraid backup verification are retained.
+- **A1 status: VERIFIED — CONDITIONAL PASS.** The gate is owner-signed-off with the deliberately limited ADR-0038 coverage exception. The original 95% goal is **unmet**, with measurements **63.1% / 81.7% / 89.5%** unchanged. This is **not** a reclassification as compliant.
+- **Named commitments stay open:** the eleven incomplete mechanical features, six numeric/resource conflicts, D-1, D-2, D-4 and species-granted-language content issue #24 are mandatory M3.2 remediation. UX-1 contains #22 and #23 along with previously assigned UX issues. UX-2 and other roadmap requirements remain open and milestone-scoped, not silently waived.
+- **Authorization boundary:** final A1 verification **does not initiate or authorize UX-1, UX-2 or Phase 3**. The next milestone requires a separate explicit owner decision.
+
+This §11 supersedes the earlier A1-R retest-pending language in §§1, 7 and 10 for current status, while preserving the original proposal and acceptance criteria as an audit trail.
